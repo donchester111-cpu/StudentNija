@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>StudentNija · About &amp; Credits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== RESET & BASE ===== */
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --bg-primary: #f0f4fa;
+      --bg-secondary: #ffffff;
+      --bg-card: rgba(255, 255, 255, 0.55);
+      --bg-solid: #e8ecf2;
+      --text-primary: #0a1927;
+      --text-secondary: #1a2d3e;
+      --text-muted: #5b6e8c;
+      --accent: #008751;
+      --accent-light: #00a86b;
+      --accent-glow: rgba(0, 135, 81, 0.20);
+      --accent-dark: #006b3f;
+      --shadow: 0 8px 40px rgba(0, 0, 0, 0.07);
+      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.10);
+      --radius: 28px;
+      --radius-sm: 16px;
+      --radius-xs: 10px;
+      --transition: 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .dark {
+      --bg-primary: #0a111f;
+      --bg-secondary: #121c28;
+      --bg-card: rgba(255, 255, 255, 0.04);
+      --bg-solid: #1a2a3a;
+      --text-primary: #f0f4fa;
+      --text-secondary: #dce4ed;
+      --text-muted: #8fa0b5;
+      --shadow: 0 8px 40px rgba(0, 0, 0, 0.50);
+      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.30);
+      --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.60);
+    }
+    html {
+      scroll-behavior: smooth;
+    }
+    body {
+      font-family: var(--font);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      transition: background var(--transition), color var(--transition);
+      padding: 0;
+      margin: 0;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    /* ===== SCROLLBAR ===== */
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--accent);
+      border-radius: 30px;
+    }
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: var(--accent) transparent;
+    }
+
+    /* ===== LAYOUT ===== */
+    .container {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 20px 18px 40px;
+      width: 100%;
+    }
+
+    /* ===== BACK BUTTON ===== */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 60px;
+      background: var(--bg-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition), transform 0.15s, box-shadow var(--transition);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 28px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      width: fit-content;
+      font-family: var(--font);
+    }
+    .back-link:hover {
+      background: var(--bg-solid);
+      color: var(--text-primary);
+    }
+    .back-link:active {
+      transform: scale(0.94);
+    }
+    .back-link svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+    }
+
+    /* ===== THEME TOGGLE (floating) ===== */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: var(--bg-secondary);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 60px;
+      padding: 10px 18px;
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: var(--shadow-sm);
+      transition: background var(--transition), color var(--transition), transform 0.15s, box-shadow var(--transition);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      font-family: var(--font);
+      letter-spacing: 0.2px;
+    }
+    .theme-toggle:hover {
+      background: var(--bg-solid);
+    }
+    .theme-toggle:active {
+      transform: scale(0.92);
+    }
+    .theme-toggle .icon {
+      font-size: 18px;
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      text-align: center;
+      padding: 20px 0 32px;
+      position: relative;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -40%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120%;
+      max-width: 600px;
+      height: 300px;
+      background: radial-gradient(ellipse at center, var(--accent-glow), transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .hero>* {
+      position: relative;
+      z-index: 1;
+    }
+    .hero .logo {
+      font-size: 72px;
+      display: inline-block;
+      filter: drop-shadow(0 8px 32px var(--accent-glow));
+      animation: float 6s ease-in-out infinite;
+      line-height: 1;
+    }
+    @keyframes float {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+    .hero .app-name {
+      font-size: 44px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-top: 4px;
+      background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero .version-badge {
+      display: inline-block;
+      margin-top: 8px;
+      background: var(--accent);
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 18px;
+      border-radius: 60px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+    .hero .tagline {
+      font-size: 18px;
+      color: var(--text-muted);
+      margin-top: 12px;
+      font-weight: 400;
+      letter-spacing: 0.2px;
+    }
+    .hero .divider {
+      width: 60px;
+      height: 4px;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      margin: 16px auto 0;
+    }
+
+    /* ===== GLASS CARD ===== */
+    .glass-card {
+      background: var(--bg-secondary);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      transition: background var(--transition), box-shadow var(--transition), transform 0.25s;
+      margin-bottom: 24px;
+    }
+    .glass-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+    .glass-card .card-title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .glass-card .card-title .emoji {
+      font-size: 26px;
+    }
+
+    /* ===== FOUNDER CARD ===== */
+    .founder-card {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+    .founder-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      box-shadow: 0 8px 24px var(--accent-glow);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 700;
+      color: white;
+      border: 3px solid var(--bg-secondary);
+      transition: border-color var(--transition);
+    }
+    .dark .founder-avatar {
+      border-color: var(--bg-secondary);
+    }
+    .founder-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .founder-avatar .fallback {
+      display: none;
+      font-size: 32px;
+      font-weight: 700;
+      color: white;
+    }
+    .founder-avatar img[src=""] + .fallback,
+    .founder-avatar img:not([src]) + .fallback,
+    .founder-avatar img.error + .fallback {
+      display: flex;
+    }
+    .founder-avatar img.error {
+      display: none;
+    }
+    .founder-info {
+      flex: 1;
+      min-width: 180px;
+    }
+    .founder-info .name {
+      font-size: 22px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .founder-info .name .verified {
+      background: var(--accent);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 14px;
+      border-radius: 60px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .founder-info .title {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .founder-info .bio {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-top: 10px;
+      max-width: 580px;
+    }
+    .dark .founder-info .bio {
+      color: var(--text-secondary);
+    }
+
+    /* ===== MISSION ===== */
+    .mission-text {
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      font-weight: 400;
+      padding: 4px 0;
+      max-width: 700px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .dark .mission-text {
+      color: var(--text-secondary);
+    }
+
+    /* ===== STATS ===== */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 14px;
+    }
+    .stat-item {
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      padding: 20px 12px;
+      text-align: center;
+      transition: background var(--transition), transform 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+    }
+    .stat-item:hover {
+      transform: scale(1.03);
+    }
+    .stat-item .stat-icon {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .stat-item .stat-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    /* ===== TECH GRID ===== */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+      gap: 12px;
+    }
+    .tech-item {
+      background: var(--bg-primary);
+      border-radius: var(--radius-xs);
+      padding: 16px 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: background var(--transition), transform 0.2s, box-shadow var(--transition);
+      cursor: default;
+    }
+    .tech-item:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-sm);
+    }
+    .tech-item .tech-icon {
+      font-size: 28px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    /* ===== OPEN SOURCE ===== */
+    .oss-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .oss-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+    .oss-item:last-child {
+      border-bottom: none;
+    }
+    .oss-item .oss-icon {
+      font-size: 22px;
+      width: 36px;
+      text-align: center;
+    }
+    .oss-item .oss-name {
+      font-weight: 600;
+      font-size: 15px;
+    }
+    .oss-item .oss-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ===== COMMUNITY ===== */
+    .community-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+    }
+    .community-item {
+      background: var(--bg-primary);
+      border-radius: var(--radius-xs);
+      padding: 16px 10px;
+      text-align: center;
+      font-weight: 600;
+      font-size: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      transition: background var(--transition), transform 0.2s;
+    }
+    .community-item:hover {
+      transform: scale(1.04);
+    }
+    .community-item .cm-icon {
+      font-size: 28px;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    /* ===== CONTACT CARDS ===== */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .contact-card {
+      background: var(--bg-primary);
+      border-radius: var(--radius-sm);
+      padding: 20px 16px;
+      text-align: center;
+      transition: background var(--transition), transform 0.2s, box-shadow var(--transition);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      cursor: pointer;
+    }
+    .contact-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-sm);
+    }
+    .contact-card:active {
+      transform: scale(0.96);
+    }
+    .contact-card .cc-icon {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .contact-card .cc-label {
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .contact-card .cc-detail {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      word-break: break-word;
+    }
+
+    /* ===== VERSION FOOTER CARD ===== */
+    .version-box {
+      text-align: center;
+      padding: 16px;
+    }
+    .version-box .version-main {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .version-box .version-sub {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .version-box .version-badge-lg {
+      display: inline-block;
+      margin-top: 8px;
+      background: var(--accent);
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 20px;
+      border-radius: 60px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== FOOTER ===== */
+    .app-footer {
+      text-align: center;
+      padding: 28px 16px 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.04);
+      margin-top: 12px;
+    }
+    .app-footer .footer-brand {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .app-footer .footer-brand span {
+      color: var(--accent);
+    }
+    .app-footer .footer-tagline {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .app-footer .footer-credit {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+    .app-footer .footer-copy {
+      font-size: 12px;
+      color: var(--text-muted);
+      opacity: 0.6;
+      margin-top: 6px;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: fadeUp 0.7s ease forwards;
+    }
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    .fade-up:nth-child(2) {
+      animation-delay: 0.06s;
+    }
+    .fade-up:nth-child(3) {
+      animation-delay: 0.12s;
+    }
+    .fade-up:nth-child(4) {
+      animation-delay: 0.18s;
+    }
+    .fade-up:nth-child(5) {
+      animation-delay: 0.24s;
+    }
+    .fade-up:nth-child(6) {
+      animation-delay: 0.30s;
+    }
+    .fade-up:nth-child(7) {
+      animation-delay: 0.36s;
+    }
+    .fade-up:nth-child(8) {
+      animation-delay: 0.42s;
+    }
+    .fade-up:nth-child(9) {
+      animation-delay: 0.48s;
+    }
+    .fade-up:nth-child(10) {
+      animation-delay: 0.54s;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .container {
+        padding: 14px 12px 30px;
+      }
+      .hero .logo {
+        font-size: 56px;
+      }
+      .hero .app-name {
+        font-size: 32px;
+      }
+      .hero .tagline {
+        font-size: 16px;
+      }
+      .glass-card {
+        padding: 20px 16px;
+        border-radius: 22px;
+      }
+      .glass-card .card-title {
+        font-size: 18px;
+      }
+      .founder-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+      .founder-avatar {
+        width: 100px;
+        height: 100px;
+        font-size: 40px;
+      }
+      .founder-info .name {
+        justify-content: center;
+      }
+      .founder-info .bio {
+        text-align: center;
+      }
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .tech-grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+      .community-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+      .theme-toggle {
+        top: 12px;
+        right: 12px;
+        padding: 8px 14px;
+        font-size: 13px;
+      }
+      .theme-toggle .icon {
+        font-size: 16px;
+      }
+      .back-link {
+        font-size: 13px;
+        padding: 8px 16px;
+      }
+      .version-box .version-main {
+        font-size: 22px;
+      }
+    }
+    @media (max-width: 400px) {
+      .tech-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .stats-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .hero .logo {
+        font-size: 44px;
+      }
+      .hero .app-name {
+        font-size: 26px;
+      }
+    }
+
+    /* ===== ACCESSIBILITY ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    /* ===== TOAST ===== */
+    .toast-message {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%) translateY(16px);
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      padding: 14px 28px;
+      border-radius: 60px;
+      box-shadow: var(--shadow-lg);
+      font-family: var(--font);
+      font-size: 15px;
+      font-weight: 500;
+      z-index: 9999;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      max-width: 90%;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .toast-message.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== FLOATING THEME TOGGLE ===== -->
+  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+    <span class="icon" id="themeIcon">🌙</span>
+    <span id="themeLabel">Dark</span>
+  </button>
+
+  <!-- ===== MAIN CONTAINER ===== -->
+  <div class="container">
+
+    <!-- ===== BACK LINK ===== -->
+    <button class="back-link" id="backLink" aria-label="Go back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+      Back to App
+    </button>
+
+    <!-- ===== HERO ===== -->
+    <section class="hero fade-up">
+      <div class="logo">🇳🇬</div>
+      <h1 class="app-name">StudentNija</h1>
+      <div class="version-badge">v1.2.0</div>
+      <p class="tagline">Study Smarter, Score Higher</p>
+      <div class="divider"></div>
+    </section>
+
+    <!-- ===== FOUNDER SPOTLIGHT ===== -->
+    <section class="glass-card fade-up">
+      <div class="card-title"><span class="emoji">👨‍💻</span> Founder &amp; Creator</div>
+      <div class="founder-card">
+        <div class="founder-avatar" id="founderAvatar">
+          <img src="/icons/founder.png" alt="Godwin Julius" id="founderImg" onerror="this.classList.add('error'); document.getElementById('fallbackInitials').style.display='flex';" />
+          <span class="fallback" id="fallbackInitials">GJ</span>
+        </div>
+        <div class="founder-info">
+          <div class="name">
+            Godwin Julius
+            <span class="verified">✓</span>
+          </div>
+          <div class="title">Founder, Lead Developer &amp; Designer</div>
+          <p class="bio">
+            StudentNija was founded and developed by Godwin Julius with the vision of helping Nigerian students access quality educational resources, AI-powered assistance, and modern learning tools through one unified platform.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== MISSION ===== -->
+    <section class="glass-card fade-up">
+      <div class="card-title"><span class="emoji">🎯</span> Our Mission</div>
+      <p class="mission-text">
+        Empowering Nigerian students through technology by providing AI-powered learning tools, educational resources, and a supportive academic community.
+      </p>
+    </section>
+
+    <!-- ===== STATISTICS ===== -->
+    <section class="glass-card fade-up">
+      <div class="card-title"><span class="emoji">📊</span> Platform Statistics</div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-icon">🇳🇬</span>
+          <span class="stat-label">Built for Nigeria</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">🧠</span>
+          <span class="stat-label">AI Powered</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">📚</span>
+          <span class="stat-label">Education First</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-icon">⚡</span>
+          <span class="stat-label">Modern Technology</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== TECHNOLOGY STACK ===== -->
+    <section class="glass-card fade-up">
+      <div class="card-title"><span class="emoji">🛠️</span> Technology Stack</div>
+      <div class="tech-grid">
+        <div class="tech-item"><span class="tech-icon">🌐</span>HTML5</div>
+        <div class="tech-item"><span class="tech-icon">🎨</span>CSS3</div>
+        <div class="tech-item"><span class="tech-icon">⚡</span>JavaScript</div>
+        <div class="tech-item"><span class="tech-icon">🚀</span>Node.js</div>
+        <div class="tech-item"><span class="tech-icon">📦</span>Express</div>
+        <div class="tech-item"><span class="tech-icon">🔌</span>Socket.IO</div>
+        <div class="tech-item"><span class="tech-icon">🧠</span>Groq AI</div>
+        <div class="tech-item"><span class="tech-icon">☁️</span>Render</div>
+      </div>
+    </section>
+
+    <!-- ===== OPEN SOURCE CREDITS ===== -->
+    <section class="glass-card fade-up">
+      <div class="card-title"><span class="emoji">📚</span> Open Source Credits</div>
+      <div class="oss-list">
+        <div class="oss-item">
+          <span class="oss-icon">🔌</span>
+          <div><span class="oss-name">Socket.IO Client</span><div class="oss-desc">Real‑time bidirectional communication</div></div>
+        </div>
+        <div class="oss-item">
+          <span class="oss-icon">📦</span>
+          <div><span class="oss-name">Express Framework</span><div class="oss-desc">Fast, unopinionated web framework</div></div>
+        </div>
+        <div class="oss-item">
+          <span class="oss-icon">🔤</span>
+          <div><span class="oss-name">Google Fonts (Inter)</span><div class="oss-desc">Modern, clean typography</div></div>
+        </div>
+        <div class="oss-item">
+          <span class="oss-icon">🌐</span>
+          <div><span class="oss-name">CORS Middleware</span><div class="oss-desc">Cross‑origin resource sharing</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== COMMUNITY APPRECIATION ===== -->
+    <section class="glass-card fade-up">
+      <div class="card-title"><span class="emoji">🙏</span> Community Appreciation</div>
+      <div class="community-grid">
+        <div class="community-item"><span class="cm-icon">🎓</span>Nigerian Students</div>
+        <div class="community-item"><span class="cm-icon">🧪</span>Testers</div>
+        <div class="community-item"><span class="cm-icon">🤝</span>Contributors</div>
+        <div class="community-item"><span class="cm-icon">❤️</span>Supporters</div>
+      </div>
+    </section>
+
+    <!-- ===== CONTACT & SUPPORT ===== -->
+    <section class="glass-card fade-up">
+      <div class="card-title"><span class="emoji">📬</span> Contact &amp; Support</div>
+      <div class="contact-grid">
+
+        <div class="contact-card" id="emailCard" role="button" tabindex="0" aria-label="Email support">
+          <span class="cc-icon">✉️</span>
+          <div class="cc-label">Email Support</div>
+          <div class="cc-detail">donchester111@gmail.com</div>
+        </div>
+
+        <div class="contact-card" id="feedbackCard" role="button" tabindex="0" aria-label="Send feedback">
+          <span class="cc-icon">💬</span>
+          <div class="cc-label">Feedback &amp; Suggestions</div>
+          <div class="cc-detail">Click to send feedback</div>
+        </div>
+
+        <div class="contact-card" id="websiteCard" role="button" tabindex="0" aria-label="Visit website">
+          <span class="cc-icon">🌍</span>
+          <div class="cc-label">Website</div>
+          <div class="cc-detail">studentnija.netlify.app</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===== VERSION INFORMATION ===== -->
+    <section class="glass-card fade-up">
+      <div class="version-box">
+        <div class="version-main">StudentNija v1.2.0</div>
+        <div class="version-sub">Production Release</div>
+        <div class="version-badge-lg">✓ Stable</div>
+      </div>
+    </section>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="app-footer fade-up">
+      <div class="footer-brand">Student<span>Nija</span></div>
+      <div class="footer-tagline">Empowering Nigerian Students Through Technology</div>
+      <div class="footer-credit">Designed &amp; Developed by Godwin Julius</div>
+      <div class="footer-copy">&copy; 2026 StudentNija. All Rights Reserved.</div>
+    </footer>
+
+  </div>
+
+  <!-- ===== SCRIPT ===== -->
+  <script>
+    (function() {
+      'use strict';
+
+      // ---- DOM refs ----
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+      const themeLabel = document.getElementById('themeLabel');
+      const backLink = document.getElementById('backLink');
+      const emailCard = document.getElementById('emailCard');
+      const feedbackCard = document.getElementById('feedbackCard');
+      const websiteCard = document.getElementById('websiteCard');
+
+      // ---- Theme keys ----
+      const APP_STORAGE_KEY = 'studentnija_settings';        // main app
+      const CHAT_STORAGE_KEY = 'studentnija_chat_settings_v3'; // chat / unified
+
+      let currentTheme = 'dark';
+      let currentAccent = 'green';
+
+      // ---- Read settings from both keys, with priority: app settings > chat settings ----
+      function readThemeFromStorage() {
+        let theme = null;
+        let accent = null;
+
+        try {
+          // 1) Try main app settings
+          const appRaw = localStorage.getItem(APP_STORAGE_KEY);
+          if (appRaw) {
+            const appSettings = JSON.parse(appRaw);
+            if (appSettings.theme) theme = appSettings.theme;
+            if (appSettings.accentColor) accent = appSettings.accentColor;
+          }
+        } catch (_) {}
+
+        // 2) Fallback to chat settings if not found
+        if (!theme) {
+          try {
+            const chatRaw = localStorage.getItem(CHAT_STORAGE_KEY);
+            if (chatRaw) {
+              const chatSettings = JSON.parse(chatRaw);
+              if (chatSettings.theme) theme = chatSettings.theme;
+              if (chatSettings.accent) accent = chatSettings.accent;
+            }
+          } catch (_) {}
+        }
+
+        // 3) System preference fallback
+        if (!theme) {
+          const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+          theme = prefersLight ? 'light' : 'dark';
+        }
+        if (!accent) accent = 'green';
+
+        return { theme, accent };
+      }
+
+      function loadTheme() {
+        const { theme, accent } = readThemeFromStorage();
+        currentTheme = theme;
+        currentAccent = accent;
+        applyTheme();
+      }
+
+      function applyTheme() {
+        const isDark = currentTheme === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        document.body.classList.toggle('dark', isDark);
+
+        // Update toggle button
+        if (isDark) {
+          themeIcon.textContent = '🌙';
+          themeLabel.textContent = 'Dark';
+        } else {
+          themeIcon.textContent = '☀️';
+          themeLabel.textContent = 'Light';
+        }
+
+        // Save to both keys for consistency
+        saveThemeToAll();
+      }
+
+      function saveThemeToAll() {
+        // Save to main app settings
+        try {
+          let appSettings = {};
+          const raw = localStorage.getItem(APP_STORAGE_KEY);
+          if (raw) {
+            try { appSettings = JSON.parse(raw); } catch (_) {}
+          }
+          appSettings.theme = currentTheme;
+          appSettings.accentColor = currentAccent;
+          localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(appSettings));
+        } catch (_) {}
+
+        // Save to chat settings
+        try {
+          let chatSettings = {};
+          const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+          if (raw) {
+            try { chatSettings = JSON.parse(raw); } catch (_) {}
+          }
+          chatSettings.theme = currentTheme;
+          chatSettings.accent = currentAccent;
+          localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatSettings));
+        } catch (_) {}
+      }
+
+      function toggleTheme() {
+        currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme();
+      }
+
+      // ---- Event listeners ----
+      themeToggle.addEventListener('click', toggleTheme);
+
+      // ---- Back link ----
+      backLink.addEventListener('click', function(e) {
+        e.preventDefault();
+        // Try to go back; if that fails, close the window (works in DroidScript)
+        if (window.history.length > 1) {
+          window.history.back();
+        } else {
+          // For DroidScript we can use app.Close() if available
+          if (typeof app !== 'undefined' && app.Close) {
+            app.Close();
+          } else {
+            window.close();
+          }
+        }
+      });
+
+      // ---- Contact cards ----
+      emailCard.addEventListener('click', function() {
+        const email = 'donchester111@gmail.com';
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(email).then(() => {
+            showToast('Email copied to clipboard!');
+          }).catch(() => {
+            window.location.href = 'mailto:' + email;
+          });
+        } else {
+          window.location.href = 'mailto:' + email;
+        }
+      });
+
+      feedbackCard.addEventListener('click', function() {
+        window.location.href = 'mailto:donchester111@gmail.com?subject=StudentNija%20Feedback';
+      });
+
+      websiteCard.addEventListener('click', function() {
+        window.open('https://studentnija.pages.dev/', '_blank');
+      });
+
+      // ---- Keyboard support ----
+      document.querySelectorAll('.contact-card').forEach(function(card) {
+        card.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            this.click();
+          }
+        });
+      });
+
+      // ---- Toast ----
+      function showToast(message) {
+        const existing = document.querySelector('.toast-message');
+        if (existing) existing.remove();
+
+        const toast = document.createElement('div');
+        toast.className = 'toast-message';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        toast.offsetHeight; // force reflow
+        toast.classList.add('show');
+
+        setTimeout(function() {
+          toast.classList.remove('show');
+          setTimeout(function() {
+            if (toast.parentNode) toast.remove();
+          }, 350);
+        }, 2800);
+      }
+
+      // ---- Founder image fallback ----
+      const founderImg = document.getElementById('founderImg');
+      const fallback = document.getElementById('fallbackInitials');
+      if (founderImg) {
+        founderImg.onerror = function() {
+          this.classList.add('error');
+          fallback.style.display = 'flex';
+        };
+        founderImg.onload = function() {
+          fallback.style.display = 'none';
+        };
+        if (founderImg.complete && founderImg.naturalWidth > 0) {
+          fallback.style.display = 'none';
+        }
+      }
+
+      // ---- Init ----
+      loadTheme();
+
+      // Listen for storage changes from other tabs (keep in sync)
+      window.addEventListener('storage', function(e) {
+        if (e.key === APP_STORAGE_KEY || e.key === CHAT_STORAGE_KEY) {
+          loadTheme();
+        }
+      });
+
+      console.log('🎓 StudentNija About & Credits page loaded – theme unified with main app.');
+    })();
+  </script>
+</body>
+</html>

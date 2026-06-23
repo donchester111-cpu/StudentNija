@@ -1,0 +1,1536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>StudentNija · Group Chat</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    /* ========== THEME VARIABLES ========== */
+    :root {
+      --bg-primary: #0A111F;
+      --bg-secondary: #121C28;
+      --bg-card: rgba(255,255,255,0.04);
+      --bg-solid: #1A2A3A;
+      --text-primary: #F0F4FA;
+      --text-muted: #8FA0B5;
+      --accent: #008751;
+      --accent-light: #00A86B;
+      --accent-glow: rgba(0,135,81,0.3);
+      --shadow: 0 8px 32px rgba(0,0,0,0.5);
+      --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
+      --radius: 24px;
+      --radius-sm: 14px;
+      --font-size: 15px;
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    body.light-theme {
+      --bg-primary: #F0F4FA;
+      --bg-secondary: #FFFFFF;
+      --bg-solid: #E8ECF2;
+      --text-primary: #0A1927;
+      --text-muted: #5B6E8C;
+      --shadow: 0 8px 32px rgba(0,0,0,0.08);
+    }
+    body.blue-theme { --accent: #1E88E5; --accent-light: #42A5F5; --accent-glow: rgba(30,136,229,0.3); }
+    body.purple-theme { --accent: #7B1FA2; --accent-light: #9C27B0; --accent-glow: rgba(123,31,162,0.3); }
+    body.gold-theme { --accent: #F57C00; --accent-light: #FFA726; --accent-glow: rgba(245,124,0,0.3); }
+    body.red-theme { --accent: #D32F2F; --accent-light: #EF5350; --accent-glow: rgba(211,47,47,0.3); }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh; width: 100vw; overflow: hidden; position: fixed;
+      display: flex; flex-direction: column;
+      transition: background var(--transition), color var(--transition);
+    }
+    .app-container {
+      display: flex; flex-direction: column; height: 100%; width: 100%; position: relative; overflow: hidden;
+      background: var(--bg-primary);
+    }
+
+    /* ========== HEADER ========== */
+    .chat-header {
+      background: rgba(18,28,40,0.75);
+      backdrop-filter: blur(20px);
+      padding: 10px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; min-height: 60px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      z-index: 10; box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+      transition: background var(--transition);
+    }
+    body.light-theme .chat-header { background: rgba(255,255,255,0.75); border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .chat-header .left { display: flex; align-items: center; gap: 12px; flex: 1; min-width: 0; }
+    .chat-header .left .back-btn {
+      background: none; border: none; color: var(--text-primary); font-size: 22px;
+      cursor: pointer; padding: 4px 8px; min-width: 40px; min-height: 40px;
+      border-radius: 50%; transition: background 0.2s, transform 0.1s;
+    }
+    .chat-header .left .back-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.92); }
+    .chat-header .left .group-info { display: flex; flex-direction: column; line-height: 1.2; overflow: hidden; }
+    .chat-header .left .group-info .name {
+      font-weight: 700; font-size: 17px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      cursor: pointer;
+    }
+    .chat-header .left .group-info .status {
+      font-size: 12px; color: var(--text-muted);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .chat-header .left .group-info .status .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #00C853; animation: pulseDot 2s infinite;
+    }
+    @keyframes pulseDot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
+    .chat-header .right { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
+    .chat-header .right button {
+      background: none; border: none; color: var(--text-muted); font-size: 20px;
+      cursor: pointer; padding: 6px 8px; border-radius: 50%; min-width: 40px; min-height: 40px;
+      transition: background 0.2s, color 0.2s, transform 0.1s;
+    }
+    .chat-header .right button:active { background: rgba(255,255,255,0.06); transform: scale(0.88); }
+    .chat-header .right .avatar-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white; font-size: 14px; font-weight: 600;
+      border: 2px solid transparent; padding: 0; display: flex; align-items: center; justify-content: center;
+    }
+    .chat-header .right .avatar-btn:active { transform: scale(0.88); }
+
+    /* ========== CHAT AREA ========== */
+    .chat-area {
+      flex: 1; overflow-y: auto; padding: 16px 16px 8px;
+      display: flex; flex-direction: column; gap: 8px;
+      background: var(--bg-primary);
+      transition: background var(--transition);
+      scroll-behavior: smooth;
+    }
+    .chat-area::-webkit-scrollbar { width: 4px; }
+    .chat-area::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 20px; }
+
+    .date-divider {
+      text-align: center; font-size: 11px; color: var(--text-muted);
+      margin: 12px 0 8px; opacity: 0.5; letter-spacing: 0.3px; font-weight: 500;
+      text-transform: uppercase; background: var(--bg-secondary); padding: 4px 12px; border-radius: 30px;
+      align-self: center;
+    }
+
+    .message-card {
+      max-width: 82%; padding: 12px 16px;
+      border-radius: 20px;
+      background: var(--bg-solid);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.15s, background 0.3s, box-shadow 0.3s;
+      animation: fadeInMsg 0.3s ease;
+      display: flex; flex-direction: column; gap: 4px;
+      position: relative;
+      border: 1px solid rgba(255,255,255,0.03);
+      cursor: default;
+      touch-action: pan-x; /* allow horizontal swipe for reply */
+    }
+    .message-card:active { transform: scale(0.98); }
+    .message-card .reply-preview {
+      background: rgba(255,255,255,0.06);
+      border-left: 3px solid var(--accent);
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .message-card .reply-preview .reply-sender { font-weight: 600; color: var(--accent); }
+    .message-card.self {
+      align-self: flex-end;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white; border: none; border-bottom-right-radius: 4px;
+    }
+    .message-card.other {
+      align-self: flex-start;
+      background: var(--bg-solid);
+      border-bottom-left-radius: 4px;
+    }
+    body.light-theme .message-card.other { background: #FFFFFF; border: 1px solid rgba(0,0,0,0.04); }
+    .message-card .sender {
+      font-size: 11px; font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 2px; letter-spacing: 0.2px;
+    }
+    .message-card.self .sender { color: rgba(255,255,255,0.8); }
+    .message-card .sender.ai { color: var(--accent-gold); }
+    .message-card .text { font-size: var(--font-size); line-height: 1.5; word-wrap: break-word; }
+    .message-card .footer {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: 6px; font-size: 10px; opacity: 0.6; gap: 8px;
+    }
+    .message-card .footer .reactions { display: flex; gap: 4px; flex-wrap: wrap; }
+    .message-card .footer .reactions .reaction-btn {
+      background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 30px;
+      font-size: 13px; cursor: pointer; transition: background 0.2s, transform 0.1s;
+      border: none; color: inherit; font-family: inherit;
+      display: flex; align-items: center; gap: 2px;
+    }
+    .message-card .footer .reactions .reaction-btn:active { transform: scale(0.85); background: rgba(255,255,255,0.15); }
+    .message-card .footer .reactions .reaction-btn .count { font-size: 10px; opacity: 0.7; }
+    .message-card .footer .timestamp { font-size: 10px; opacity: 0.7; }
+    .message-card .deleted { opacity: 0.5; font-style: italic; }
+    .message-card .pinned-badge {
+      position: absolute; top: 4px; right: 8px; font-size: 14px; opacity: 0.5;
+    }
+    .message-card .edited-badge { font-size: 9px; opacity: 0.5; margin-left: 6px; }
+
+    @keyframes fadeInMsg {
+      from { opacity: 0; transform: translateY(12px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: var(--text-muted); padding: 40px; text-align: center;
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .empty-state .icon { font-size: 72px; margin-bottom: 16px; filter: drop-shadow(0 8px 24px var(--accent-glow)); }
+    .empty-state h2 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; max-width: 300px; opacity: 0.7; }
+
+    .typing-bubble {
+      align-self: flex-start;
+      background: var(--bg-solid);
+      padding: 12px 20px; border-radius: 20px; border-bottom-left-radius: 4px;
+      display: flex; gap: 6px; align-items: center;
+      animation: fadeInMsg 0.2s ease;
+    }
+    .typing-bubble .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted);
+      animation: typingDot 1.4s infinite both;
+    }
+    .typing-bubble .dot:nth-child(1) { animation-delay: 0s; }
+    .typing-bubble .dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-bubble .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typingDot { 0%,80%,100% { transform: scale(0.6); opacity:0.4; } 40% { transform: scale(1); opacity:1; } }
+    .ai-typing-bubble {
+      align-self: flex-start;
+      background: var(--bg-solid);
+      padding: 10px 18px; border-radius: 20px; border-bottom-left-radius: 4px;
+      display: flex; align-items: center; gap: 8px;
+      color: var(--text-muted); font-size: 13px;
+      animation: fadeInMsg 0.2s ease;
+    }
+    .ai-typing-bubble .spinner {
+      width: 14px; height: 14px; border: 2px solid var(--text-muted); border-top-color: var(--accent);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ========== REPLY BAR ========== */
+    .reply-bar {
+      display: none;
+      background: var(--bg-secondary);
+      padding: 6px 16px;
+      border-top: 1px solid rgba(255,255,255,0.04);
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+    .reply-bar.show { display: flex; }
+    .reply-bar .reply-content { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .reply-bar .reply-content .reply-sender { font-weight: 600; color: var(--accent); }
+    .reply-bar .reply-close { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; padding: 4px; }
+
+    /* ========== INPUT AREA ========== */
+    .input-wrapper {
+      padding: 8px 12px calc(8px + var(--safe-bottom));
+      background: rgba(18,28,40,0.7);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.04);
+      flex-shrink: 0;
+      transition: background var(--transition);
+      position: relative;
+    }
+    body.light-theme .input-wrapper { background: rgba(255,255,255,0.7); border-top: 1px solid rgba(0,0,0,0.04); }
+    .input-bar {
+      display: flex; gap: 8px; align-items: center;
+      background: var(--bg-primary);
+      border-radius: 40px;
+      padding: 4px 4px 4px 18px;
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: border 0.25s, box-shadow 0.25s;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+    .input-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
+    .input-bar input {
+      flex: 1; background: none; border: none;
+      color: var(--text-primary); font-size: var(--font-size);
+      outline: none; padding: 10px 0; min-height: 40px;
+      font-family: inherit;
+    }
+    .input-bar input:disabled { opacity: 0.5; }
+    .input-bar input::placeholder { color: var(--text-muted); }
+    .input-bar .btn-icon {
+      background: none; border: none; color: var(--text-muted);
+      font-size: 20px; cursor: pointer; padding: 6px 8px;
+      border-radius: 50%; min-width: 40px; min-height: 40px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .input-bar .btn-icon:active { background: rgba(255,255,255,0.06); transform: scale(0.88); }
+    .input-bar .send-btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      border: none; border-radius: 40px; padding: 8px 20px;
+      color: white; font-weight: 700; cursor: pointer;
+      min-height: 40px; font-size: 14px;
+      transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+    .input-bar .send-btn:active { transform: scale(0.92); }
+    .input-bar .send-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+    .input-bar .ai-toggle {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 12px; color: var(--text-muted); padding: 0 4px;
+      white-space: nowrap;
+    }
+    .input-bar .ai-toggle input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+
+    /* ========== DRAWER ========== */
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px); z-index: 50; display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .drawer-overlay.open { display: block; }
+    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+    .drawer {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: var(--bg-secondary);
+      border-radius: 32px 32px 0 0;
+      padding: 16px 16px calc(16px + var(--safe-bottom));
+      max-height: 75vh;
+      z-index: 51;
+      transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.2,0.9,0.4,1);
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.3);
+      display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .drawer.open { transform: translateY(0); }
+    .drawer .handle {
+      width: 40px; height: 5px; border-radius: 10px;
+      background: var(--text-muted); opacity: 0.3;
+      margin: 0 auto 16px; flex-shrink: 0;
+    }
+    .drawer .drawer-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px; flex-shrink: 0;
+    }
+    .drawer .drawer-header h3 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+    .drawer .drawer-header .actions { display: flex; gap: 8px; }
+    .drawer .drawer-header .actions button {
+      background: var(--accent); border: none; color: white;
+      padding: 6px 16px; border-radius: 40px; font-size: 13px; font-weight: 600;
+      cursor: pointer; min-height: 36px;
+      transition: transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .drawer .drawer-header .actions button:active { transform: scale(0.92); }
+    .drawer .group-list { flex: 1; overflow-y: auto; padding: 4px 0; display: flex; flex-direction: column; gap: 4px; }
+    .drawer .group-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      cursor: pointer; transition: background 0.2s, transform 0.1s, border-color 0.2s;
+      border: 1.5px solid transparent; background: var(--bg-card);
+    }
+    .drawer .group-item:active { transform: scale(0.98); background: rgba(255,255,255,0.04); }
+    .drawer .group-item.active { background: rgba(0,135,81,0.08); border-color: var(--accent); }
+    .drawer .group-item .avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 18px; color: white; flex-shrink: 0;
+      box-shadow: 0 2px 8px var(--accent-glow);
+    }
+    .drawer .group-item .info { flex: 1; min-width: 0; }
+    .drawer .group-item .info .name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .drawer .group-item .info .preview { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .drawer .group-item .meta { text-align: right; flex-shrink: 0; }
+    .drawer .group-item .meta .time { font-size: 10px; color: var(--text-muted); }
+    .drawer .group-item .meta .unread {
+      background: var(--accent); color: white; font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 30px; margin-top: 4px; display: inline-block; min-width: 18px; text-align: center;
+    }
+
+    /* ========== SETTINGS PANEL ========== */
+    .settings-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px); z-index: 100; display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .settings-overlay.show { display: block; }
+    .settings-panel {
+      position: fixed; top: 0; right: -420px; width: min(400px, 92%);
+      height: 100%; background: var(--bg-secondary);
+      border-left: 1px solid rgba(255,255,255,0.04);
+      padding: 28px 24px; overflow-y: auto;
+      transition: right 0.35s cubic-bezier(0.2,0.9,0.4,1);
+      z-index: 101; box-shadow: var(--shadow);
+      display: flex; flex-direction: column;
+    }
+    .settings-panel.open { right: 0; }
+    .settings-panel .close-btn { text-align: right; font-size: 26px; cursor: pointer; color: var(--text-muted); padding: 4px 8px; margin-bottom: 8px; align-self: flex-end; }
+    .settings-panel .close-btn:active { transform: scale(0.88); }
+    .settings-panel h3 {
+      font-size: 22px; font-weight: 700; margin-bottom: 20px;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .settings-panel .setting-group { margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.04); padding-bottom: 16px; }
+    .settings-panel .setting-group h4 {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px;
+      color: var(--accent); font-weight: 700; margin-bottom: 12px;
+    }
+    .settings-panel .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; }
+    .settings-panel .setting-row .label { font-weight: 500; font-size: 14px; }
+    .settings-panel .switch {
+      width: 44px; height: 22px; background: var(--text-muted);
+      border-radius: 22px; position: relative; cursor: pointer;
+      flex-shrink: 0; transition: background 0.2s;
+    }
+    .settings-panel .switch.active { background: var(--accent); }
+    .settings-panel .switch::after {
+      content: ''; position: absolute; width: 18px; height: 18px;
+      background: white; border-radius: 50%; top: 2px; left: 2px;
+      transition: left 0.2s, transform 0.1s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .settings-panel .switch.active::after { left: 24px; }
+    .settings-panel select, .settings-panel input[type="range"] {
+      width: 100%; padding: 10px 14px; border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.06);
+      background: var(--bg-primary); color: var(--text-primary);
+      font-size: 14px; min-height: 40px; outline: none;
+    }
+    .settings-panel select:focus, .settings-panel input:focus { border-color: var(--accent); }
+    .settings-panel .color-options { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+    .settings-panel .color-options .color-dot {
+      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+      border: 2px solid transparent; transition: border 0.2s, transform 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .settings-panel .color-options .color-dot.active { border-color: white; transform: scale(1.15); }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(8px); z-index: 200; display: none;
+      align-items: center; justify-content: center;
+      animation: fadeIn 0.25s ease;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: var(--bg-secondary); border-radius: var(--radius);
+      padding: 32px 28px; max-width: 400px; width: 92%;
+      box-shadow: var(--shadow);
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(30px); opacity:0; } to { transform: translateY(0); opacity:1; } }
+    .modal-box h2 {
+      font-size: 22px; font-weight: 700; margin-bottom: 16px;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .modal-box input, .modal-box textarea {
+      width: 100%; padding: 14px 18px; border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,0.06); background: var(--bg-primary);
+      color: var(--text-primary); margin-bottom: 16px; font-size: 15px;
+      outline: none; transition: border 0.2s;
+      font-family: inherit;
+    }
+    .modal-box input:focus, .modal-box textarea:focus { border-color: var(--accent); }
+    .modal-box .btn-row { display: flex; gap: 12px; justify-content: flex-end; }
+    .modal-box .btn-row button {
+      padding: 10px 28px; border-radius: 40px; border: none;
+      font-weight: 600; cursor: pointer; min-height: 40px;
+      transition: transform 0.1s, box-shadow 0.2s;
+    }
+    .modal-box .btn-row button:active { transform: scale(0.92); }
+    .modal-box .btn-row .cancel { background: rgba(255,255,255,0.06); color: var(--text-muted); }
+    .modal-box .btn-row .confirm {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      color: white; box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    /* ========== GROUP INFO ========== */
+    .group-info-panel {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--bg-secondary);
+      z-index: 60;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.2,0.9,0.4,1);
+      display: flex; flex-direction: column;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .group-info-panel.open { transform: translateY(0); }
+    .group-info-panel .close-info { align-self: flex-end; font-size: 24px; cursor: pointer; color: var(--text-muted); padding: 8px; }
+    .group-info-panel .info-avatar {
+      font-size: 64px; text-align: center; margin: 16px 0;
+    }
+    .group-info-panel .info-name { font-size: 24px; font-weight: 700; text-align: center; }
+    .group-info-panel .info-desc { text-align: center; color: var(--text-muted); margin: 8px 0 20px; }
+    .group-info-panel .info-member-list { margin-top: 16px; }
+    .group-info-panel .info-member-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .group-info-panel .info-member-item .crown { color: var(--accent-gold); margin-left: 4px; }
+
+    /* ========== EMOJI PICKER ========== */
+    .emoji-picker {
+      display: none;
+      position: absolute; bottom: 70px; left: 16px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      box-shadow: var(--shadow);
+      z-index: 20;
+      max-height: 200px; overflow-y: auto;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 6px;
+      border: 1px solid rgba(255,255,255,0.04);
+      animation: slideUp 0.2s ease;
+    }
+    .emoji-picker.open { display: grid; }
+    .emoji-picker button { background: none; border: none; font-size: 24px; cursor: pointer; padding: 4px; border-radius: 8px; transition: background 0.15s, transform 0.1s; }
+    .emoji-picker button:active { background: rgba(255,255,255,0.06); transform: scale(0.85); }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 480px) {
+      .message-card { max-width: 92%; padding: 10px 14px; }
+      .chat-header .left .group-info .name { font-size: 15px; }
+      .input-bar { padding: 2px 2px 2px 14px; }
+      .input-bar input { font-size: 14px; min-height: 36px; padding: 6px 0; }
+      .input-bar .send-btn { padding: 6px 16px; font-size: 13px; min-height: 36px; }
+      .input-bar .btn-icon { font-size: 18px; min-width: 36px; min-height: 36px; }
+      .settings-panel { width: 92%; padding: 16px; }
+      .drawer { padding: 12px 12px calc(12px + var(--safe-bottom)); }
+      .empty-state .icon { font-size: 56px; }
+      .emoji-picker { left: 8px; right: 8px; width: auto; grid-template-columns: repeat(7, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- HEADER -->
+    <header class="chat-header">
+      <div class="left">
+        <button class="back-btn" id="backBtn">←</button>
+        <div class="group-info">
+          <div class="name" id="groupTitle">StudentNija</div>
+          <div class="status">
+            <span class="dot"></span>
+            <span id="memberStatus">0 members</span>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <button id="drawerToggle" title="Groups">💬</button>
+        <button id="settingsBtn" title="Settings">⚙️</button>
+        <button class="avatar-btn" id="avatarBtn">👤</button>
+      </div>
+    </header>
+
+    <!-- CHAT AREA -->
+    <div class="chat-area" id="chatArea">
+      <div class="empty-state" id="emptyState">
+        <div class="icon">💬</div>
+        <h2>Welcome to Study Chat</h2>
+        <p>Join a group to start studying with friends.</p>
+      </div>
+    </div>
+
+    <!-- REPLY BAR -->
+    <div class="reply-bar" id="replyBar">
+      <span class="reply-content">Replying to <span class="reply-sender">User</span>: <span class="reply-text">Message</span></span>
+      <button class="reply-close" id="replyClose">✕</button>
+    </div>
+
+    <!-- INPUT AREA -->
+    <div class="input-wrapper" style="position:relative;">
+      <div class="input-bar">
+        <input type="text" id="messageInput" placeholder="Type a message..." disabled />
+        <button class="btn-icon" id="emojiBtn">😊</button>
+        <label class="ai-toggle">
+          <input type="checkbox" id="aiToggle" /> <span>AI</span>
+        </label>
+        <button class="send-btn" id="sendBtn" disabled>Send</button>
+      </div>
+      <div class="emoji-picker" id="emojiPicker"></div>
+    </div>
+  </div>
+
+  <!-- ========== DRAWER ========== -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <div class="drawer" id="drawer">
+    <div class="handle"></div>
+    <div class="drawer-header">
+      <h3>💬 Groups</h3>
+      <div class="actions">
+        <button id="newGroupDrawerBtn">+ New</button>
+        <button id="joinGroupDrawerBtn">🔗 Join</button>
+      </div>
+    </div>
+    <div class="group-list" id="groupList"></div>
+  </div>
+
+  <!-- ========== SETTINGS ========== -->
+  <div class="settings-overlay" id="settingsOverlay"></div>
+  <div class="settings-panel" id="settingsPanel">
+    <div class="close-btn" id="settingsClose">✕</div>
+    <h3>⚙️ Settings</h3>
+    <!-- Appearance -->
+    <div class="setting-group">
+      <h4>🎨 Appearance</h4>
+      <div class="setting-row"><span class="label">Theme</span><select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option></select></div>
+      <div class="setting-row">
+        <span class="label">Accent</span>
+        <div class="color-options" id="colorOptions">
+          <div class="color-dot active" style="background:#008751" data-color="green"></div>
+          <div class="color-dot" style="background:#1E88E5" data-color="blue"></div>
+          <div class="color-dot" style="background:#7B1FA2" data-color="purple"></div>
+          <div class="color-dot" style="background:#F57C00" data-color="gold"></div>
+          <div class="color-dot" style="background:#D32F2F" data-color="red"></div>
+        </div>
+      </div>
+      <div class="setting-row"><span class="label">Font Size</span><input type="range" id="fontSizeSlider" min="13" max="18" value="15" step="1" /></div>
+      <div class="setting-row"><span class="label">Show timestamps</span><div class="switch active" id="showTimestampsSwitch"></div></div>
+    </div>
+    <!-- AI -->
+    <div class="setting-group">
+      <h4>🤖 AI</h4>
+      <div class="setting-row"><span class="label">AI auto‑respond</span><div class="switch active" id="aiAutoSwitch"></div></div>
+      <div class="setting-row"><span class="label">AI Personality</span><select id="aiPersonalitySelect"><option value="Friendly Tutor">Friendly Tutor</option><option value="Creative">Creative</option><option value="Professor">Professor</option><option value="Gamer">Gamer</option></select></div>
+    </div>
+    <!-- Notifications -->
+    <div class="setting-group">
+      <h4>🔔 Notifications</h4>
+      <div class="setting-row"><span class="label">Sound</span><div class="switch active" id="soundSwitch"></div></div>
+    </div>
+    <!-- Profile -->
+    <div class="setting-group">
+      <h4>👤 Profile</h4>
+      <div class="setting-row"><span class="label">Display name</span><input type="text" id="displayNameInput" placeholder="Your name" style="flex:1; min-width:120px;" /></div>
+    </div>
+    <!-- Advanced -->
+    <div class="setting-group">
+      <h4>⚡ Advanced</h4>
+      <button class="btn-outline" id="clearHistoryBtn" style="width:100%; padding:12px; border-radius:40px; border:1.5px solid var(--accent); background:transparent; color:var(--text-primary); font-weight:600; cursor:pointer; transition:0.2s;">🗑️ Clear history</button>
+      <button class="btn-outline" id="resetSettingsBtn" style="width:100%; padding:12px; border-radius:40px; border:1.5px solid #ff4444; background:transparent; color:#ff4444; font-weight:600; cursor:pointer; margin-top:8px; transition:0.2s;">↺ Reset settings</button>
+    </div>
+  </div>
+
+  <!-- ========== MODAL (Create/Join) ========== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+      <h2 id="modalTitle">Create Group</h2>
+      <input type="text" id="modalInput" placeholder="Group name..." />
+      <div class="btn-row"><button class="cancel" id="modalCancel">Cancel</button><button class="confirm" id="modalConfirm">Confirm</button></div>
+    </div>
+  </div>
+
+  <!-- ========== GROUP INFO PANEL ========== -->
+  <div class="group-info-panel" id="groupInfoPanel">
+    <div class="close-info" id="closeInfo">✕</div>
+    <div class="info-avatar" id="infoAvatar">📚</div>
+    <div class="info-name" id="infoName">Group Name</div>
+    <div class="info-desc" id="infoDesc">Group description</div>
+    <div style="text-align:center; margin:8px 0;">
+      <button id="editGroupMetaBtn" class="btn-outline" style="background:var(--accent); color:white; border:none; padding:6px 18px; border-radius:40px; font-weight:600;">✏️ Edit</button>
+    </div>
+    <div class="info-member-list" id="infoMemberList"></div>
+  </div>
+
+  <!-- ========== SCRIPT ========== -->
+  <script>
+    // ============================================================
+    // CONFIG
+    // ============================================================
+    const SERVER_URL = "https://studentnija-public-chat.onrender.com"; // REPLACE
+    let USER_NAME = localStorage.getItem('studentnija_chat_user_name') || 'Student';
+    let USER_ID = localStorage.getItem('studentnija_chat_user_id') || ('user_' + Date.now());
+    localStorage.setItem('studentnija_chat_user_name', USER_NAME);
+    localStorage.setItem('studentnija_chat_user_id', USER_ID);
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let socket = null;
+    let currentGroup = null;
+    let groups = [];
+    let messages = [];
+    let members = [];
+    let createdBy = null;
+    let admins = [];
+    let groupMeta = { name: '', description: '', avatar: '📚' };
+    let pinnedMessageId = null;
+    let replyTo = null; // { id, senderName, text }
+    let settings = {
+      theme: 'dark', accent: 'green', fontSize: 15,
+      showTimestamps: true, aiAuto: true, aiPersonality: 'Friendly Tutor', sound: true
+    };
+
+    // DOM refs
+    const chatArea = document.getElementById('chatArea');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const groupTitle = document.getElementById('groupTitle');
+    const memberStatus = document.getElementById('memberStatus');
+    const drawerOverlay = document.getElementById('drawerOverlay');
+    const drawer = document.getElementById('drawer');
+    const groupList = document.getElementById('groupList');
+    const drawerToggle = document.getElementById('drawerToggle');
+    const backBtn = document.getElementById('backBtn');
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsOverlay = document.getElementById('settingsOverlay');
+    const settingsPanel = document.getElementById('settingsPanel');
+    const settingsClose = document.getElementById('settingsClose');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalInput = document.getElementById('modalInput');
+    const modalConfirm = document.getElementById('modalConfirm');
+    const modalCancel = document.getElementById('modalCancel');
+    const newGroupDrawerBtn = document.getElementById('newGroupDrawerBtn');
+    const joinGroupDrawerBtn = document.getElementById('joinGroupDrawerBtn');
+    const aiToggle = document.getElementById('aiToggle');
+    const emojiBtn = document.getElementById('emojiBtn');
+    const emojiPicker = document.getElementById('emojiPicker');
+    const avatarBtn = document.getElementById('avatarBtn');
+    const replyBar = document.getElementById('replyBar');
+    const replyClose = document.getElementById('replyClose');
+    const groupInfoPanel = document.getElementById('groupInfoPanel');
+    const closeInfo = document.getElementById('closeInfo');
+    const infoAvatar = document.getElementById('infoAvatar');
+    const infoName = document.getElementById('infoName');
+    const infoDesc = document.getElementById('infoDesc');
+    const infoMemberList = document.getElementById('infoMemberList');
+    const editGroupMetaBtn = document.getElementById('editGroupMetaBtn');
+
+    // ============================================================
+    // EMOJI PICKER
+    // ============================================================
+    const EMOJIS = ['😊','😂','❤️','👍','🎉','🔥','📚','💪','🤓','✨','🥳','🤔','😭','🤗','💯','🙌','👏','🕊️','🌱','⭐'];
+    function buildEmojiPicker() {
+      emojiPicker.innerHTML = EMOJIS.map(e => `<button data-emoji="${e}">${e}</button>`).join('');
+      emojiPicker.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+          messageInput.value += btn.dataset.emoji;
+          messageInput.focus();
+          emojiPicker.classList.remove('open');
+        });
+      });
+    }
+    emojiBtn.addEventListener('click', (e) => { e.stopPropagation(); emojiPicker.classList.toggle('open'); });
+    document.addEventListener('click', (e) => {
+      if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) emojiPicker.classList.remove('open');
+    });
+    buildEmojiPicker();
+
+    // ============================================================
+    // SETTINGS
+    // ============================================================
+    function initSettings() {
+      const themeSelect = document.getElementById('themeSelect');
+      if (themeSelect) { themeSelect.value = settings.theme; themeSelect.addEventListener('change', () => { settings.theme = themeSelect.value; saveSettings(); applySettings(); }); }
+      const colorOptions = document.getElementById('colorOptions');
+      if (colorOptions) {
+        colorOptions.addEventListener('click', (e) => {
+          const dot = e.target.closest('.color-dot'); if (!dot) return;
+          settings.accent = dot.dataset.color; saveSettings(); applySettings();
+        });
+      }
+      const fontSizeSlider = document.getElementById('fontSizeSlider');
+      if (fontSizeSlider) { fontSizeSlider.value = settings.fontSize; fontSizeSlider.addEventListener('input', () => { settings.fontSize = parseInt(fontSizeSlider.value); saveSettings(); applySettings(); }); }
+      const showTimestampsSwitch = document.getElementById('showTimestampsSwitch');
+      if (showTimestampsSwitch) { showTimestampsSwitch.classList.toggle('active', settings.showTimestamps); showTimestampsSwitch.addEventListener('click', () => { settings.showTimestamps = !settings.showTimestamps; saveSettings(); applySettings(); }); }
+      const aiAutoSwitch = document.getElementById('aiAutoSwitch');
+      if (aiAutoSwitch) { aiAutoSwitch.classList.toggle('active', settings.aiAuto); aiAutoSwitch.addEventListener('click', () => { settings.aiAuto = !settings.aiAuto; saveSettings(); applySettings(); }); }
+      const soundSwitch = document.getElementById('soundSwitch');
+      if (soundSwitch) { soundSwitch.classList.toggle('active', settings.sound); soundSwitch.addEventListener('click', () => { settings.sound = !settings.sound; saveSettings(); applySettings(); }); }
+      const aiPersonalitySelect = document.getElementById('aiPersonalitySelect');
+      if (aiPersonalitySelect) { aiPersonalitySelect.value = settings.aiPersonality; aiPersonalitySelect.addEventListener('change', () => { settings.aiPersonality = aiPersonalitySelect.value; saveSettings(); applySettings(); }); }
+      const displayNameInput = document.getElementById('displayNameInput');
+      if (displayNameInput) { displayNameInput.value = USER_NAME; displayNameInput.addEventListener('change', () => { const name = displayNameInput.value.trim(); if (name) { USER_NAME = name; localStorage.setItem('studentnija_chat_user_name', USER_NAME); } }); }
+      const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+      if (clearHistoryBtn) clearHistoryBtn.addEventListener('click', () => { if (confirm('Clear all messages?')) { messages = []; renderMessages(); } });
+      const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+      if (resetSettingsBtn) resetSettingsBtn.addEventListener('click', () => { if (confirm('Reset all settings?')) { settings = { theme:'dark', accent:'green', fontSize:15, showTimestamps:true, aiAuto:true, aiPersonality:'Friendly Tutor', sound:true }; saveSettings(); applySettings(); } });
+      if (settingsBtn && settingsOverlay && settingsPanel) {
+        settingsBtn.addEventListener('click', () => { settingsOverlay.classList.add('show'); settingsPanel.classList.add('open'); });
+        settingsClose.addEventListener('click', () => { settingsOverlay.classList.remove('show'); settingsPanel.classList.remove('open'); });
+        settingsOverlay.addEventListener('click', () => { settingsOverlay.classList.remove('show'); settingsPanel.classList.remove('open'); });
+      }
+    }
+    // ============================================================
+// THEME SYNC – reads from main app & chat, writes to both
+// ============================================================
+const APP_STORAGE_KEY = 'studentnija_settings';
+const CHAT_STORAGE_KEY = 'studentnija_chat_settings_v3';
+
+function readThemeFromStorage() {
+  let theme = null;
+  let accent = null;
+  try {
+    const appRaw = localStorage.getItem(APP_STORAGE_KEY);
+    if (appRaw) {
+      const appSettings = JSON.parse(appRaw);
+      if (appSettings.theme) theme = appSettings.theme;
+      if (appSettings.accentColor) accent = appSettings.accentColor;
+    }
+  } catch (_) {}
+  if (!theme) {
+    try {
+      const chatRaw = localStorage.getItem(CHAT_STORAGE_KEY);
+      if (chatRaw) {
+        const chatSettings = JSON.parse(chatRaw);
+        if (chatSettings.theme) theme = chatSettings.theme;
+        if (chatSettings.accent) accent = chatSettings.accent;
+      }
+    } catch (_) {}
+  }
+  if (!theme) {
+    const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+    theme = prefersLight ? 'light' : 'dark';
+  }
+  if (!accent) accent = 'green';
+  return { theme, accent };
+}
+
+function saveThemeToAll(theme, accent) {
+  // Main app settings
+  try {
+    let appSettings = {};
+    const raw = localStorage.getItem(APP_STORAGE_KEY);
+    if (raw) try { appSettings = JSON.parse(raw); } catch(_) {}
+    appSettings.theme = theme;
+    appSettings.accentColor = accent;
+    localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(appSettings));
+  } catch(_) {}
+  // Chat settings
+  try {
+    let chatSettings = {};
+    const raw = localStorage.getItem(CHAT_STORAGE_KEY);
+    if (raw) try { chatSettings = JSON.parse(raw); } catch(_) {}
+    chatSettings.theme = theme;
+    chatSettings.accent = accent;
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatSettings));
+  } catch(_) {}
+}
+
+// ---- Override the old functions ----
+function loadSettings() {
+  const { theme, accent } = readThemeFromStorage();
+  settings.theme = theme;
+  settings.accent = accent;
+  applySettings();
+}
+
+function saveSettings() {
+  saveThemeToAll(settings.theme, settings.accent);
+}
+
+function applySettings() {
+  // Apply theme
+  document.body.classList.toggle('light-theme', settings.theme === 'light');
+  // Apply accent (the page uses body classes for accent)
+  document.body.classList.remove('blue-theme','purple-theme','gold-theme','red-theme');
+  document.body.classList.add(settings.accent + '-theme');
+  // Font size
+  document.documentElement.style.setProperty('--font-size', settings.fontSize + 'px');
+
+  // Update UI toggles (settings panel) – preserve existing logic
+  const showTimestampsSwitch = document.getElementById('showTimestampsSwitch');
+  if (showTimestampsSwitch) showTimestampsSwitch.classList.toggle('active', settings.showTimestamps);
+  const aiAutoSwitch = document.getElementById('aiAutoSwitch');
+  if (aiAutoSwitch) aiAutoSwitch.classList.toggle('active', settings.aiAuto);
+  const soundSwitch = document.getElementById('soundSwitch');
+  if (soundSwitch) soundSwitch.classList.toggle('active', settings.sound);
+
+  const themeSelect = document.getElementById('themeSelect');
+  if (themeSelect) themeSelect.value = settings.theme;
+  const aiPersonalitySelect = document.getElementById('aiPersonalitySelect');
+  if (aiPersonalitySelect) aiPersonalitySelect.value = settings.aiPersonality;
+  const fontSizeSlider = document.getElementById('fontSizeSlider');
+  if (fontSizeSlider) fontSizeSlider.value = settings.fontSize;
+
+  document.querySelectorAll('.color-dot').forEach(el => {
+    el.classList.toggle('active', el.dataset.color === settings.accent);
+  });
+
+  const displayNameInput = document.getElementById('displayNameInput');
+  if (displayNameInput) displayNameInput.value = USER_NAME;
+}
+
+// ---- Also update the settings panel's theme change listener ----
+// In your initSettings() function, replace the theme select event with:
+document.getElementById('themeSelect')?.addEventListener('change', function() {
+  settings.theme = this.value;
+  saveSettings();
+  applySettings();
+});
+
+// And for the color dots, replace with:
+document.getElementById('colorOptions')?.addEventListener('click', function(e) {
+  const dot = e.target.closest('.color-dot');
+  if (!dot) return;
+  settings.accent = dot.dataset.color;
+  saveSettings();
+  applySettings();
+});
+
+    // ============================================================
+    // SOCKET
+    // ============================================================
+    function connectSocket() {
+      socket = io(SERVER_URL, { transports: ['websocket','polling'], reconnection: true, reconnectionAttempts: 10, reconnectionDelay: 1000, withCredentials: true });
+      socket.on('connect', () => {
+        console.log('✅ Connected');
+        if (currentGroup) socket.emit('joinGroup', { groupId: currentGroup, userName: USER_NAME, userId: USER_ID });
+      });
+      socket.on('connect_error', (err) => console.error('❌ Connection error:', err));
+      socket.on('disconnect', () => console.log('❌ Disconnected'));
+
+      // ---- Group State ----
+      socket.on('groupState', (data) => {
+        members = data.members || [];
+        messages = data.messages || [];
+        createdBy = data.createdBy || null;
+        admins = data.admins || [];
+        groupMeta.name = data.name || currentGroup;
+        groupMeta.description = data.description || '';
+        groupMeta.avatar = data.avatar || '📚';
+        pinnedMessageId = data.pinned || null;
+        renderMessages();
+        updateMemberStatus();
+        updateHeaderInfo();
+      });
+      socket.on('groupNotFound', (data) => {
+        const groupName = data.groupId;
+        groups = groups.filter(g => g !== groupName);
+        localStorage.setItem('studentnija_groups', JSON.stringify(groups));
+        renderGroups();
+        if (currentGroup === groupName) { currentGroup = null; groupTitle.textContent = 'StudentNija'; messages = []; members = []; renderMessages(); updateMemberStatus(); socket.emit('leaveGroup'); }
+      });
+      socket.on('groupMetaUpdated', (data) => {
+        groupMeta.description = data.description || '';
+        groupMeta.avatar = data.avatar || '📚';
+        updateHeaderInfo();
+      });
+      socket.on('groupRenamed', (data) => {
+        const idx = groups.indexOf(data.groupId);
+        if (idx !== -1) { groups[idx] = data.newName; localStorage.setItem('studentnija_groups', JSON.stringify(groups)); renderGroups(); if (currentGroup === data.groupId) { currentGroup = data.newName; groupTitle.textContent = data.newName; } }
+      });
+      socket.on('groupDeleted', (data) => {
+        groups = groups.filter(g => g !== data.groupId);
+        localStorage.setItem('studentnija_groups', JSON.stringify(groups));
+        if (currentGroup === data.groupId) { currentGroup = null; groupTitle.textContent = 'StudentNija'; messages = []; members = []; renderMessages(); updateMemberStatus(); }
+        renderGroups();
+      });
+      socket.on('membersUpdate', (updated) => {
+        members = updated;
+        updateMemberStatus();
+        updateGroupInfoPanel();
+      });
+      socket.on('memberAdded', (data) => {
+        members.push({ id: data.userId, name: data.name });
+        updateMemberStatus();
+        updateGroupInfoPanel();
+      });
+      socket.on('memberRemoved', (data) => {
+        if (data.userId === USER_ID) {
+          alert('You have been removed from the group by the admin.');
+          if (currentGroup) { currentGroup = null; groupTitle.textContent = 'StudentNija'; messages = []; members = []; renderMessages(); updateMemberStatus(); socket.emit('leaveGroup'); renderGroups(); }
+        } else {
+          members = members.filter(m => m.id !== data.userId);
+          updateMemberStatus();
+          updateGroupInfoPanel();
+        }
+      });
+      socket.on('adminUpdated', (data) => {
+        if (data.isAdmin) { if (!admins.includes(data.targetUserId)) admins.push(data.targetUserId); }
+        else { admins = admins.filter(id => id !== data.targetUserId); }
+        updateGroupInfoPanel();
+      });
+
+      // ---- Messages ----
+      socket.on('newMessage', (msg) => {
+        messages.push(msg);
+        renderMessages();
+        if (settings.sound) playSound();
+      });
+      socket.on('messageEdited', (data) => {
+        const msg = messages.find(m => m.id === data.messageId);
+        if (msg) { msg.text = data.newText; msg.edited = true; msg.editedAt = data.editedAt; renderMessages(); }
+      });
+      socket.on('messageDeleted', (data) => {
+        const msg = messages.find(m => m.id === data.messageId);
+        if (msg) { msg.deleted = true; msg.text = 'This message was deleted.'; renderMessages(); }
+      });
+      socket.on('messageDeletedForSelf', (data) => {
+        if (data.userId === USER_ID) {
+          const msg = messages.find(m => m.id === data.messageId);
+          if (msg) { msg.deletedFor = msg.deletedFor || []; if (!msg.deletedFor.includes(USER_ID)) msg.deletedFor.push(USER_ID); renderMessages(); }
+        }
+      });
+      socket.on('messagePinned', (data) => {
+        pinnedMessageId = data.messageId;
+        renderMessages();
+      });
+      socket.on('messageUnpinned', (data) => {
+        pinnedMessageId = null;
+        renderMessages();
+      });
+      socket.on('reactionUpdate', (data) => {
+        const msg = messages.find(m => m.id === data.messageId);
+        if (msg) { msg.reactions = data.reactions; renderMessages(); }
+      });
+      socket.on('aiTyping', (data) => {
+        if (data.typing) showAITyping(); else hideAITyping();
+      });
+
+      // ---- Errors ----
+      socket.on('error', (data) => { alert('Error: ' + data.message); });
+    }
+
+    function playSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.frequency.value = 800; gain.gain.value = 0.08;
+        osc.start(); osc.stop(ctx.currentTime + 0.08);
+      } catch(e) {}
+    }
+
+    // ============================================================
+    // RENDER MESSAGES
+    // ============================================================
+    function renderMessages() {
+      if (!currentGroup) {
+        chatArea.innerHTML = `<div class="empty-state"><div class="icon">💬</div><h2>Welcome to Study Chat</h2><p>Join a group to start studying with friends.</p></div>`;
+        messageInput.disabled = true; sendBtn.disabled = true; messageInput.placeholder = 'Join a group first...';
+        return;
+      }
+      messageInput.disabled = false; sendBtn.disabled = false; messageInput.placeholder = 'Type a message...';
+      if (!messages.length) {
+        chatArea.innerHTML = `<div class="empty-state" style="padding:30px;"><div style="font-size:40px;">👋</div><p style="font-size:14px; color:var(--text-muted);">No messages yet. Say hello!</p></div>`;
+        return;
+      }
+      let html = '';
+      let lastDate = '';
+      messages.forEach(m => {
+        // Skip if deleted for self
+        if (m.deletedFor && m.deletedFor.includes(USER_ID)) return;
+        const msgDate = m.timestamp ? new Date(m.timestamp).toDateString() : '';
+        if (msgDate && msgDate !== lastDate) { html += `<div class="date-divider">${new Date(m.timestamp).toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' })}</div>`; lastDate = msgDate; }
+        const isSelf = m.senderId === USER_ID;
+        const isAI = m.senderId === 'ai_bot';
+        const senderClass = isAI ? 'ai' : '';
+        const timestamp = settings.showTimestamps && m.timestamp ? new Date(m.timestamp).toLocaleTimeString() : '';
+        const isPinned = (pinnedMessageId === m.id);
+        const isDeleted = m.deleted;
+        const text = isDeleted ? 'This message was deleted.' : m.text;
+        const replyHtml = m.replyTo ? `<div class="reply-preview"><span class="reply-sender">${escapeHtml(m.replyTo.senderName)}</span> ${escapeHtml(m.replyTo.text)}</div>` : '';
+        const reactionHtml = Object.entries(m.reactions || {}).map(([emoji, users]) =>
+          `<button class="reaction-btn" data-msgid="${m.id}" data-emoji="${emoji}">${emoji} <span class="count">${users.length}</span></button>`
+        ).join('');
+
+        html += `
+          <div class="message-card ${isSelf ? 'self' : 'other'}" data-id="${m.id}" data-sender="${m.senderId}">
+            ${isPinned ? '<div class="pinned-badge">📌</div>' : ''}
+            <div class="sender ${senderClass}">${escapeHtml(m.senderName)}${m.edited ? ' <span class="edited-badge">(edited)</span>' : ''}</div>
+            ${replyHtml}
+            <div class="text${isDeleted ? ' deleted' : ''}">${escapeHtml(text)}</div>
+            <div class="footer">
+              <div class="reactions">${reactionHtml}</div>
+              ${timestamp ? `<span class="timestamp">${timestamp}</span>` : ''}
+            </div>
+          </div>
+        `;
+      });
+      chatArea.innerHTML = html;
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      // ---- Attach reaction clicks ----
+      document.querySelectorAll('.reaction-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const msgId = this.dataset.msgid;
+          const emoji = this.dataset.emoji;
+          if (socket && currentGroup) {
+            socket.emit('react', { groupId: currentGroup, messageId: msgId, emoji, userId: USER_ID });
+          }
+        });
+      });
+
+      // ---- Attach long‑press for message actions ----
+      let pressTimer = null;
+      document.querySelectorAll('.message-card').forEach(card => {
+        card.addEventListener('touchstart', (e) => {
+          pressTimer = setTimeout(() => {
+            showMessageActions(card);
+          }, 500);
+        });
+        card.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
+        card.addEventListener('touchend', () => { clearTimeout(pressTimer); });
+        // For desktop, use context menu
+        card.addEventListener('contextmenu', (e) => {
+          e.preventDefault();
+          showMessageActions(card);
+        });
+      });
+
+      // ---- Swipe to reply ----
+      let startX = 0;
+      document.querySelectorAll('.message-card').forEach(card => {
+        card.addEventListener('touchstart', (e) => {
+          startX = e.touches[0].clientX;
+        }, { passive: true });
+        card.addEventListener('touchmove', (e) => {
+          const delta = e.touches[0].clientX - startX;
+          if (delta > 60) {
+            const id = card.dataset.id;
+            const msg = messages.find(m => m.id === id);
+            if (msg && !msg.deleted) {
+              setReplyTo({ id: msg.id, senderName: msg.senderName, text: msg.text });
+              // Visual feedback
+              card.style.transform = 'translateX(12px)';
+              setTimeout(() => { card.style.transform = ''; }, 300);
+            }
+          }
+        }, { passive: true });
+      });
+    }
+
+    // ============================================================
+    // MESSAGE ACTIONS (edit, delete, pin)
+    // ============================================================
+    function showMessageActions(card) {
+      const id = card.dataset.id;
+      const msg = messages.find(m => m.id === id);
+      if (!msg || msg.deleted) return;
+      const isSelf = msg.senderId === USER_ID;
+      const isAdmin = admins.includes(USER_ID) || createdBy === USER_ID;
+      const isCreator = createdBy === USER_ID;
+      const options = [];
+      if (isSelf) {
+        options.push({ label: '✏️ Edit', action: 'edit' });
+        options.push({ label: '🗑️ Delete for me', action: 'deleteSelf' });
+        if (isAdmin) options.push({ label: '🗑️ Delete for everyone', action: 'deleteAll' });
+      } else if (isAdmin) {
+        options.push({ label: '🗑️ Delete for everyone', action: 'deleteAll' });
+      }
+      if (isAdmin) {
+        if (pinnedMessageId === id) options.push({ label: '📌 Unpin', action: 'unpin' });
+        else options.push({ label: '📌 Pin', action: 'pin' });
+      }
+      options.push({ label: '🔁 Reply', action: 'reply' });
+      options.push({ label: '❌ Cancel', action: 'cancel' });
+
+      const choice = prompt(
+        `Message from ${msg.senderName}:\n"${msg.text.substring(0, 60)}${msg.text.length>60?'…':''}"\n\n` +
+        options.map((o, i) => `${i+1}. ${o.label}`).join('\n') +
+        '\n\nEnter number:'
+      );
+      if (choice === null) return;
+      const idx = parseInt(choice) - 1;
+      if (idx >= 0 && idx < options.length) {
+        const action = options[idx].action;
+        if (action === 'edit') {
+          const newText = prompt('Edit message:', msg.text);
+          if (newText !== null && newText.trim()) {
+            socket.emit('editMessage', { groupId: currentGroup, messageId: id, newText: newText.trim(), userId: USER_ID });
+          }
+        } else if (action === 'deleteSelf') {
+          socket.emit('deleteMessage', { groupId: currentGroup, messageId: id, userId: USER_ID, forAll: false });
+        } else if (action === 'deleteAll') {
+          if (confirm('Delete this message for everyone?')) {
+            socket.emit('deleteMessage', { groupId: currentGroup, messageId: id, userId: USER_ID, forAll: true });
+          }
+        } else if (action === 'pin') {
+          socket.emit('pinMessage', { groupId: currentGroup, messageId: id, userId: USER_ID });
+        } else if (action === 'unpin') {
+          socket.emit('pinMessage', { groupId: currentGroup, messageId: id, userId: USER_ID });
+        } else if (action === 'reply') {
+          setReplyTo({ id: msg.id, senderName: msg.senderName, text: msg.text });
+        }
+      }
+    }
+
+    // ============================================================
+    // REPLY HANDLING
+    // ============================================================
+    function setReplyTo(data) {
+      if (!data) { replyTo = null; replyBar.classList.remove('show'); return; }
+      replyTo = data;
+      const replySender = document.querySelector('.reply-sender');
+      const replyText = document.querySelector('.reply-text');
+      if (replySender) replySender.textContent = data.senderName;
+      if (replyText) replyText.textContent = data.text.length > 60 ? data.text.substring(0,60)+'…' : data.text;
+      replyBar.classList.add('show');
+      messageInput.focus();
+    }
+    replyClose.addEventListener('click', () => setReplyTo(null));
+
+    // ============================================================
+    // AI TYPING INDICATOR
+    // ============================================================
+    let aiTypingEl = null;
+    function showAITyping() {
+      if (aiTypingEl) return;
+      aiTypingEl = document.createElement('div');
+      aiTypingEl.className = 'ai-typing-bubble';
+      aiTypingEl.innerHTML = '<div class="spinner"></div> ✦ AI is thinking...';
+      chatArea.appendChild(aiTypingEl);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+    function hideAITyping() {
+      if (aiTypingEl) { aiTypingEl.remove(); aiTypingEl = null; }
+    }
+
+    // ============================================================
+    // GROUP INFO PANEL
+    // ============================================================
+    function updateGroupInfoPanel() {
+      infoAvatar.textContent = groupMeta.avatar || '📚';
+      infoName.textContent = groupMeta.name || currentGroup || 'Group';
+      infoDesc.textContent = groupMeta.description || 'No description';
+      if (infoMemberList) {
+        infoMemberList.innerHTML = members.map(m => {
+          const isAdmin = admins.includes(m.id);
+          const isCreator = createdBy === m.id;
+          const crown = (isAdmin || isCreator) ? '👑' : '';
+          const you = m.id === USER_ID ? ' (you)' : '';
+          return `<div class="info-member-item">
+            <span style="font-weight:500;">${escapeHtml(m.name)}${you}</span>
+            ${crown ? `<span class="crown">${crown}</span>` : ''}
+            ${(createdBy === USER_ID && m.id !== USER_ID) ? `<button class="admin-toggle" data-id="${m.id}" data-admin="${isAdmin}" style="margin-left:auto; background:none; border:1px solid var(--accent); color:var(--accent); border-radius:20px; padding:2px 12px; font-size:11px; cursor:pointer;">${isAdmin ? 'Demote' : 'Promote'}</button>` : ''}
+          </div>`;
+        }).join('');
+        // Admin toggle buttons
+        document.querySelectorAll('.admin-toggle').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const targetId = btn.dataset.id;
+            const isAdmin = btn.dataset.admin === 'true';
+            socket.emit('toggleAdmin', { groupId: currentGroup, userId: USER_ID, targetUserId: targetId, add: !isAdmin });
+          });
+        });
+      }
+    }
+
+    function updateHeaderInfo() {
+      groupTitle.textContent = groupMeta.name || currentGroup || 'StudentNija';
+    }
+
+    // Open/close info panel
+    document.querySelector('.group-info .name')?.addEventListener('click', () => {
+      if (currentGroup) {
+        updateGroupInfoPanel();
+        groupInfoPanel.classList.add('open');
+      }
+    });
+    closeInfo.addEventListener('click', () => groupInfoPanel.classList.remove('open'));
+
+    editGroupMetaBtn.addEventListener('click', () => {
+      if (!currentGroup) return;
+      const newDesc = prompt('Group description:', groupMeta.description);
+      const newAvatar = prompt('Group avatar (emoji):', groupMeta.avatar);
+      if (newDesc !== null || newAvatar !== null) {
+        const update = {};
+        if (newDesc !== null) update.description = newDesc.trim() || '';
+        if (newAvatar !== null) update.avatar = newAvatar.trim() || '📚';
+        socket.emit('updateGroupMeta', { groupId: currentGroup, userId: USER_ID, ...update });
+      }
+    });
+
+    // ============================================================
+    // RENDER GROUPS
+    // ============================================================
+    function renderGroups() {
+      if (!groupList) return;
+      const validGroups = groups.filter(g => g && typeof g === 'string' && g.trim().length > 0);
+      if (!validGroups.length) {
+        groupList.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">No groups yet.<br>Create or join one!</div>`;
+        return;
+      }
+      const isCreator = (createdBy === USER_ID && currentGroup);
+      groupList.innerHTML = validGroups.map(g => {
+        const isActive = g === currentGroup;
+        const lastMsg = messages.length ? messages[messages.length-1].text : '';
+        const initial = g.charAt(0).toUpperCase();
+        const creatorBadge = (isActive && isCreator) ? '👑' : '';
+        return `
+          <div class="group-item ${isActive ? 'active' : ''}" data-group="${g}">
+            <div class="avatar">${initial}</div>
+            <div class="info">
+              <div class="name">${escapeHtml(g)} ${creatorBadge}</div>
+              <div class="preview">${lastMsg ? escapeHtml(lastMsg.substring(0, 40)) : 'No messages yet'}</div>
+            </div>
+            <div class="meta">
+              <div class="time">${messages.length ? new Date(messages[messages.length-1].timestamp).toLocaleTimeString() : ''}</div>
+            </div>
+            ${isActive && isCreator ? `<button class="group-admin-btn" data-group="${g}" data-action="manage">⚙️</button>` : ''}
+          </div>
+        `;
+      }).join('');
+
+      groupList.querySelectorAll('.group-item').forEach(el => {
+        const name = el.dataset.group;
+        el.addEventListener('click', (e) => {
+          if (e.target.classList.contains('group-admin-btn')) return;
+          switchGroup(name);
+          closeDrawer();
+        });
+      });
+      groupList.querySelectorAll('.group-admin-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const groupName = btn.dataset.group;
+          showGroupAdminMenu(groupName);
+        });
+      });
+    }
+
+    function updateMemberStatus() {
+      if (memberStatus) memberStatus.textContent = members.length + ' members';
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' })[m] || m);
+    }
+
+    // ============================================================
+    // ADMIN MENU
+    // ============================================================
+    function showGroupAdminMenu(groupName) {
+      const options = [
+        { label: '✏️ Rename Group', action: 'rename' },
+        { label: '🗑️ Delete Group', action: 'delete' },
+        { label: '👥 Manage Members', action: 'members' },
+        { label: '❌ Cancel', action: 'cancel' }
+      ];
+      const choice = prompt(
+        `Admin options for "${groupName}":\n` +
+        options.map((o,i) => `${i+1}. ${o.label}`).join('\n') +
+        '\n\nEnter number:'
+      );
+      if (choice === null) return;
+      const idx = parseInt(choice) - 1;
+      if (idx >= 0 && idx < options.length) {
+        const action = options[idx].action;
+        if (action === 'rename') {
+          const newName = prompt('Enter new group name:', groupName);
+          if (newName && newName.trim()) socket.emit('renameGroup', { groupId: groupName, newName: newName.trim(), userId: USER_ID });
+        } else if (action === 'delete') {
+          if (confirm(`Delete group "${groupName}"? This cannot be undone.`)) socket.emit('deleteGroup', { groupId: groupName, userId: USER_ID });
+        } else if (action === 'members') {
+          manageMembers(groupName);
+        }
+      }
+    }
+
+    function manageMembers(groupName) {
+      const memberList = members.map(m => `${m.name} (${m.id === USER_ID ? 'you' : ''})`).join('\n');
+      const action = prompt(
+        `Members in "${groupName}":\n${memberList}\n\n` +
+        `Enter "add" to add a member, "remove ID" to remove (e.g., remove user123), or "cancel".`
+      );
+      if (!action) return;
+      if (action.toLowerCase().startsWith('add')) {
+        const newUserId = prompt('Enter user ID (or email):');
+        if (newUserId) {
+          const newUserName = prompt('Display name:') || 'Student';
+          socket.emit('addMember', { groupId: groupName, userId: USER_ID, newUserId, newUserName });
+        }
+      } else if (action.toLowerCase().startsWith('remove')) {
+        const parts = action.split(' ');
+        const targetId = parts[1];
+        if (targetId && targetId !== USER_ID) {
+          if (confirm(`Remove member ${targetId}?`)) socket.emit('removeMember', { groupId: groupName, userId: USER_ID, targetUserId: targetId });
+        } else alert('Invalid or cannot remove yourself.');
+      }
+    }
+
+    // ============================================================
+    // GROUP MANAGEMENT
+    // ============================================================
+    function switchGroup(name) {
+      if (currentGroup === name) return;
+      if (currentGroup && socket) socket.emit('leaveGroup');
+      currentGroup = name;
+      groupTitle.textContent = name;
+      if (socket) socket.emit('joinGroup', { groupId: name, userName: USER_NAME, userId: USER_ID });
+      const saved = JSON.parse(localStorage.getItem('studentnija_groups') || '[]');
+      if (!saved.includes(name)) { saved.push(name); localStorage.setItem('studentnija_groups', JSON.stringify(saved)); }
+      renderGroups();
+      renderMessages();
+      localStorage.setItem('studentnija_last_group_v3', name);
+      // Update group info panel if open
+      if (groupInfoPanel.classList.contains('open')) updateGroupInfoPanel();
+    }
+
+    function createGroup(name) {
+      if (!name || !name.trim()) return;
+      const trimmed = name.trim();
+      // Check if already exists locally
+      const saved = JSON.parse(localStorage.getItem('studentnija_groups') || '[]');
+      if (saved.includes(trimmed)) {
+        switchGroup(trimmed);
+        closeDrawer();
+        return;
+      }
+      socket.emit('createGroup', { groupId: trimmed, userName: USER_NAME, userId: USER_ID }, (response) => {
+        if (response && response.success) {
+          if (!saved.includes(trimmed)) { saved.push(trimmed); localStorage.setItem('studentnija_groups', JSON.stringify(saved)); }
+          renderGroups();
+          currentGroup = trimmed;
+          groupTitle.textContent = trimmed;
+          members = response.members || [];
+          messages = response.messages || [];
+          createdBy = response.createdBy || USER_ID;
+          admins = [USER_ID];
+          groupMeta.name = trimmed;
+          groupMeta.description = '';
+          groupMeta.avatar = '📚';
+          renderMessages();
+          updateMemberStatus();
+          closeDrawer();
+        } else {
+          alert('Failed to create group: ' + (response?.error || 'Unknown error'));
+        }
+      });
+    }
+
+    function loadGroups() {
+      const saved = JSON.parse(localStorage.getItem('studentnija_groups') || '[]');
+      groups = saved;
+      renderGroups();
+      if (currentGroup && !groups.includes(currentGroup)) {
+        currentGroup = null;
+        groupTitle.textContent = 'StudentNija';
+        messages = []; members = [];
+        renderMessages(); updateMemberStatus();
+        if (socket) socket.emit('leaveGroup');
+      }
+    }
+
+    // ============================================================
+    // SEND MESSAGE
+    // ============================================================
+    function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text || !currentGroup || !socket) return;
+      messageInput.value = '';
+      const replyToId = replyTo ? replyTo.id : null;
+      socket.emit('sendMessage', {
+        groupId: currentGroup,
+        text,
+        senderName: USER_NAME,
+        senderId: USER_ID,
+        timestamp: new Date().toISOString(),
+        replyToId
+      });
+      if (replyTo) setReplyTo(null);
+     // Inside sendMessage() – update the AI request block
+if (aiToggle && (aiToggle.checked || text.toLowerCase().startsWith('@ai'))) {
+  const cleanPrompt = text.replace(/^@ai\s*/i, '');
+  socket.emit('requestAI', {
+    groupId: currentGroup,
+    prompt: cleanPrompt || text,
+    context: messages.slice(-8).map(m => `${m.senderName}: ${m.text}`).join('\n'), // last 8 messages
+    personality: settings.aiPersonality || 'Friendly Tutor',
+    senderName: USER_NAME,   // << add
+    senderId: USER_ID        // << add
+  });
+}
+    }
+
+    // ============================================================
+    // DRAWER
+    // ============================================================
+    function openDrawer() { drawerOverlay.classList.add('open'); drawer.classList.add('open'); }
+    function closeDrawer() { drawerOverlay.classList.remove('open'); drawer.classList.remove('open'); }
+    drawerToggle.addEventListener('click', openDrawer);
+    drawerOverlay.addEventListener('click', closeDrawer);
+
+    // ============================================================
+    // MODAL
+    // ============================================================
+    let modalMode = 'create';
+    function showModal(mode) {
+      modalMode = mode;
+      modalTitle.textContent = mode === 'create' ? '✨ Create Group' : '🔗 Join Group';
+      modalInput.placeholder = mode === 'create' ? 'Enter group name...' : 'Enter group name to join...';
+      modalInput.value = '';
+      modalOverlay.classList.add('show');
+      setTimeout(() => modalInput.focus(), 100);
+    }
+    function hideModal() { modalOverlay.classList.remove('show'); }
+    function confirmModal() {
+      const val = modalInput.value.trim();
+      if (!val) return;
+      if (modalMode === 'create') createGroup(val);
+      else {
+        const saved = JSON.parse(localStorage.getItem('studentnija_groups') || '[]');
+        if (!saved.includes(val)) { saved.push(val); localStorage.setItem('studentnija_groups', JSON.stringify(saved)); }
+        renderGroups();
+        switchGroup(val);
+      }
+      hideModal();
+    }
+    newGroupDrawerBtn.addEventListener('click', () => showModal('create'));
+    joinGroupDrawerBtn.addEventListener('click', () => showModal('join'));
+    modalConfirm.addEventListener('click', confirmModal);
+    modalCancel.addEventListener('click', hideModal);
+    modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
+    modalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') confirmModal(); });
+
+    // ============================================================
+    // OTHER LISTENERS
+    // ============================================================
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    backBtn.addEventListener('click', () => {
+      if (currentGroup) {
+        switchGroup(null);
+        currentGroup = null;
+        groupTitle.textContent = 'StudentNija';
+        messages = []; members = [];
+        renderMessages(); updateMemberStatus();
+        groupInfoPanel.classList.remove('open');
+      }
+    });
+    avatarBtn.addEventListener('click', () => alert('👤 ' + USER_NAME + '\nID: ' + USER_ID));
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    loadSettings();
+    initSettings();
+    connectSocket();
+    loadGroups();
+    const last = localStorage.getItem('studentnija_last_group_v3');
+    if (last && groups.includes(last)) switchGroup(last);
+    console.log('🚀 StudentNija Chat (Full WhatsApp‑like) loaded.');
+  </script>
+</body>
+</html>

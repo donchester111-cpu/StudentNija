@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>StudentNija AI</title>
+    <style>
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-primary: #F5F7FA;
+            --bg-card: rgba(255, 255, 255, 0.82);
+            --bg-card-solid: #FFFFFF;
+            --text-primary: #0A1927;
+            --text-muted: #6B7F96;
+            --border-light: rgba(0, 0, 0, 0.06);
+            --accent-green: #008751;
+            --accent-green-light: #00A86B;
+            --accent-gold: #F4B400;
+            --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.10);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.14);
+            --radius-sm: 12px;
+            --radius-md: 20px;
+            --radius-lg: 28px;
+            --radius-xl: 40px;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --transition-smooth: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+        }
+
+        body.dark-theme {
+            --bg-primary: #0A111F;
+            --bg-card: rgba(18, 28, 40, 0.88);
+            --bg-card-solid: #122033;
+            --text-primary: #F0F4FA;
+            --text-muted: #8FA0B5;
+            --border-light: rgba(255, 255, 255, 0.06);
+            --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.5);
+            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
+        }
+
+        body {
+            background: var(--bg-primary);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            color: var(--text-primary);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
+            transition: background 0.3s, color 0.3s;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        #app {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100vw;
+            background: var(--bg-primary);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        .ai-header {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-light);
+            padding: 10px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            min-height: 56px;
+            z-index: 10;
+            gap: 8px;
+        }
+
+        .ai-header .title {
+            font-size: 18px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-gold));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+        }
+
+        .ai-header .back-btn,
+        .ai-header .settings-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px 8px;
+            color: var(--text-primary);
+            min-width: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            touch-action: manipulation;
+            transition: background 0.2s;
+        }
+
+        .ai-header .back-btn:active,
+        .ai-header .settings-btn:active {
+            background: rgba(0, 135, 81, 0.12);
+        }
+
+        /* ============================================================
+           CHAT AREA
+           ============================================================ */
+        .ai-chat-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            -webkit-overflow-scrolling: touch;
+            min-height: 0;
+            height: 100%;
+            background: var(--bg-primary);
+        }
+
+        .ai-message {
+            max-width: 88%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            line-height: 1.5;
+            animation: fadeInMsg 0.25s ease;
+            font-size: 14px;
+            word-wrap: break-word;
+            transition: transform 0.1s;
+        }
+
+        .ai-message.user {
+            align-self: flex-end;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-green-light));
+            color: white;
+        }
+
+        .ai-message.assistant {
+            align-self: flex-start;
+            background: var(--bg-card-solid);
+            border: 0.5px solid var(--border-light);
+            color: var(--text-primary);
+        }
+
+        .ai-message .message-content {
+            word-break: break-word;
+        }
+
+        .ai-message .message-content code {
+            background: rgba(0, 0, 0, 0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .ai-message .message-content pre {
+            background: rgba(0, 0, 0, 0.05);
+            padding: 8px;
+            border-radius: 10px;
+            overflow-x: auto;
+            margin: 4px 0;
+            font-size: 12px;
+        }
+
+        .ai-message .message-content strong {
+            font-weight: 600;
+        }
+
+        @keyframes fadeInMsg {
+            from {
+                opacity: 0;
+                transform: translateY(6px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .typing-indicator {
+            align-self: flex-start;
+            background: var(--bg-card-solid);
+            border: 0.5px solid var(--border-light);
+            padding: 10px 14px;
+            border-radius: 18px;
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .typing-indicator .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--text-muted);
+            border-radius: 50%;
+            animation: typingDot 1.4s infinite both;
+        }
+
+        .typing-indicator .dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        .typing-indicator .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingDot {
+            0%, 80%, 100% {
+                transform: scale(0.6);
+                opacity: 0.4;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ============================================================
+           INPUT BAR
+           ============================================================ */
+        .ai-input-wrapper {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-light);
+            width: 100%;
+            z-index: 10;
+        }
+
+        .ai-input-bar {
+            padding: 8px 10px calc(8px + var(--safe-bottom));
+            background: var(--bg-primary);
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .ai-input-bar .icon-btn {
+            background: var(--bg-card-solid);
+            border: 1px solid var(--border-light);
+            border-radius: 30px;
+            padding: 8px 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: 0.1s;
+            min-width: 40px;
+            min-height: 40px;
+            font-size: 18px;
+            touch-action: manipulation;
+        }
+
+        .ai-input-bar .icon-btn:active {
+            transform: scale(0.92);
+            background: rgba(0, 135, 81, 0.08);
+        }
+
+        .ai-input-bar .icon-btn.recording {
+            background: #ff4444;
+            color: white;
+            animation: pulseRed 1s infinite;
+        }
+
+        @keyframes pulseRed {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 0 6px rgba(255, 68, 68, 0);
+            }
+        }
+
+        .ai-input-bar input[type="text"] {
+            flex: 1;
+            padding: 10px 14px;
+            border-radius: 30px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-card-solid);
+            color: var(--text-primary);
+            font-size: 14px;
+            outline: none;
+            margin: 0;
+            min-height: 40px;
+            font-family: inherit;
+        }
+
+        .ai-input-bar input[type="text"]:focus {
+            border-color: var(--accent-green);
+            box-shadow: 0 0 0 3px rgba(0, 135, 81, 0.08);
+        }
+
+        .ai-input-bar input[type="text"]:disabled {
+            opacity: 0.6;
+        }
+
+        .ai-input-bar .send-btn {
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-green-light));
+            border: none;
+            border-radius: 30px;
+            padding: 10px 18px;
+            color: white;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+            min-width: 56px;
+            min-height: 40px;
+            font-size: 13px;
+            transition: var(--transition-smooth);
+            touch-action: manipulation;
+        }
+
+        .ai-input-bar .send-btn:active {
+            transform: scale(0.94);
+        }
+
+        .ai-input-bar .send-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ai-attach-menu {
+            position: absolute;
+            bottom: 64px;
+            left: 10px;
+            background: var(--bg-card-solid);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 6px;
+            width: 180px;
+            display: none;
+            z-index: 50;
+            flex-direction: column;
+            box-shadow: var(--shadow-md);
+        }
+
+        .ai-attach-menu.show {
+            display: flex;
+        }
+
+        .ai-attach-menu .attach-item {
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            min-height: 40px;
+            touch-action: manipulation;
+            color: var(--text-primary);
+        }
+
+        .ai-attach-menu .attach-item:active {
+            background: rgba(0, 135, 81, 0.08);
+        }
+
+        /* ============================================================
+           SETTINGS PANEL
+           ============================================================ */
+        .ai-settings-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 300;
+            display: none;
+            backdrop-filter: blur(4px);
+        }
+
+        .ai-settings-overlay.show {
+            display: block;
+        }
+
+        .ai-settings-panel {
+            position: fixed;
+            top: 0;
+            right: -360px;
+            width: min(340px, 88%);
+            height: 100%;
+            background: var(--bg-card-solid);
+            border-left: 1px solid var(--border-light);
+            padding: 24px 20px;
+            overflow-y: auto;
+            transition: right 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+            z-index: 301;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .ai-settings-panel.open {
+            right: 0;
+        }
+
+        .ai-settings-panel .close-btn {
+            text-align: right;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+            padding: 4px 8px;
+            min-height: 40px;
+            touch-action: manipulation;
+        }
+
+        .ai-settings-panel .settings-group {
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-light);
+            padding-bottom: 16px;
+        }
+
+        .ai-settings-panel .settings-group:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .ai-settings-panel h4 {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--accent-green);
+            margin: 0 0 10px 0;
+            font-weight: 700;
+        }
+
+        .ai-settings-panel .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 10px;
+            font-size: 14px;
+            color: var(--text-primary);
+            flex-wrap: wrap;
+        }
+
+        .ai-settings-panel .setting-row .label {
+            font-weight: 500;
+            min-width: 100px;
+        }
+
+        .ai-settings-panel .setting-row .value {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+
+        .ai-settings-panel .switch {
+            width: 44px;
+            height: 22px;
+            background: var(--text-muted);
+            border-radius: 22px;
+            position: relative;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: background 0.2s;
+        }
+
+        .ai-settings-panel .switch.active {
+            background: var(--accent-green);
+        }
+
+        .ai-settings-panel .switch::after {
+            content: "";
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s;
+        }
+
+        .ai-settings-panel .switch.active::after {
+            left: 24px;
+        }
+
+        .ai-settings-panel select,
+        .ai-settings-panel input[type="text"],
+        .ai-settings-panel input[type="number"],
+        .ai-settings-panel input[type="range"] {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-light);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            margin: 4px 0 10px;
+            font-size: 14px;
+            min-height: 40px;
+            font-family: inherit;
+        }
+
+        .ai-settings-panel select:focus,
+        .ai-settings-panel input:focus {
+            outline: none;
+            border-color: var(--accent-green);
+        }
+
+        .ai-settings-panel .color-palette {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 6px 0 10px;
+        }
+
+        .ai-settings-panel .color-dot {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .ai-settings-panel .color-dot.active {
+            border-color: var(--text-primary);
+            transform: scale(1.12);
+        }
+
+        .ai-settings-panel .btn-outline {
+            width: 100%;
+            padding: 12px;
+            border-radius: var(--radius-xl);
+            border: 1.5px solid var(--accent-green-light);
+            background: transparent;
+            color: var(--text-primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            margin-top: 4px;
+            font-size: 14px;
+            touch-action: manipulation;
+        }
+
+        .ai-settings-panel .btn-outline:active {
+            background: rgba(0, 135, 81, 0.08);
+            transform: scale(0.97);
+        }
+
+        .ai-settings-panel .btn-danger {
+            border-color: #ff4444;
+            color: #ff4444;
+        }
+
+        .ai-settings-panel .btn-danger:active {
+            background: rgba(255, 68, 68, 0.08);
+        }
+
+        /* ============================================================
+           SCROLLBAR
+           ============================================================ */
+        ::-webkit-scrollbar {
+            width: 3px;
+            height: 3px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--accent-green);
+            border-radius: 10px;
+        }
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-green) transparent;
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 480px) {
+            .ai-header {
+                padding: 8px 12px;
+                min-height: 48px;
+            }
+            .ai-header .title {
+                font-size: 15px;
+            }
+            .ai-input-bar {
+                padding: 6px 8px calc(6px + var(--safe-bottom));
+                gap: 4px;
+            }
+            .ai-input-bar .icon-btn {
+                min-width: 36px;
+                min-height: 36px;
+                font-size: 16px;
+                padding: 6px 8px;
+            }
+            .ai-input-bar input[type="text"] {
+                font-size: 13px;
+                min-height: 36px;
+                padding: 8px 12px;
+            }
+            .ai-input-bar .send-btn {
+                min-width: 48px;
+                min-height: 36px;
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            .ai-message {
+                max-width: 92%;
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+            .ai-chat-area {
+                padding: 8px 10px;
+                gap: 6px;
+            }
+            .ai-settings-panel {
+                width: 90%;
+                padding: 16px;
+            }
+            .ai-settings-panel .setting-row {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+            }
+            .ai-settings-panel .setting-row .label {
+                min-width: auto;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .ai-message {
+                max-width: 75%;
+            }
+            .ai-settings-panel {
+                width: min(400px, 60%);
+                padding: 32px 28px;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .ai-message {
+                max-width: 65%;
+            }
+        }
+
+        /* ---- Safe area ---- */
+        @supports (padding: max(0px)) {
+            .ai-input-bar {
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+            }
+            .ai-settings-panel {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- HEADER -->
+        <div class="ai-header">
+            <button class="back-btn" id="backBtn">←</button>
+            <span class="title">🤖 StudentNija AI</span>
+            <button class="settings-btn" id="settingsBtn">⚙️</button>
+        </div>
+
+        <!-- CHAT AREA -->
+        <div class="ai-chat-area" id="chatArea"></div>
+
+        <!-- INPUT BAR -->
+        <div class="ai-input-wrapper">
+            <div class="ai-input-bar">
+                <button class="icon-btn" id="plusBtn">➕</button>
+                <button class="icon-btn" id="micBtn">🎤</button>
+                <input type="text" id="userInput" placeholder="Type your message..." />
+                <button class="send-btn" id="sendBtn">SEND</button>
+            </div>
+            <div class="ai-attach-menu" id="attachMenu">
+                <div class="attach-item" id="attachImage">📷 Upload Image</div>
+                <div class="attach-item" id="attachFile">📄 Upload Text</div>
+                <div class="attach-item" id="attachWebSearch">🔍 Search Web</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS PANEL -->
+    <div class="ai-settings-overlay" id="settingsOverlay"></div>
+    <div class="ai-settings-panel" id="settingsPanel">
+        <div class="close-btn" id="settingsClose">✕</div>
+
+        <div class="settings-group">
+            <h4>🧠 Model & Personality</h4>
+            <div class="setting-row">
+                <span class="label">AI Model</span>
+                <select id="modelSelect">
+                    <option value="google/gemini-2.5-flash">Google Gemini 2.5 Flash</option>
+                    <option value="llama-3.1-8b-instant">Llama 3.1 8B (fast)</option>
+                    <option value="llama-3.3-70b-versatile">Llama 3.3 70B (powerful)</option>
+                    <option value="gpt-4o-mini">GPT-4o-mini (GitHub)</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <span class="label">Personality</span>
+                <select id="personalitySelect">
+                    <option value="Friendly Tutor">Friendly Tutor</option>
+                    <option value="Creative">Creative</option>
+                    <option value="Professor">Professor (detailed)</option>
+                    <option value="Gamer">Gamer</option>
+                    <option value="Sarcastic">Sarcastic</option>
+                    <option value="Motivational">Motivational</option>
+                </select>
+            </div>
+            <div class="setting-row">
+                <span class="label">Creativity (Temp)</span>
+                <input type="range" id="tempSlider" min="0" max="1" step="0.05" value="0.7" />
+                <span class="value" id="tempDisplay">0.70</span>
+            </div>
+            <div class="setting-row">
+                <span class="label">Max Tokens</span>
+                <input type="number" id="maxTokensInput" value="800" min="100" max="2000" step="50" />
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <h4>💾 Memory & Context</h4>
+            <div class="setting-row">
+                <span class="label">Remember conversation</span>
+                <div class="switch active" id="memorySwitch"></div>
+            </div>
+            <div class="setting-row">
+                <span class="label">Include app data</span>
+                <div class="switch active" id="appDataSwitch"></div>
+            </div>
+            <div class="setting-row">
+                <span class="label">Clear history</span>
+                <button class="btn-outline" id="clearChatBtn" style="width:auto; padding:6px 16px;">Clear</button>
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <h4>🎨 Appearance</h4>
+            <div class="setting-row">
+                <span class="label">Neon Effect</span>
+                <div class="switch active" id="neonSwitch"></div>
+            </div>
+            <div class="setting-row">
+                <span class="label">Sync theme with app</span>
+                <div class="switch active" id="syncThemeSwitch"></div>
+            </div>
+            <div class="setting-row">
+                <span class="label">Accent Color</span>
+                <div class="color-palette" id="colorPalette">
+                    <div class="color-dot" style="background:#008751" data-color="#008751"></div>
+                    <div class="color-dot" style="background:#a855f7" data-color="#a855f7"></div>
+                    <div class="color-dot" style="background:#00f7ff" data-color="#00f7ff"></div>
+                    <div class="color-dot" style="background:#F4B400" data-color="#F4B400"></div>
+                    <div class="color-dot" style="background:#ff2d55" data-color="#ff2d55"></div>
+                    <div class="color-dot" style="background:#ff6b6b" data-color="#ff6b6b"></div>
+                    <div class="color-dot" style="background:#4ecdc4" data-color="#4ecdc4"></div>
+                    <div class="color-dot" style="background:#ff9f1c" data-color="#ff9f1c"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <h4>🔊 Voice & Input</h4>
+            <div class="setting-row">
+                <span class="label">Voice recognition</span>
+                <div class="switch active" id="voiceSwitch"></div>
+            </div>
+        </div>
+
+        <div class="settings-group">
+            <h4>⚡ Advanced</h4>
+            <div class="setting-row">
+                <span class="label">System prompt (custom)</span>
+                <textarea id="systemPromptInput" rows="3" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-light); background:var(--bg-primary); color:var(--text-primary); font-size:13px; resize:vertical; font-family:inherit;"></textarea>
+            </div>
+            <button class="btn-outline" id="saveSystemPromptBtn">Save Custom Prompt</button>
+            <button class="btn-outline btn-danger" id="resetSystemPromptBtn" style="margin-top:6px;">Reset to Default</button>
+        </div>
+    </div>
+
+    <!-- HIDDEN FILE INPUT -->
+    <input type="file" id="fileInput" accept="image/*,text/plain" style="display:none" />
+
+    <script>
+        // ============================================================
+        // STUDENTNIJA AI v3.0 – Full Control & Customisation
+        // ============================================================
+
+        // ---- STATE ----
+        let currentUser = null;
+        let conversationHistory = [];
+        let isAiProcessing = false;
+        let aiMemoryEnabled = true;
+        let aiNeonEffect = true;
+        let aiAccentColor = "#008751";
+        let aiPersonality = "Friendly Tutor";
+        let currentAIModel = "google/gemini-2.5-flash";
+        let aiTemperature = 0.7;
+        let aiMaxTokens = 800;
+        let appState = null;
+        let includeAppData = true;
+        let syncTheme = true;
+        let voiceEnabled = true;
+        let customSystemPrompt = '';
+
+        // ---- DOM refs ----
+        const chatArea = document.getElementById('chatArea');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const plusBtn = document.getElementById('plusBtn');
+        const micBtn = document.getElementById('micBtn');
+        const attachMenu = document.getElementById('attachMenu');
+        const backBtn = document.getElementById('backBtn');
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsOverlay = document.getElementById('settingsOverlay');
+        const settingsPanel = document.getElementById('settingsPanel');
+        const settingsClose = document.getElementById('settingsClose');
+        const memorySwitch = document.getElementById('memorySwitch');
+        const neonSwitch = document.getElementById('neonSwitch');
+        const personalitySelect = document.getElementById('personalitySelect');
+        const modelSelect = document.getElementById('modelSelect');
+        const tempSlider = document.getElementById('tempSlider');
+        const tempDisplay = document.getElementById('tempDisplay');
+        const maxTokensInput = document.getElementById('maxTokensInput');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+        const colorDots = document.querySelectorAll('.color-dot');
+        const attachImage = document.getElementById('attachImage');
+        const attachFile = document.getElementById('attachFile');
+        const attachWebSearch = document.getElementById('attachWebSearch');
+        const fileInput = document.getElementById('fileInput');
+        const appDataSwitch = document.getElementById('appDataSwitch');
+        const syncThemeSwitch = document.getElementById('syncThemeSwitch');
+        const voiceSwitch = document.getElementById('voiceSwitch');
+        const systemPromptInput = document.getElementById('systemPromptInput');
+        const saveSystemPromptBtn = document.getElementById('saveSystemPromptBtn');
+        const resetSystemPromptBtn = document.getElementById('resetSystemPromptBtn');
+
+        // ---- Communication with parent ----
+        function sendCommand(action, data) {
+            return new Promise((resolve, reject) => {
+                const requestId = Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+                const iframe = window.parent;
+                if (!iframe) {
+                    reject(new Error('Parent window not found'));
+                    return;
+                }
+                const message = { action, data, requestId };
+                iframe.postMessage(message, '*');
+
+                const handler = function(event) {
+                    const msg = event.data;
+                    if (msg && msg.type === 'aiResponse' && msg.requestId === requestId) {
+                        window.removeEventListener('message', handler);
+                        if (msg.success) {
+                            resolve(msg.result);
+                        } else {
+                            reject(new Error(msg.error || 'Command failed'));
+                        }
+                    }
+                };
+                window.addEventListener('message', handler);
+                setTimeout(() => {
+                    window.removeEventListener('message', handler);
+                    reject(new Error('Timeout waiting for response'));
+                }, 10000);
+            });
+        }
+
+        // ---- Fetch initial state ----
+        async function fetchAppState() {
+            try {
+                appState = await sendCommand('getState');
+                if (appState && appState.user) {
+                    currentUser = appState.user;
+                }
+            } catch (e) {
+                console.warn('Could not fetch state:', e);
+            }
+        }
+        fetchAppState();
+
+        // ---- Load settings ----
+        function loadSettings() {
+            const saved = localStorage.getItem('studentnija_ai_settings');
+            if (saved) {
+                try {
+                    const s = JSON.parse(saved);
+                    aiMemoryEnabled = s.memory !== undefined ? s.memory : true;
+                    aiNeonEffect = s.neon !== undefined ? s.neon : true;
+                    aiAccentColor = s.accent || "#008751";
+                    aiPersonality = s.personality || "Friendly Tutor";
+                    currentAIModel = s.model || "google/gemini-2.5-flash";
+                    aiTemperature = s.temp !== undefined ? s.temp : 0.7;
+                    aiMaxTokens = s.maxTokens || 800;
+                    includeAppData = s.includeAppData !== undefined ? s.includeAppData : true;
+                    syncTheme = s.syncTheme !== undefined ? s.syncTheme : true;
+                    voiceEnabled = s.voiceEnabled !== undefined ? s.voiceEnabled : true;
+                    customSystemPrompt = s.customSystemPrompt || '';
+                } catch (e) {}
+            }
+            applySettings();
+        }
+        loadSettings();
+
+        function saveSettings() {
+            const data = {
+                memory: aiMemoryEnabled,
+                neon: aiNeonEffect,
+                accent: aiAccentColor,
+                personality: aiPersonality,
+                model: currentAIModel,
+                temp: aiTemperature,
+                maxTokens: aiMaxTokens,
+                includeAppData,
+                syncTheme,
+                voiceEnabled,
+                customSystemPrompt
+            };
+            localStorage.setItem('studentnija_ai_settings', JSON.stringify(data));
+        }
+
+        function applySettings() {
+            memorySwitch.classList.toggle('active', aiMemoryEnabled);
+            neonSwitch.classList.toggle('active', aiNeonEffect);
+            appDataSwitch.classList.toggle('active', includeAppData);
+            syncThemeSwitch.classList.toggle('active', syncTheme);
+            voiceSwitch.classList.toggle('active', voiceEnabled);
+            personalitySelect.value = aiPersonality;
+            modelSelect.value = currentAIModel;
+            tempSlider.value = aiTemperature;
+            tempDisplay.textContent = aiTemperature.toFixed(2);
+            maxTokensInput.value = aiMaxTokens;
+            colorDots.forEach(d => d.classList.toggle('active', d.dataset.color === aiAccentColor));
+            systemPromptInput.value = customSystemPrompt;
+            document.documentElement.style.setProperty('--ai-accent', aiAccentColor);
+            document.body.classList.toggle('ai-neon', aiNeonEffect);
+            // Apply theme sync
+            if (syncTheme && window.parent && window.parent.settings && window.parent.settings.theme) {
+                const theme = window.parent.settings.theme;
+                if (theme === 'dark') {
+                    document.body.classList.add('dark-theme');
+                } else {
+                    document.body.classList.remove('dark-theme');
+                }
+            }
+        }
+
+        // ---- Render messages ----
+        function renderMessages() {
+            chatArea.innerHTML = '';
+            for (const msg of conversationHistory) {
+                if (msg.role === 'system') continue;
+                const div = document.createElement('div');
+                div.className = `ai-message ${msg.role}`;
+                let formatted = escapeHtml(msg.content || '');
+                formatted = formatted.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                formatted = formatted.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                formatted = formatted.replace(/`(.*?)`/g, '<code>$1</code>');
+                formatted = formatted.replace(/\n- /g, '<br>• ');
+                formatted = formatted.replace(/\n/g, '<br>');
+                div.innerHTML = `<div class="message-content">${formatted}</div>`;
+                chatArea.appendChild(div);
+            }
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function showTyping() {
+            const div = document.createElement('div');
+            div.className = 'typing-indicator';
+            div.id = 'typingIndicator';
+            div.innerHTML = `<span>✦Thinking</span><span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+            chatArea.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function hideTyping() {
+            const el = document.getElementById('typingIndicator');
+            if (el) el.remove();
+        }
+
+        // ---- Build user context ----
+        function buildUserContext() {
+            if (!includeAppData) return '';
+            if (!currentUser) return '';
+            let ctx = `User: ${currentUser.fullName || ''}\n`;
+            ctx += `School: ${currentUser.school || ''}\n`;
+            ctx += `Department: ${currentUser.department || ''}\n`;
+            ctx += `Level: ${currentUser.level || ''}\n`;
+            if (appState) {
+                ctx += `Total courses: ${Object.values(appState.courses || {}).reduce((acc, arr) => acc + arr.length, 0)}\n`;
+                ctx += `Tasks: ${appState.tasks ? appState.tasks.length : 0}\n`;
+                ctx += `Flashcards: ${appState.flashcards ? appState.flashcards.length : 0}\n`;
+            }
+            return ctx;
+        }
+
+        // ---- Call AI ----
+        async function callAI(userMessage, extraContext = '') {
+            const context = buildUserContext() + extraContext;
+            return await callAIHelper(userMessage, "chat", context);
+        }
+
+        async function callAIHelper(userPrompt, purpose, context) {
+            const personalityMap = {
+                'Friendly Tutor': 'You are a friendly, encouraging tutor who helps students understand concepts clearly. Use warm language and celebrate their progress.',
+                'Creative': 'You are a creative thinker who provides imaginative explanations and unique perspectives. Use analogies and storytelling.',
+                'Professor': 'You are a formal, highly detailed professor who gives thorough explanations with academic precision.',
+                'Gamer': 'You are a gamer-style assistant who uses gaming metaphors, fun language, and makes learning feel like a game.',
+                'Sarcastic': 'You are a witty, sarcastic assistant who uses humor to engage students. Keep it light and fun.',
+                'Motivational': 'You are a motivational coach who inspires students with positive reinforcement and encouragement.'
+            };
+
+            const personalityPrompt = personalityMap[aiPersonality] || personalityMap['Friendly Tutor'];
+
+            let systemPrompt = customSystemPrompt || `You are StudentNija, an advanced AI study assistant for Nigerian students. ${personalityPrompt} You are helpful, thorough, and encouraging. Use markdown for formatting. If you don't know, say so honestly. Current date: ${new Date().toLocaleDateString()}.
+
+You have FULL ACCESS to the user's app data and can perform ANY action on their behalf.
+
+To perform an action, respond with a JSON object in this format:
+{"action":"actionName","data":{"param1":"value1"}}
+
+Available actions:
+- getUser: returns the user profile (no data needed)
+- getState: returns full app state (no data needed)
+- updateProfile: { "fullName": "John", "school": "Unilag", ... }
+- addCourse: { "semester": "100L-First", "code": "MTH101", "unit": 3, "grade": "A" }
+- addTask: { "title": "Finish assignment", "priority": "High" }
+- addFlashcard: { "question": "What is...", "answer": "..." }
+- addClass: { "day": "Monday", "time": "10:00", "subject": "Math", "location": "Room 101" }
+- addExam: { "courseName": "MTH101", "examDate": "2026-07-15" }
+- completeTask: { "taskId": 123456789 }
+- setTheme: { "theme": "dark" } (or "light" or "system")
+- getCGPA: returns current CGPA (no data needed)
+- searchNotes: { "query": "search term" }
+
+If the user asks you to perform an action, format your response as the JSON above. If they ask for information (like "what's my CGPA?"), you can use the getCGPA action and then explain the result.
+Always confirm the action with the user before executing.
+
+If it's a regular chat message, just respond as normal. You can also use the actions to retrieve data and then answer questions.
+
+${context ? `\n---\nApp data:\n${context}` : ''}`;
+
+            const messages = [
+                { role: "system", content: systemPrompt },
+                ...conversationHistory
+            ];
+
+            const GROQ_MODELS = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"];
+            let endpoint = '';
+            if (currentAIModel.startsWith("google/")) endpoint = 'gemini';
+            else if (GROQ_MODELS.includes(currentAIModel)) endpoint = 'groq';
+            else if (currentAIModel === 'gpt-4o-mini') endpoint = 'github';
+            else return '⚠️ Unknown model.';
+
+            const PROXY_URL = "https://studentnija-proxy.donchester111.workers.dev";
+            let requestBody;
+
+            if (endpoint === 'gemini') {
+                const contents = messages.filter(m => m.role !== 'system').map(m => ({
+                    role: m.role === 'assistant' ? 'model' : 'user',
+                    parts: [{ text: m.content }]
+                }));
+                contents.unshift({ role: 'user', parts: [{ text: systemPrompt }] });
+                requestBody = { contents };
+            } else {
+                let modelName = endpoint === 'groq' ? currentAIModel : "gpt-4o-mini";
+                requestBody = { model: modelName, messages };
+            }
+
+            try {
+                const response = await fetch(`${PROXY_URL}/${endpoint}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody)
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Proxy error: ${response.status} - ${errorText}`);
+                }
+                const data = await response.json();
+                if (endpoint === 'gemini') {
+                    return data.candidates[0].content.parts[0].text;
+                } else {
+                    return data.choices[0].message.content;
+                }
+            } catch (err) {
+                console.error('AI error:', err);
+                return ' Oops! The AI service is currently unavailable. Please try again later.';
+            }
+        }
+
+        // ---- Send message ----
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text || isAiProcessing) return;
+            userInput.value = '';
+            isAiProcessing = true;
+            sendBtn.disabled = true;
+
+            conversationHistory.push({ role: "user", content: text });
+            renderMessages();
+            showTyping();
+
+            try {
+                const reply = await callAI(text);
+                hideTyping();
+
+                // Check for action JSON
+                const actionMatch = reply.match(/\{[\s\S]*"action"[\s\S]*\}/);
+                if (actionMatch) {
+                    try {
+                        const actionObj = JSON.parse(actionMatch[0]);
+                        if (actionObj.action) {
+                            const result = await sendCommand(actionObj.action, actionObj.data || {});
+                            const successMsg = result && result.message ? result.message : `Action ${actionObj.action} completed successfully.`;
+                            conversationHistory.push({ role: "assistant", content: `✓ ${successMsg}` });
+                            appState = await sendCommand('getState');
+                            renderMessages();
+                        } else {
+                            conversationHistory.push({ role: "assistant", content: reply });
+                            renderMessages();
+                        }
+                    } catch (e) {
+                        conversationHistory.push({ role: "assistant", content: reply });
+                        renderMessages();
+                    }
+                } else {
+                    conversationHistory.push({ role: "assistant", content: reply });
+                    renderMessages();
+                }
+            } catch (err) {
+                hideTyping();
+                conversationHistory.push({ role: "assistant", content: '❌ Error: ' + err.message });
+                renderMessages();
+            } finally {
+                isAiProcessing = false;
+                sendBtn.disabled = false;
+            }
+        }
+
+        // ---- Helpers ----
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function toggleAttachMenu() {
+            attachMenu.classList.toggle('show');
+        }
+
+        // ---- Event listeners ----
+        sendBtn.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); sendMessage(); }
+        });
+        plusBtn.addEventListener('click', toggleAttachMenu);
+        document.addEventListener('click', (e) => {
+            if (attachMenu.classList.contains('show') && !attachMenu.contains(e.target) && e.target !== plusBtn) {
+                attachMenu.classList.remove('show');
+            }
+        });
+
+        // ---- Back button ----
+        backBtn.addEventListener('click', function() {
+            // Try parent methods
+            try {
+                if (window.parent && typeof window.parent.closeAIPage === 'function') {
+                    window.parent.closeAIPage();
+                    return;
+                }
+            } catch (e) {}
+            try {
+                if (window.parent) {
+                    window.parent.postMessage({ type: 'navigateTo', page: 'home' }, '*');
+                    return;
+                }
+            } catch (e) {}
+            window.history.back();
+        });
+
+        // ---- Settings ----
+        settingsBtn.addEventListener('click', () => {
+            settingsOverlay.classList.add('show');
+            settingsPanel.classList.add('open');
+        });
+        settingsClose.addEventListener('click', () => {
+            settingsOverlay.classList.remove('show');
+            settingsPanel.classList.remove('open');
+        });
+        settingsOverlay.addEventListener('click', () => {
+            settingsOverlay.classList.remove('show');
+            settingsPanel.classList.remove('open');
+        });
+
+        // Memory switch
+        memorySwitch.addEventListener('click', () => {
+            aiMemoryEnabled = !aiMemoryEnabled;
+            memorySwitch.classList.toggle('active', aiMemoryEnabled);
+            if (!aiMemoryEnabled) { conversationHistory = []; renderMessages(); }
+            saveSettings();
+        });
+
+        // Neon switch
+        neonSwitch.addEventListener('click', () => {
+            aiNeonEffect = !aiNeonEffect;
+            neonSwitch.classList.toggle('active', aiNeonEffect);
+            document.body.classList.toggle('ai-neon', aiNeonEffect);
+            saveSettings();
+        });
+
+        // App data switch
+        appDataSwitch.addEventListener('click', () => {
+            includeAppData = !includeAppData;
+            appDataSwitch.classList.toggle('active', includeAppData);
+            saveSettings();
+        });
+
+        // Sync theme switch
+        syncThemeSwitch.addEventListener('click', () => {
+            syncTheme = !syncTheme;
+            syncThemeSwitch.classList.toggle('active', syncTheme);
+            if (syncTheme) {
+                applySettings();
+            }
+            saveSettings();
+        });
+
+        // Voice switch
+        voiceSwitch.addEventListener('click', () => {
+            voiceEnabled = !voiceEnabled;
+            voiceSwitch.classList.toggle('active', voiceEnabled);
+            saveSettings();
+        });
+
+        // Personality
+        personalitySelect.addEventListener('change', () => {
+            aiPersonality = personalitySelect.value;
+            saveSettings();
+        });
+
+        // Model
+        modelSelect.addEventListener('change', () => {
+            currentAIModel = modelSelect.value;
+            saveSettings();
+        });
+
+        // Temperature
+        tempSlider.addEventListener('input', () => {
+            aiTemperature = parseFloat(tempSlider.value);
+            tempDisplay.textContent = aiTemperature.toFixed(2);
+            saveSettings();
+        });
+
+        // Max tokens
+        maxTokensInput.addEventListener('change', () => {
+            aiMaxTokens = parseInt(maxTokensInput.value) || 800;
+            if (aiMaxTokens < 100) aiMaxTokens = 100;
+            if (aiMaxTokens > 2000) aiMaxTokens = 2000;
+            maxTokensInput.value = aiMaxTokens;
+            saveSettings();
+        });
+
+        // Clear chat
+        clearChatBtn.addEventListener('click', () => {
+            conversationHistory = [];
+            renderMessages();
+            conversationHistory.push({ role: "assistant", content: "Conversation cleared. How can I help you today? 🚀" });
+            renderMessages();
+            settingsOverlay.classList.remove('show');
+            settingsPanel.classList.remove('open');
+        });
+
+        // Color dots
+        colorDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const color = dot.dataset.color;
+                aiAccentColor = color;
+                colorDots.forEach(d => d.classList.remove('active'));
+                dot.classList.add('active');
+                document.documentElement.style.setProperty('--ai-accent', color);
+                saveSettings();
+            });
+        });
+
+        // Custom system prompt
+        saveSystemPromptBtn.addEventListener('click', () => {
+            customSystemPrompt = systemPromptInput.value.trim();
+            saveSettings();
+            addNotification('Settings', 'Custom prompt saved');
+            settingsOverlay.classList.remove('show');
+            settingsPanel.classList.remove('open');
+        });
+
+        resetSystemPromptBtn.addEventListener('click', () => {
+            if (confirm('Reset to default system prompt?')) {
+                customSystemPrompt = '';
+                systemPromptInput.value = '';
+                saveSettings();
+                addNotification('Settings', 'Prompt reset to default');
+            }
+        });
+
+        // ---- Attach handlers ----
+        attachImage.addEventListener('click', () => {
+            attachMenu.classList.remove('show');
+            fileInput.accept = 'image/*';
+            fileInput.click();
+        });
+
+        attachFile.addEventListener('click', () => {
+            attachMenu.classList.remove('show');
+            fileInput.accept = 'text/plain';
+            fileInput.click();
+        });
+
+        attachWebSearch.addEventListener('click', () => {
+            attachMenu.classList.remove('show');
+            const query = userInput.value.trim() || "latest news";
+            userInput.value = `🔍 Search web for: ${query}. Can you provide a summary?`;
+            sendMessage();
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const content = ev.target.result;
+                if (file.type.startsWith('image/')) {
+                    userInput.value = `[Image uploaded: ${file.name}] Please describe this image.`;
+                } else {
+                    userInput.value = `[File: ${file.name}]\n${content}\n\nPlease summarize or answer based on this file.`;
+                }
+                sendMessage();
+            };
+            if (file.type === 'text/plain') { reader.readAsText(file); } else { reader.readAsDataURL(file); }
+            fileInput.value = '';
+        });
+
+        // ---- Voice recognition ----
+        let recognition = null;
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.interimResults = false;
+            recognition.onresult = (e) => {
+                userInput.value = e.results[0][0].transcript;
+                micBtn.classList.remove('recording');
+                if (voiceEnabled) sendMessage();
+            };
+            recognition.onend = () => micBtn.classList.remove('recording');
+        }
+
+        micBtn.addEventListener('click', () => {
+            if (!recognition) { alert('Voice recognition not supported. Use Chrome on Android.'); return; }
+            if (!voiceEnabled) { alert('Voice input is disabled in settings.'); return; }
+            if (micBtn.classList.contains('recording')) { recognition.stop(); } else { recognition.start(); micBtn.classList.add('recording'); }
+        });
+
+        // ---- Load conversation history ----
+        function loadConversationHistory() {
+            const saved = localStorage.getItem('studentnija_ai_history_standalone');
+            if (saved) {
+                try { conversationHistory = JSON.parse(saved); } catch (e) { conversationHistory = []; }
+            }
+            if (conversationHistory.length === 0) {
+                conversationHistory.push({ role: "assistant", content: "StudentNija AI v3.0 – I have full access to your app. Ask me to add courses, tasks, update profile, or search anything!" });
+            }
+            renderMessages();
+        }
+        loadConversationHistory();
+
+        // ---- Save history on unload ----
+        window.addEventListener('beforeunload', () => {
+            localStorage.setItem('studentnija_ai_history_standalone', JSON.stringify(conversationHistory));
+        });
+
+        // ---- Simple notification ----
+        function addNotification(title, message) {
+            if (window.parent && window.parent.addNotification) {
+                window.parent.addNotification(title, message);
+            } else {
+                console.log(`[${title}] ${message}`);
+            }
+        }
+
+        console.log('✅ StudentNija AI v3.0 loaded.');
+    </script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>StudentNija · Offline</title>
+  <style>
+    /* ─── Reset & Base ─── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #0A111F;
+      color: #FFFFFF;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+    }
+
+    /* ─── Glass Card ─── */
+    .offline-card {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 48px;
+      padding: 40px 32px;
+      max-width: 420px;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+      text-align: center;
+      animation: fadeInUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1) both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ─── Icon ─── */
+    .offline-icon {
+      font-size: 64px;
+      line-height: 1;
+      margin-bottom: 16px;
+      display: block;
+    }
+
+    /* ─── Brand ─── */
+    .brand {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #00C3FF, #008751, #F4B400);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+    .tagline {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 1.5px;
+      font-weight: 400;
+      margin-bottom: 24px;
+    }
+
+    /* ─── Message ─── */
+    .message {
+      font-size: 16px;
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 24px;
+    }
+    .message strong {
+      color: #00C3FF;
+      font-weight: 600;
+    }
+
+    /* ─── Retry Button ─── */
+    .retry-btn {
+      display: inline-block;
+      padding: 14px 32px;
+      border-radius: 60px;
+      background: linear-gradient(135deg, #008751, #00A86B);
+      border: none;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(0, 135, 81, 0.3);
+      touch-action: manipulation;
+      min-height: 52px;
+    }
+    .retry-btn:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 8px rgba(0, 135, 81, 0.2);
+    }
+    .retry-btn:focus-visible {
+      outline: 2px solid #00C3FF;
+      outline-offset: 2px;
+    }
+
+    /* ─── Hints ─── */
+    .hint {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.25);
+      margin-top: 20px;
+      line-height: 1.5;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 480px) {
+      .offline-card {
+        padding: 32px 24px;
+        border-radius: 32px;
+      }
+      .brand { font-size: 24px; }
+      .offline-icon { font-size: 48px; }
+      .message { font-size: 15px; }
+      .retry-btn { padding: 12px 24px; font-size: 15px; min-height: 44px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-card">
+    <span class="offline-icon">📡</span>
+    <div class="brand">StudentNija</div>
+    <div class="tagline">Study Smarter · Score Higher</div>
+
+    <p class="message">
+      You’re <strong>offline</strong>.<br>
+      Please check your internet connection.<br>
+      We’ll be back as soon as you’re online.
+    </p>
+
+    <button class="retry-btn" onclick="window.location.reload()">
+      ⟳ Retry
+    </button>
+
+    <p class="hint">
+      💡 Your saved data is safe and will sync when you reconnect.
+    </p>
+  </div>
+</body>
+</html>
