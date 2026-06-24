@@ -2,24 +2,25 @@
   "id": "/",
   "name": "StudentNija",
   "short_name": "StudentNija",
-  "description": "Study Smarter. Score Higher",
+  "description": "StudentNija is Nigeria's next-generation educational platform offering AI-powered learning, JAMB, WAEC and NECO preparation, past questions, educational resources, student communities, academic updates, and smart study tools to help students learn faster, perform better, and achieve academic success.",
+
   "start_url": "/",
   "scope": "/",
+
   "display": "standalone",
-  "display_override": [
-    "window-controls-overlay",
-    "standalone"
-  ],
-  "orientation": "any",
+  "orientation": "portrait-primary",
+
   "background_color": "#ffffff",
   "theme_color": "#008751",
+
   "lang": "en",
   "dir": "ltr",
 
   "categories": [
     "education",
     "books",
-    "social"
+    "social",
+    "productivity"
   ],
 
   "icons": [
@@ -59,7 +60,7 @@
       "sizes": "1080x1920",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "StudentNija Home"
+      "label": "StudentNija Home Dashboard"
     },
     {
       "src": "/screenshots/public_chat.png",
@@ -73,34 +74,53 @@
   "shortcuts": [
     {
       "name": "StudentNija Public Chat",
-      "short_name": "SPC",
+      "short_name": "Public Chat",
+      "description": "Connect and chat with students across Nigeria.",
       "url": "/Public_Chat.html",
       "icons": [
         {
           "src": "/icons/icon.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "StudentNija Ai",
-      "short_name": "SAI",
+      "name": "StudentNija AI",
+      "short_name": "AI",
+      "description": "Get instant AI-powered academic assistance.",
       "url": "/StudentNija_Ai.html",
       "icons": [
         {
           "src": "/icons/icon.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     },
     {
-      "name": "Credit Page",
-      "short_name": "CP",
+      "name": "Exam Hub",
+      "short_name": "Exams",
+      "description": "Practice JAMB, WAEC and NECO past questions.",
+      "url": "/exam_tool.html",
+      "icons": [
+        {
+          "src": "/icons/icon.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Credits",
+      "short_name": "Credits",
+      "description": "Meet the creators and contributors behind StudentNija.",
       "url": "/credit_page.html",
       "icons": [
         {
           "src": "/icons/icon.png",
-          "sizes": "192x192"
+          "sizes": "192x192",
+          "type": "image/png"
         }
       ]
     }
