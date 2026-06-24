@@ -3,17 +3,8 @@ User-agent: *
 Allow: /
 
 Disallow: /admin/
-Disallow: /private/
 Disallow: /api/
 Disallow: /auth/
-Disallow: /server/
-Disallow: /backend/
-Disallow: /config/
-Disallow: /logs/
-Disallow: /temp/
-Disallow: /.git/
-Disallow: /.github/
-Disallow: /node_modules/
 
 
 Sitemap: https://studentnija.pages.dev/sitemap.xml
