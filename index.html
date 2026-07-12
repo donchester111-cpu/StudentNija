@@ -2,23 +2,25 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <script async src="<https></https>://<pagead2></<pagead2></pagead2>>.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2766834653586662"
-     crossorigin="anonymous"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>StudentNija | Study Smarter. Score Higher.</title>
   <link rel="stylesheet" href="style.css">
-  <meta name="google-site-verification" content="YJESQdlP0IWVLlkMmy2DztmDbw80fu09-B8f5BWKKk4" />
-  <meta name="google-site-verification" content="a584f6OBvZ73YZfhB17_Y7op0ayR8LYYcJUFBOhsUXY" />
   <link rel="icon" type="image/png" href="/icons/favicon.png">
   <link rel="manifest" href="manifest.json" />
+
+  <!-- Google AdSense (async) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2766834653586662"
+     crossorigin="anonymous"></script>
 </head>
 <body class="light-theme">
+
   <!-- Loading screen -->
   <div class="loading-screen" id="loadingScreen">
-                <div class="spinnerl"></div>
+    <div class="spinnerl"></div>
     <p style="margin-top: 20px; color: #008751; font-weight: 700; font-size: 24px;">🇳🇬 StudentNija</p>
     <p class="text-muted" style="margin-top: 8px;">Study Smarter. Score Higher.</p>
-    <p style="margin-top: 30px; font-size: 16px; color: #888; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px; max-width: 300px; text-align: center;">This app contains advertisements<br>
+    <p style="margin-top: 30px; font-size: 16px; color: #888; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px; max-width: 300px; text-align: center;">
+      This app contains advertisements<br>
       <span style="font-size: 11px; color: #aaa;">Ads help keep this app free for all students</span>
     </p>
   </div>
@@ -30,26 +32,40 @@
     <div class="bottom-nav" id="bottomNav"></div>
   </div>
 
-
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2766834653586662"
-     crossorigin="anonymous"></script>
-<!-- Ads1 -->
-<ins class="adsbygoogle"
-     style="display:block"
-     data-ad-client="ca-pub-2766834653586662"
-     data-ad-slot="8698200940"
-     data-ad-format="auto"
-     data-full-width-responsive="true"></ins>
-<script>
-     (adsbygoogle = window.adsbygoogle || []).push({});
-</script>
-  <!-- Scripts -->
+  <!-- Ad Unit (only one) -->
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-2766834653586662"
+       data-ad-slot="8698200940"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
   <script>
-  if (typeof navigator.serviceWorker !== 'undefined') {
-    navigator.serviceWorker.register('sw.js')
-  }
-</script>
+    (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+
+  <!-- ========== IMPORT MAP for ES Modules ========== -->
+  <script type="importmap">
+    {
+      "imports": {
+        "./state.js": "./state.js",
+        "./pages/": "./pages/",
+        "./tools/": "./tools/"
+      }
+    }
+  </script>
+
+  <!-- Service Worker (if supported) -->
+  <script>
+    if (typeof navigator.serviceWorker !== 'undefined') {
+      navigator.serviceWorker.register('sw.js');
+    }
+  </script>
+
+  <!-- DroidScript notification bridge (optional) -->
   <script src="notifications.js"></script>
-  <script src="app.js"></script>
+
+  <!-- ========== MAIN APP – LOADED AS A MODULE ========== -->
+  <script type="module" src="app.js"></script>
+
 </body>
-</html>
+  </html>
