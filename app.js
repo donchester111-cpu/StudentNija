@@ -456,7 +456,7 @@ export function attachBottomNav() {
             return;
           }
           if (page === 'exams') {
-            window.open('exam.html', '_blank');
+            window.open('exams.html', '_blank');
             return;
           }
 
