@@ -173,9 +173,8 @@ export function showAuthForm(formType) {
 
 // ======================== GOOGLE SIGN-IN ========================
 export function startGoogleSignIn() {
-  const loginUrl = "studentnija_sync.html"; // Use relative path if same folder, or full URL
-  // If you want to use the hosted version:
-  // const loginUrl = "https://studentnija.pages.dev/StudentNija_sync.html";
+  // Use relative path – assumes studentnija_sync.html is in the same folder
+  const loginUrl = "studentnija_sync.html";
 
   if (typeof app !== 'undefined' && app.CreateIntent && app.StartActivity) {
     // DroidScript – open in system browser
@@ -186,11 +185,11 @@ export function startGoogleSignIn() {
     app.StartActivity(intent);
     addNotification('Sign In', 'Please complete login in your browser, then return to the app.');
   } else {
-    // Web – open in new tab (like credit page)
+    // Web – open in new tab
     window.open(loginUrl, '_blank');
     addNotification('Sign In', 'Please complete login in the new tab, then return here.');
   }
-  
+
   isWaitingForLogin = true;
   startLoginPoller();
 }
@@ -288,14 +287,12 @@ export function renderApp() {
 let pagesBuilt = false;
 
 export function renderMainApp() {
-  // Safety: ensure currentPage is always a valid string
   if (!currentPage || currentPage === 'null' || currentPage === 'undefined') {
     currentPage = 'home';
     window.currentPage = 'home';
   }
   console.log('🔄 renderMainApp() called, currentPage =', currentPage);
 
-  // Attach tools to window
   window.openCalculator = openCalculator;
   window.openMathSolver = openMathSolver;
   window.openDictionary = openDictionary;
@@ -315,7 +312,6 @@ export function renderMainApp() {
   window.renderMainApp = renderMainApp;
   window.currentPage = currentPage;
 
-  // Close AI settings if open (if they are still in DOM)
   const overlay = document.getElementById('settingsOverlayAI');
   if (overlay) overlay.classList.remove('show');
   const panel = document.getElementById('settingsPanelAI');
@@ -327,7 +323,6 @@ export function renderMainApp() {
     return;
   }
 
-  // ---- Build page structure only once ----
   if (!pagesBuilt) {
     console.log('🏗️ Building page structure...');
     pagesContainer.innerHTML = `
@@ -343,7 +338,6 @@ export function renderMainApp() {
     console.log('✅ Page structure built.');
   }
 
-  // ---- Reset all page styles ----
   document.querySelectorAll('.page').forEach(p => {
     p.style.display = 'none';
     p.style.flex = '';
@@ -353,15 +347,12 @@ export function renderMainApp() {
     p.style.flexDirection = '';
   });
 
-  // ---- Show the current page ----
   const activePage = document.getElementById(`${currentPage}-page`);
   if (!activePage) {
     console.error(`❌ Page "${currentPage}-page" not found!`);
     return;
   }
 
-  // For special pages (ai, studygroups, exams), we open them in new tabs,
-  // so we don't show them in the main app. Just redirect.
   const isSpecial = ['ai', 'studygroups', 'exams'].includes(currentPage);
 
   if (isSpecial) {
@@ -371,21 +362,16 @@ export function renderMainApp() {
       studygroups: 'Chat.html',
       exams: 'Exam.html'
     };
-    // Open in new tab/window like the credit page
     window.open(pageMap[currentPage], '_blank');
-    // Reset currentPage to home so the app stays on home
     currentPage = 'home';
     window.currentPage = 'home';
     renderMainApp();
-    return; // stop further execution
+    return;
   }
 
-  // ---- Normal page (home, academics, planner, profile) ----
   activePage.style.display = 'block';
-
   console.log(`📄 Active page: ${currentPage}`);
 
-  // ---- Render page content ----
   if (currentPage === 'home') {
     renderHome();
   } else if (currentPage === 'academics') {
@@ -396,24 +382,19 @@ export function renderMainApp() {
     renderProfilePage();
   }
 
-  // ---- Remove any floating back buttons (shouldn't exist for normal pages) ----
   ['aiBackBtn', 'studyGroupsBackBtn', 'examsBackBtn'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.remove();
   });
 
-  // ---- Attach bottom nav ----
   attachBottomNav();
-
-  // ---- Update other global state ----
   checkAchievements();
   updateConnectionIndicator();
   rescheduleAllFromStorage();
 
-  // ---- Hide/show bottom nav and adjust container ----
   const bottomNav = document.getElementById('bottomNav');
   if (bottomNav) {
-    bottomNav.style.display = 'flex'; // always show for normal pages
+    bottomNav.style.display = 'flex';
   }
 
   pagesContainer.style.overflowY = 'auto';
@@ -450,28 +431,22 @@ export function attachBottomNav() {
         const page = el.getAttribute('data-page');
         if (navItems.includes(page)) {
           if (page === currentPage) return;
-
-          // ---- SPECIAL PAGES: open in new tab ----
           if (page === 'ai') {
-            window.open('ai.html', '_blank');
+            window.open('AI.html', '_blank');
             return;
           }
           if (page === 'studygroups') {
-            window.open('studygroups.html', '_blank');
+            window.open('Chat.html', '_blank');
             return;
           }
           if (page === 'exams') {
-            window.open('exams.html', '_blank');
+            window.open('Exam.html', '_blank');
             return;
           }
-
-          // ---- For other pages, update state and re-render ----
-          // Close any open settings
           const overlay = document.getElementById('settingsOverlayAI');
           if (overlay) overlay.classList.remove('show');
           const panel = document.getElementById('settingsPanelAI');
           if (panel) panel.classList.remove('open');
-
           currentPage = page;
           window.currentPage = page;
           renderMainApp();
@@ -481,7 +456,7 @@ export function attachBottomNav() {
   }
 }
 
-// ======================== AI BRIDGE (kept for any remaining communication) ========================
+// ======================== AI BRIDGE ========================
 function getAppState() {
   return {
     user: currentUser,
@@ -636,19 +611,19 @@ window.sendAICommand = function(action, data) {
   });
 };
 
-// ======================== CLOSE FUNCTIONS (kept for safety) ========================
+// ======================== CLOSE FUNCTIONS ========================
 window.closeStudyGroups = function() {
-  console.log('🔄 closeStudyGroups called (redirect to home)');
+  console.log('🔄 closeStudyGroups called');
   window.location.href = 'index.html';
 };
 
 window.closeExamsPage = function() {
-  console.log('🔄 closeExamsPage called (redirect to home)');
+  console.log('🔄 closeExamsPage called');
   window.location.href = 'index.html';
 };
 
 window.closeAIPage = function() {
-  console.log('🔄 closeAIPage called (redirect to home)');
+  console.log('🔄 closeAIPage called');
   window.location.href = 'index.html';
 };
 
@@ -659,6 +634,22 @@ if (!window._aiMessageListener) {
 
     if (msg && msg.action) {
       handleAICommand(msg.action, msg.data, msg.requestId);
+    }
+
+    // ---- Handle Google Sign-In success message from sync page ----
+    if (msg && msg.type === 'google_oauth_response' && msg.success) {
+      console.log('✅ Google Sign-In success message received!');
+      // Force a check of localStorage
+      const userData = localStorage.getItem('studentnija_user');
+      if (userData) {
+        processUserData(userData);
+      } else {
+        // If the sync page sent success but data isn't there yet, wait a bit
+        setTimeout(() => {
+          const data = localStorage.getItem('studentnija_user');
+          if (data) processUserData(data);
+        }, 500);
+      }
     }
 
     if (msg && msg.type === 'navigateTo' && msg.page === 'home') {
