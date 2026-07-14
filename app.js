@@ -334,9 +334,9 @@ export function renderMainApp() {
   if (isSpecial) {
     console.log(`⚠️ Special page ${currentPage} detected, opening in new tab.`);
     const pageMap = {
-      ai: 'AI.html',
-      studygroups: 'Chat.html',
-      exams: 'Exam.html'
+      ai: 'ai.html',
+      studygroups: 'studygroups.html',
+      exams: 'exams.html'
     };
     window.open(pageMap[currentPage], '_blank');
     currentPage = 'home';
