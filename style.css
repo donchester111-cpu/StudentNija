@@ -2040,3 +2040,250 @@ textarea {
 .achievements-grid .ach-item .ach-status.unlocked {
   color: var(--accent-green);
 }
+
+
+
+
+
+
+/* ============================================================
+   UPGRADED LOGIN / SIGN‑IN SECTION
+   ============================================================ */
+
+/* Outer glass card (container for the auth page) */
+.glass-card.auth-container {
+  max-width: 420px;
+  margin: 30px auto;
+  padding: 40px 28px 32px;
+  animation: authCardIn 0.6s cubic-bezier(0.2, 0.9, 0.4, 1);
+  border: 1px solid var(--border-light);
+  box-shadow: var(--shadow-lg);
+}
+
+@keyframes authCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* App title inside the auth card */
+.auth-container h1 {
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+  background: linear-gradient(135deg, var(--accent-green), #00C3FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Subtitle */
+.auth-container p {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  font-weight: 500;
+}
+
+/* Input fields inside the auth forms */
+#authForms input {
+  background: var(--bg-card-solid);
+  border: 2px solid transparent;
+  border-bottom: 2px solid var(--border-light);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 10px 0;
+  font-size: 15px;
+  transition: border-color 0.25s, box-shadow 0.25s, background 0.2s;
+  box-shadow: none;
+  width: 100%;
+  color: var(--text-primary);
+  -webkit-appearance: none;
+}
+
+#authForms input:focus {
+  outline: none;
+  border-bottom-color: var(--accent-green);
+  box-shadow: 0 4px 12px rgba(0, 135, 81, 0.12);
+  background: var(--bg-card);
+}
+
+/* Buttons inside auth forms */
+#authForms .btn-primary,
+#authForms .btn-outline {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 60px;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.3px;
+  margin-top: 10px;
+  transition: transform 0.2s, box-shadow 0.25s;
+}
+
+#authForms .btn-primary {
+  background: linear-gradient(135deg, var(--accent-green), var(--accent-green-light));
+  border: none;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(0, 135, 81, 0.3);
+}
+
+#authForms .btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: 0 4px 12px rgba(0, 135, 81, 0.25);
+}
+
+#authForms .btn-outline {
+  border: 2px solid var(--accent-green-light);
+  background: transparent;
+  color: var(--accent-green-light);
+}
+
+#authForms .btn-outline:active {
+  background: rgba(0, 135, 81, 0.08);
+}
+
+/* Google sign‑in button */
+#googleSignInBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: #fff;
+  color: #0A1927;
+  border: none;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  font-weight: 600;
+  font-size: 16px;
+  padding: 14px 20px;
+  border-radius: 60px;
+  width: 100%;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.25s, background 0.2s;
+  margin-top: 12px;
+}
+
+#googleSignInBtn:hover {
+  background: #f9f9f9;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+#googleSignInBtn:active {
+  transform: scale(0.97);
+}
+
+.dark-theme #googleSignInBtn {
+  background: #1e2a3a;
+  color: #F0F4FA;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+}
+
+.dark-theme #googleSignInBtn:hover {
+  background: #273445;
+}
+
+/* Divider line between login and Google button */
+#authForms hr {
+  border: 0;
+  border-top: 1px solid var(--border-light);
+  margin: 20px 0;
+}
+
+/* “Remember me” and “Forgot?” row */
+#authForms .flex-between {
+  margin: 8px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+#authForms .flex-between label {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+#authForms .flex-between input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  accent-color: var(--accent-green);
+}
+
+#forgotBtn {
+  color: var(--accent-gold);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+#forgotBtn:hover {
+  color: var(--accent-green-light);
+  text-decoration: underline;
+}
+
+/* Register form extra spacing */
+#authForms input[type="email"],
+#authForms input[type="password"] {
+  margin-bottom: 4px;
+}
+
+/* Floating label effect – if you wrap input+label in a div (optional) */
+/* Uncomment if you add .input-group in HTML
+.input-group {
+  position: relative;
+  margin: 12px 0;
+}
+.input-group input {
+  padding-top: 18px;
+  padding-bottom: 10px;
+}
+.input-group label {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  font-size: 14px;
+  color: var(--text-muted);
+  transition: 0.2s;
+  pointer-events: none;
+}
+.input-group input:focus + label,
+.input-group input:not(:placeholder-shown) + label {
+  top: 4px;
+  font-size: 11px;
+  color: var(--accent-green);
+}
+*/
+
+/* Mobile optimizations */
+@media (max-width: 480px) {
+  .glass-card.auth-container {
+    margin: 16px 8px;
+    padding: 28px 16px 24px;
+  }
+  #authForms input {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  #authForms .btn-primary,
+  #authForms .btn-outline,
+  #googleSignInBtn {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+}
+
+/* Small additional tweaks for register form */
+#authForms input#regName,
+#authForms input#regEmail,
+#authForms input#regPass,
+#authForms input#regConfirm,
+#authForms input#regSchool,
+#authForms input#regDept,
+#authForms input#regLevel {
+  /* same as above, just ensuring consistency */
+   }
