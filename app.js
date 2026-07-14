@@ -41,11 +41,22 @@ window.closeToolModal = closeToolModal;
 export let currentPage = "home";
 window.currentPage = currentPage;
 
-export let isWaitingForLogin = false;
-export let loginPoller = null;
+// ======================== HIDE LOADING SCREEN ========================
+function hideLoadingScreen() {
+  const loadingScreen = document.getElementById('loadingScreen');
+  if (loadingScreen) {
+    loadingScreen.classList.add('hide');
+    setTimeout(() => { loadingScreen.style.display = 'none'; }, 300);
+  }
+  const appRoot = document.getElementById('appRoot');
+  if (appRoot) appRoot.style.display = 'flex';
+}
 
 // ======================== AUTH ========================
 export function renderAuth() {
+  console.log('🔐 renderAuth() called – showing login page');
+  hideLoadingScreen();
+
   const container = document.getElementById('pagesContainer');
   if (container) container.innerHTML = `<div class="page active-page" id="auth-page">${getAuthHTML()}</div>`;
   const bottomNav = document.getElementById('bottomNav');
@@ -171,124 +182,96 @@ export function showAuthForm(formType) {
   }
 }
 
-// ======================== GOOGLE SIGN-IN ========================
+// ======================== GOOGLE SIGN-IN (same‑tab redirect) ========================
 export function startGoogleSignIn() {
-  const loginUrl = "studentnija_sync.html";
+  window.location.href = 'studentnija_sync.html';
+}
 
-  if (typeof app !== 'undefined' && app.CreateIntent && app.StartActivity) {
-    var intent = app.CreateIntent();
-    intent.SetAction("android.intent.action.VIEW");
-    intent.SetData(loginUrl);
-    intent.AddFlags(0x10000000);
-    app.StartActivity(intent);
-    addNotification('Sign In', 'Please complete login in your browser, then return to the app.');
+// ======================== PROCESS GOOGLE USER ========================
+function processGoogleUser(userData) {
+  if (!userData || !userData.email) {
+    console.warn('Invalid Google user data:', userData);
+    return;
+  }
+  let existingUser = users.find(u => u.email === userData.email);
+  if (!existingUser) {
+    const newUser = {
+      id: Date.now(),
+      fullName: userData.name || 'Google User',
+      email: userData.email,
+      password: 'oauth_' + Date.now(),
+      school: '',
+      department: '',
+      level: '',
+      profilePic: userData.picture || '',
+      bio: '',
+      googleAuth: true
+    };
+    users.push(newUser);
+    saveAll();
+    currentUser = newUser;
+    console.log('✅ New Google user created:', currentUser.fullName);
   } else {
-    window.open(loginUrl, '_blank');
-    addNotification('Sign In', 'Please complete login in the new tab, then return here.');
+    existingUser.fullName = userData.name || existingUser.fullName;
+    existingUser.profilePic = userData.picture || existingUser.profilePic;
+    existingUser.googleAuth = true;
+    saveAll();
+    currentUser = existingUser;
+    console.log('✅ Existing user updated:', currentUser.fullName);
   }
-
-  isWaitingForLogin = true;
-  startLoginPoller();
-}
-
-export function startLoginPoller() {
-  if (loginPoller) return;
-  loginPoller = setInterval(function() {
-    if (!isWaitingForLogin) {
-      clearInterval(loginPoller);
-      loginPoller = null;
-      return;
-    }
-    const userData = localStorage.getItem('studentnija_user');
-    if (userData) {
-      clearInterval(loginPoller);
-      loginPoller = null;
-      isWaitingForLogin = false;
-      processUserData(userData);
-    }
-  }, 2000);
-}
-
-export function processUserData(userData) {
-  try {
-    const user = typeof userData === 'string' ? JSON.parse(userData) : userData;
-    if (!user || !user.email) {
-      localStorage.removeItem('studentnija_user');
-      return;
-    }
-    let existingUser = users.find(u => u.email === user.email);
-    if (!existingUser) {
-      const newUser = {
-        id: Date.now(),
-        fullName: user.name || 'Google User',
-        email: user.email,
-        password: 'oauth_' + Date.now(),
-        school: '',
-        department: '',
-        level: '',
-        profilePic: user.picture || '',
-        bio: '',
-        googleAuth: true
-      };
-      users.push(newUser);
-      saveAll();
-      currentUser = newUser;
-    } else {
-      existingUser.fullName = user.name || existingUser.fullName;
-      existingUser.profilePic = user.picture || existingUser.profilePic;
-      existingUser.googleAuth = true;
-      saveAll();
-      currentUser = existingUser;
-    }
-    localStorage.removeItem('studentnija_user');
-    renderApp();
-    addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
-  } catch (e) {
-    console.log('Error processing login:', e);
-    localStorage.removeItem('studentnija_user');
-  }
-}
-
-export function checkForStoredUser() {
-  const userData = localStorage.getItem('studentnija_user');
-  if (userData) {
-    processUserData(userData);
-    return true;
-  }
-  return false;
-}
-
-if (typeof app !== 'undefined') {
-  app.OnResume = function() {
-    if (isWaitingForLogin) {
-      const userData = localStorage.getItem('studentnija_user');
-      if (userData) {
-        clearInterval(loginPoller);
-        loginPoller = null;
-        isWaitingForLogin = false;
-        processUserData(userData);
-      }
-    } else {
-      checkForStoredUser();
-    }
-  };
+  localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
+  addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
 }
 
 // ======================== RENDER APP ========================
 export function renderApp() {
-  if (!currentUser) renderAuth();
-  else renderMainApp();
+  console.log('🔄 renderApp() called');
+
+  // 1. Check for temporary Google user data
+  const tempUser = localStorage.getItem('studentnija_user');
+  if (tempUser) {
+    try {
+      const userData = JSON.parse(tempUser);
+      console.log('📦 Found temporary Google user data:', userData);
+      processGoogleUser(userData);
+      localStorage.removeItem('studentnija_user');
+      // After processing, show main app
+      renderMainApp();
+      return;
+    } catch (_) {
+      localStorage.removeItem('studentnija_user');
+    }
+  }
+
+  // 2. Check stored user
+  const stored = localStorage.getItem('studentnija_currentUser');
+  if (stored) {
+    try {
+      const user = JSON.parse(stored);
+      Object.assign(currentUser, user);
+      console.log('👤 Restored stored user:', currentUser.fullName);
+      renderMainApp();
+      return;
+    } catch (_) {
+      localStorage.removeItem('studentnija_currentUser');
+    }
+  }
+
+  // 3. No user – show login
+  renderAuth();
 }
 
-// Flag to build the page structure only once
+// ======================== MAIN APP RENDER ========================
 let pagesBuilt = false;
 
 export function renderMainApp() {
+  console.log('🏠 renderMainApp() called');
+  hideLoadingScreen();
+
   if (!currentPage || currentPage === 'null' || currentPage === 'undefined') {
     currentPage = 'home';
     window.currentPage = 'home';
   }
-  console.log('🔄 renderMainApp() called, currentPage =', currentPage);
 
   window.openCalculator = openCalculator;
   window.openMathSolver = openMathSolver;
@@ -308,11 +291,6 @@ export function renderMainApp() {
 
   window.renderMainApp = renderMainApp;
   window.currentPage = currentPage;
-
-  const overlay = document.getElementById('settingsOverlayAI');
-  if (overlay) overlay.classList.remove('show');
-  const panel = document.getElementById('settingsPanelAI');
-  if (panel) panel.classList.remove('open');
 
   const pagesContainer = document.getElementById('pagesContainer');
   if (!pagesContainer) {
@@ -440,10 +418,6 @@ export function attachBottomNav() {
             window.open('Exam.html', '_blank');
             return;
           }
-          const overlay = document.getElementById('settingsOverlayAI');
-          if (overlay) overlay.classList.remove('show');
-          const panel = document.getElementById('settingsPanelAI');
-          if (panel) panel.classList.remove('open');
           currentPage = page;
           window.currentPage = page;
           renderMainApp();
@@ -454,6 +428,7 @@ export function attachBottomNav() {
 }
 
 // ======================== AI BRIDGE ========================
+// ... (unchanged)
 function getAppState() {
   return {
     user: currentUser,
@@ -633,20 +608,6 @@ if (!window._aiMessageListener) {
       handleAICommand(msg.action, msg.data, msg.requestId);
     }
 
-    // ---- Handle Google Sign-In success (postMessage from sync page) ----
-    if (msg && msg.type === 'google_login_success' && msg.user) {
-      console.log('✅ Google login success via postMessage!', msg.user);
-      // Process the user data directly
-      processUserData(msg.user);
-      // Stop the poller if it's running (since we already have the data)
-      if (loginPoller) {
-        clearInterval(loginPoller);
-        loginPoller = null;
-        isWaitingForLogin = false;
-      }
-      // Render the app (already handled by processUserData)
-    }
-
     if (msg && msg.type === 'navigateTo' && msg.page === 'home') {
       window.location.href = 'index.html';
     }
@@ -693,21 +654,10 @@ window.addEventListener('load', async () => {
   window.addEventListener('online', updateConnectionIndicator);
   window.addEventListener('offline', updateConnectionIndicator);
 
-  const remember = localStorage.getItem('studentnija_remember');
+  // Fallback: hide loading screen after 3 seconds even if renderApp fails
   setTimeout(() => {
-    const loadingScreen = document.getElementById('loadingScreen');
-    if (loadingScreen) loadingScreen.classList.add('hide');
-    setTimeout(() => {
-      if (loadingScreen) loadingScreen.style.display = 'none';
-      const appRoot = document.getElementById('appRoot');
-      if (appRoot) appRoot.style.display = 'flex';
-      if (remember === 'true' && currentUser) {
-        renderApp();
-      } else if (currentUser) {
-        renderApp();
-      } else {
-        renderApp();
-      }
-    }, 500);
-  }, 1500);
+    hideLoadingScreen();
+  }, 3000);
+
+  renderApp();
 });
