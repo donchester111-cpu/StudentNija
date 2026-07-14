@@ -78,6 +78,7 @@
         .spinner.show { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 480px) { .container { padding: 32px 18px 24px; } .logo { font-size: 56px; } h1 { font-size: 24px; } .sub { font-size: 14px; } }
+        
     </style>
 </head>
 <body>
@@ -100,8 +101,7 @@
 
             // ---- CONFIGURATION ----
             const CLIENT_ID = '738668428340-gpf3ctm26fkfpj441ra00ra1h65gelov.apps.googleusercontent.com';
-            // STATIC URI – must match exactly what is registered in Google Cloud Console
-            const REDIRECT_URI = 'https://studentnija.pages.dev/studentnija_sync.html';
+            const REDIRECT_URI = 'https://studentnija.pages.dev/studentnija_sync.html'; // must match Google Cloud Console
             const SCOPE = 'email profile';
 
             // ---- DOM refs ----
@@ -142,24 +142,6 @@
                 if (e.key === APP_KEY || e.key === CHAT_KEY) loadTheme();
             });
 
-            // ---- If this page is loaded in a popup and has a URL fragment (token response) ----
-            if (window.opener && window.location.hash) {
-                const hash = window.location.hash.substring(1);
-                const params = new URLSearchParams(hash);
-                const accessToken = params.get('access_token');
-                const error = params.get('error');
-
-                if (error) {
-                    window.opener.postMessage({ type: 'google_oauth_response', error: error }, '*');
-                } else if (accessToken) {
-                    window.opener.postMessage({ type: 'google_oauth_response', access_token: accessToken }, '*');
-                } else {
-                    window.opener.postMessage({ type: 'google_oauth_response', error: 'No token received' }, '*');
-                }
-                window.close();
-                throw new Error('Popup closed');
-            }
-
             // ---- Helper: fetch user info from Google ----
             async function fetchUserInfo(accessToken) {
                 try {
@@ -174,24 +156,12 @@
                         picture: data.picture || ''
                     };
 
-                    // ---- Save to localStorage (fallback) ----
+                    // ---- Save to localStorage for the main app ----
                     localStorage.setItem('studentnija_user', JSON.stringify(userData));
+                    console.log('✅ Saved user data to localStorage. Redirecting to main app...');
 
-                    // ---- Send to opener via postMessage (primary) ----
-                    if (window.opener && !window.opener.closed) {
-                        window.opener.postMessage({
-                            type: 'google_login_success',
-                            user: userData
-                        }, window.location.origin);
-                        statusEl.textContent = '✅ Login successful! Returning to app...';
-                        spinner.classList.remove('show');
-                        setTimeout(() => window.close(), 500);
-                    } else {
-                        // Standalone mode – show success and allow user to close
-                        statusEl.textContent = '✅ Login successful! You can close this window.';
-                        spinner.classList.remove('show');
-                        setTimeout(() => window.close(), 2000);
-                    }
+                    // ---- Redirect to main app (same tab) ----
+                    window.location.href = 'index.html';
                 } catch (err) {
                     statusEl.textContent = '❌ Error: ' + err.message;
                     spinner.classList.remove('show');
@@ -210,30 +180,28 @@
                     `&scope=${encodeURIComponent(SCOPE)}` +
                     `&prompt=select_account`;
 
-                const popup = window.open(authUrl, '_blank', 'width=500,height=600');
-                if (!popup) {
-                    statusEl.textContent = '❌ Popup blocked. Please allow popups for this site.';
+                // Open in the same tab (the sync page will redirect back)
+                window.location.href = authUrl;
+            }
+
+            // ---- If this page is loaded with a URL fragment (token response) ----
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1);
+                const params = new URLSearchParams(hash);
+                const accessToken = params.get('access_token');
+                const error = params.get('error');
+
+                if (error) {
+                    statusEl.textContent = '❌ Error: ' + error;
                     spinner.classList.remove('show');
-                    return;
+                } else if (accessToken) {
+                    fetchUserInfo(accessToken);
+                } else {
+                    statusEl.textContent = '❌ No token received.';
+                    spinner.classList.remove('show');
                 }
-
-                const handleMessage = (event) => {
-                    if (event.data && event.data.type === 'google_oauth_response') {
-                        const { access_token, error } = event.data;
-                        if (error) {
-                            statusEl.textContent = '❌ Error: ' + error;
-                            spinner.classList.remove('show');
-                        } else if (access_token) {
-                            fetchUserInfo(access_token);
-                        }
-                        window.removeEventListener('message', handleMessage);
-                    }
-                };
-                window.addEventListener('message', handleMessage);
-
-                setTimeout(() => {
-                    window.removeEventListener('message', handleMessage);
-                }, 120000);
+                // Stop further execution
+                throw new Error('Token flow handled');
             }
 
             // ---- Init ----
@@ -247,7 +215,7 @@
                 }
             });
 
-            console.log('✅ StudentNija OAuth page loaded.');
+            console.log('✅ StudentNija OAuth page loaded (same‑tab redirect).');
         })();
     </script>
 </body>
