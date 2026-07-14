@@ -78,7 +78,6 @@
         .spinner.show { display: block; }
         @keyframes spin { to { transform: rotate(360deg); } }
         @media (max-width: 480px) { .container { padding: 32px 18px 24px; } .logo { font-size: 56px; } h1 { font-size: 24px; } .sub { font-size: 14px; } }
-        
     </style>
 </head>
 <body>
@@ -142,7 +141,7 @@
                 if (e.key === APP_KEY || e.key === CHAT_KEY) loadTheme();
             });
 
-            // ---- Helper: fetch user info from Google ----
+            // ---- Helper: Save Google user directly into main app storage ----
             async function fetchUserInfo(accessToken) {
                 try {
                     const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
@@ -150,18 +149,61 @@
                     });
                     if (!response.ok) throw new Error('Failed to fetch user info');
                     const data = await response.json();
-                    const userData = {
+
+                    // Build user object matching the main app's structure
+                    const googleUser = {
+                        id: Date.now(),
+                        fullName: data.name || data.given_name || 'Google User',
                         email: data.email,
-                        name: data.name || data.given_name || 'Google User',
-                        picture: data.picture || ''
+                        password: 'oauth_' + Date.now(),  // not used for Google login
+                        school: '',
+                        department: '',
+                        level: '',
+                        profilePic: data.picture || '',
+                        bio: '',
+                        googleAuth: true
                     };
 
-                    // ---- Save to localStorage for the main app ----
-                    localStorage.setItem('studentnija_user', JSON.stringify(userData));
-                    console.log('✅ Saved user data to localStorage. Redirecting to main app...');
+                    // ---- Merge with the existing users array ----
+                    const USERS_KEY = 'studentnija_users';
+                    let users = [];
+                    try {
+                        users = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+                    } catch (_) {}
 
-                    // ---- Redirect to main app (same tab) ----
-                    window.location.href = 'index.html';
+                    // Check if this Google email already exists
+                    const existingIndex = users.findIndex(u => u.email === googleUser.email);
+                    if (existingIndex > -1) {
+                        // Update existing user
+                        users[existingIndex] = {
+                            ...users[existingIndex],
+                            fullName: googleUser.fullName,
+                            profilePic: googleUser.profilePic,
+                            googleAuth: true
+                        };
+                        // Use existing user's ID
+                        googleUser.id = users[existingIndex].id;
+                    } else {
+                        // Add new user
+                        users.push(googleUser);
+                    }
+
+                    // Save back the users array
+                    localStorage.setItem(USERS_KEY, JSON.stringify(users));
+
+                    // Set the current user (the main app will pick this up)
+                    localStorage.setItem('studentnija_currentUser', JSON.stringify(googleUser));
+
+                    // Also save a temporary key for backward compatibility (optional)
+                    localStorage.setItem('studentnija_user', JSON.stringify(googleUser));
+
+                    console.log('✅ Google user saved directly. Redirecting to main app...');
+                    statusEl.textContent = '✅ Sign‑in successful! Redirecting...';
+
+                    // Use replace() to prevent the OAuth page from staying in history
+                    setTimeout(() => {
+                        window.location.replace('index.html');
+                    }, 300);
                 } catch (err) {
                     statusEl.textContent = '❌ Error: ' + err.message;
                     spinner.classList.remove('show');
@@ -180,7 +222,7 @@
                     `&scope=${encodeURIComponent(SCOPE)}` +
                     `&prompt=select_account`;
 
-                // Open in the same tab (the sync page will redirect back)
+                // Redirect to Google (same tab)
                 window.location.href = authUrl;
             }
 
@@ -215,7 +257,7 @@
                 }
             });
 
-            console.log('✅ StudentNija OAuth page loaded (same‑tab redirect).');
+            console.log('✅ StudentNija OAuth page loaded (direct‑merge version).');
         })();
     </script>
 </body>
