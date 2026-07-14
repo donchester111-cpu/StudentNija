@@ -224,10 +224,11 @@ function processGoogleUser(userData) {
 }
 
 // ======================== RENDER APP ========================
+// This function is kept for compatibility (called after manual login, etc.)
 export function renderApp() {
   console.log('🔄 renderApp() called');
 
-  // 1. Check for temporary Google user data
+  // Check for temporary Google user data (just in case it arrives after load)
   const tempUser = localStorage.getItem('studentnija_user');
   if (tempUser) {
     try {
@@ -235,30 +236,30 @@ export function renderApp() {
       console.log('📦 Found temporary Google user data:', userData);
       processGoogleUser(userData);
       localStorage.removeItem('studentnija_user');
-      // After processing, show main app
-      renderMainApp();
-      return;
     } catch (_) {
       localStorage.removeItem('studentnija_user');
     }
   }
 
-  // 2. Check stored user
-  const stored = localStorage.getItem('studentnija_currentUser');
-  if (stored) {
-    try {
-      const user = JSON.parse(stored);
-      Object.assign(currentUser, user);
-      console.log('👤 Restored stored user:', currentUser.fullName);
-      renderMainApp();
-      return;
-    } catch (_) {
-      localStorage.removeItem('studentnija_currentUser');
+  // After potential processing, decide based on currentUser
+  if (currentUser && currentUser.email) {
+    renderMainApp();
+  } else {
+    // Fallback to stored currentUser
+    const stored = localStorage.getItem('studentnija_currentUser');
+    if (stored) {
+      try {
+        const user = JSON.parse(stored);
+        Object.assign(currentUser, user);
+        renderMainApp();
+      } catch (_) {
+        localStorage.removeItem('studentnija_currentUser');
+        renderAuth();
+      }
+    } else {
+      renderAuth();
     }
   }
-
-  // 3. No user – show login
-  renderAuth();
 }
 
 // ======================== MAIN APP RENDER ========================
@@ -627,13 +628,58 @@ if (!window._aiMessageListener) {
   window._aiMessageListener = true;
 }
 
-// ======================== BOOTSTRAP ========================
+// ======================== BOOTSTRAP (FIXED) ========================
 window.addEventListener('load', async () => {
   console.log('🚀 App bootstrapping...');
+
+  // Load all persisted data (users, courses, tasks, etc.)
   loadAll();
 
+  // ---------- NEW: Handle temporary Google user data (if any) ----------
+  // This catches the case where the OAuth page saved data but the user
+  // didn't yet have a session (very rare after the sync page update).
+  const tempUser = localStorage.getItem('studentnija_user');
+  if (tempUser) {
+    try {
+      const userData = JSON.parse(tempUser);
+      console.log('📦 Found temporary Google user data:', userData);
+      processGoogleUser(userData);
+      localStorage.removeItem('studentnija_user');
+    } catch (e) {
+      console.warn('Failed to process temporary user', e);
+      localStorage.removeItem('studentnija_user');
+    }
+  }
+
+  // ---------- Check if a user is already logged in ----------
+  // After loadAll, currentUser should be populated from studentnija_currentUser if the user was logged in before.
+  // If not, we still try to load from localStorage directly as a fallback.
+  if (!currentUser || !currentUser.email) {
+    const stored = localStorage.getItem('studentnija_currentUser');
+    if (stored) {
+      try {
+        const user = JSON.parse(stored);
+        // Update the global currentUser (state.js uses this reference)
+        Object.assign(currentUser, user);
+        console.log('👤 Restored stored user:', currentUser.fullName);
+      } catch (_) {
+        localStorage.removeItem('studentnija_currentUser');
+      }
+    }
+  }
+
+  // ---------- Decide what to render ----------
+  if (currentUser && currentUser.email) {
+    console.log('✅ User logged in:', currentUser.fullName);
+    renderMainApp();
+  } else {
+    console.log('❌ No user session – showing auth');
+    renderAuth();
+  }
+
+  // ---------- Rest of the boot sequence ----------
   window.addEventListener('app:logout', () => {
-    renderApp();
+    renderApp();   // renderApp will now show login if no user remains
   });
 
   if (typeof app !== 'undefined') {
@@ -654,10 +700,8 @@ window.addEventListener('load', async () => {
   window.addEventListener('online', updateConnectionIndicator);
   window.addEventListener('offline', updateConnectionIndicator);
 
-  // Fallback: hide loading screen after 3 seconds even if renderApp fails
+  // Fallback: hide loading screen after 3 seconds even if something fails
   setTimeout(() => {
     hideLoadingScreen();
   }, 3000);
-
-  renderApp();
 });
