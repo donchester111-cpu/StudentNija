@@ -334,9 +334,9 @@ export function renderMainApp() {
   if (isSpecial) {
     console.log(`⚠️ Special page ${currentPage} detected, opening in new tab.`);
     const pageMap = {
-      ai: 'ai.html',
-      studygroups: 'studygroups.html',
-      exams: 'exams.html'
+      ai: 'AI.html',
+      studygroups: 'Chat.html',
+      exams: 'Exam.html'
     };
     window.open(pageMap[currentPage], '_blank');
     currentPage = 'home';
@@ -408,15 +408,15 @@ export function attachBottomNav() {
         if (navItems.includes(page)) {
           if (page === currentPage) return;
           if (page === 'ai') {
-            window.open('AI.html', '_blank');
+            window.open('ai.html', '_blank');
             return;
           }
           if (page === 'studygroups') {
-            window.open('Chat.html', '_blank');
+            window.open('studygroups.html', '_blank');
             return;
           }
           if (page === 'exams') {
-            window.open('Exam.html', '_blank');
+            window.open('exams.html', '_blank');
             return;
           }
           currentPage = page;
