@@ -8,7 +8,7 @@ import {
   originalAddExam, originalAddClass, rescheduleAllFromStorage,
   escapeHtml, initCoursesData, initScholarships, initAchievements,
   showLoadingOverlay, hideLoadingOverlay,
-  registerUser, loginUser, changePassword,
+  registerUser, loginUser, updateUserProfile, changePassword, logout, deleteAccount,
   updateConnectionIndicator
 } from './state.js';
 
@@ -41,112 +41,10 @@ window.closeToolModal = closeToolModal;
 export let currentPage = "home";
 window.currentPage = currentPage;
 
-const JWT_STORAGE_KEY = 'studentnija_jwt';
-const USER_STORAGE_KEY = 'studentnija_currentUser';
-const API_BASE_URL = 'https://studentnija-public-chat.onrender.com'; // Replace with your backend URL
+export let isWaitingForLogin = false;
+export let loginPoller = null;
 
-// ======================== OAUTH 2.0 CALLBACK HANDLER ========================
-function handleOAuthCallback() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get('token');
-  const userData = urlParams.get('user');
-  if (token && userData) {
-    try {
-      const user = JSON.parse(decodeURIComponent(userData));
-      localStorage.setItem(JWT_STORAGE_KEY, token);
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
-      Object.assign(currentUser, user);
-      // Remove query params from URL
-      window.history.replaceState({}, document.title, window.location.pathname);
-      addNotification('Welcome', `Hello ${user.fullName}!`);
-      return true; // login successful
-    } catch (e) {
-      console.warn('Failed to parse OAuth callback data:', e);
-    }
-  }
-  return false;
-}
-
-// ---- Session restoration with timeout ----
-async function restoreSession() {
-  const token = localStorage.getItem(JWT_STORAGE_KEY);
-  if (!token) return false;
-  
-  // Create a timeout promise (5 seconds)
-  const timeout = new Promise((_, reject) => {
-    setTimeout(() => reject(new Error('Session validation timeout')), 5000);
-  });
-  
-  const fetchPromise = fetch(`${API_BASE_URL}/api/auth/me`, {
-    headers: { 'Authorization': `Bearer ${token}` }
-  });
-
-  try {
-    const response = await Promise.race([fetchPromise, timeout]);
-    if (!response.ok) {
-      throw new Error('Invalid session');
-    }
-    const data = await response.json();
-    if (data.user) {
-      Object.assign(currentUser, data.user);
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
-      return true;
-    }
-    return false;
-  } catch (error) {
-    console.warn('Session restore failed:', error.message);
-    localStorage.removeItem(JWT_STORAGE_KEY);
-    localStorage.removeItem(USER_STORAGE_KEY);
-    return false;
-  }
-}
-
-// ---- Logout ----
-function logout() {
-  localStorage.removeItem(JWT_STORAGE_KEY);
-  localStorage.removeItem(USER_STORAGE_KEY);
-  Object.keys(currentUser).forEach(key => delete currentUser[key]);
-  fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST' }).catch(() => {});
-  renderApp();
-  addNotification('Logout', 'You have been logged out.');
-}
-window.logout = logout;
-
-// ---- UpdateUserProfile ----
-export function updateUserProfile(updatedData) {
-  if (currentUser) {
-    Object.assign(currentUser, updatedData);
-    const stored = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || '{}');
-    Object.assign(stored, updatedData);
-    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(stored));
-    saveAll();
-    renderMainApp();
-    addNotification("Profile", "Profile updated");
-  }
-}
-window.updateUserProfile = updateUserProfile;
-
-// ---- DeleteAccount ----
-export function deleteAccount() {
-  if (!currentUser) return;
-  if (confirm('⚠️ Are you sure you want to permanently delete your account?\n\nThis action cannot be undone. All your data will be lost.')) {
-    showLoadingOverlay('Deleting account...');
-    setTimeout(() => {
-      const index = users.findIndex(u => u.id === currentUser.id);
-      if (index !== -1) users.splice(index, 1);
-      localStorage.removeItem(JWT_STORAGE_KEY);
-      localStorage.removeItem(USER_STORAGE_KEY);
-      Object.keys(currentUser).forEach(key => delete currentUser[key]);
-      saveAll();
-      hideLoadingOverlay();
-      renderApp();
-      addNotification('Account', 'Your account has been permanently deleted.');
-    }, 800);
-  }
-}
-window.deleteAccount = deleteAccount;
-
-// ======================== AUTH FORMS ========================
+// ======================== AUTH ========================
 export function renderAuth() {
   const container = document.getElementById('pagesContainer');
   if (container) container.innerHTML = `<div class="page active-page" id="auth-page">${getAuthHTML()}</div>`;
@@ -185,9 +83,9 @@ export function showAuthForm(formType) {
         <span style="padding:0 12px; color:var(--text-muted); font-size:12px;">OR</span>
         <hr style="flex:1; border:0; border-top:1px solid var(--border-light);">
       </div>
-      <a href="${API_BASE_URL}/api/auth/google" style="display:block; width:100%; padding:14px; border-radius:60px; background:#ffffff; color:#0A111F; font-weight:600; font-size:16px; text-align:center; text-decoration:none; border:1px solid #ddd; box-shadow:0 2px 8px rgba(0,0,0,0.06); margin-top:4px; font-family:inherit; transition:transform 0.15s; cursor:pointer;">
-        <span style="display:inline-block; margin-right:10px;">🔵</span> Sign in with Google
-      </a>
+      <button class="btn-outline" id="googleSignInBtn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-color:#4285F4; color:#4285F4; padding:12px; border-radius:60px; font-weight:500; font-size:16px; cursor:pointer; transition:0.2s; background:transparent;">
+        <span style="font-size:18px; font-weight:bold;">G</span> Sign in with Google
+      </button>
       <button class="btn-outline" id="gotoRegister" style="margin-top:8px;">Create Account</button>
     `;
 
@@ -200,6 +98,10 @@ export function showAuthForm(formType) {
       } else {
         alert('Invalid credentials');
       }
+    });
+
+    document.getElementById('googleSignInBtn')?.addEventListener('click', function() {
+      startGoogleSignIn();
     });
 
     document.getElementById('gotoRegister')?.addEventListener('click', function() {
@@ -269,46 +171,116 @@ export function showAuthForm(formType) {
   }
 }
 
-// ======================== RENDER APP ========================
-export function renderApp() {
-  // 1. Handle OAuth callback first (if URL has token and user)
-  const loggedIn = handleOAuthCallback();
-  if (loggedIn) {
-    // Already rendered after storing user data; re-render to show main app
-    renderMainApp();
-    return;
+// ======================== GOOGLE SIGN-IN ========================
+export function startGoogleSignIn() {
+  const loginUrl = "studentnija_sync.html";
+
+  if (typeof app !== 'undefined' && app.CreateIntent && app.StartActivity) {
+    var intent = app.CreateIntent();
+    intent.SetAction("android.intent.action.VIEW");
+    intent.SetData(loginUrl);
+    intent.AddFlags(0x10000000);
+    app.StartActivity(intent);
+    addNotification('Sign In', 'Please complete login in your browser, then return to the app.');
+  } else {
+    window.open(loginUrl, '_blank');
+    addNotification('Sign In', 'Please complete login in the new tab, then return here.');
   }
 
-  // 2. Check if we have a stored user
-  let storedUser = null;
+  isWaitingForLogin = true;
+  startLoginPoller();
+}
+
+export function startLoginPoller() {
+  if (loginPoller) return;
+  loginPoller = setInterval(function() {
+    if (!isWaitingForLogin) {
+      clearInterval(loginPoller);
+      loginPoller = null;
+      return;
+    }
+    const userData = localStorage.getItem('studentnija_user');
+    if (userData) {
+      clearInterval(loginPoller);
+      loginPoller = null;
+      isWaitingForLogin = false;
+      processUserData(userData);
+    }
+  }, 2000);
+}
+
+export function processUserData(userData) {
   try {
-    const raw = localStorage.getItem(USER_STORAGE_KEY);
-    if (raw) storedUser = JSON.parse(raw);
-  } catch (_) {}
-
-  if (storedUser && storedUser.id) {
-    // 3. We have a stored user – show main app immediately (optimistic)
-    Object.assign(currentUser, storedUser);
-    renderMainApp();
-
-    // 4. Validate session in background (with timeout)
-    restoreSession().then(valid => {
-      if (!valid) {
-        // Session invalid – clear and show auth
-        Object.keys(currentUser).forEach(key => delete currentUser[key]);
-        localStorage.removeItem(USER_STORAGE_KEY);
-        localStorage.removeItem(JWT_STORAGE_KEY);
-        renderAuth();
-      }
-      // If valid, nothing to do – user already rendered
-    });
-  } else {
-    // 5. No stored user – show auth page
-    renderAuth();
+    const user = typeof userData === 'string' ? JSON.parse(userData) : userData;
+    if (!user || !user.email) {
+      localStorage.removeItem('studentnija_user');
+      return;
+    }
+    let existingUser = users.find(u => u.email === user.email);
+    if (!existingUser) {
+      const newUser = {
+        id: Date.now(),
+        fullName: user.name || 'Google User',
+        email: user.email,
+        password: 'oauth_' + Date.now(),
+        school: '',
+        department: '',
+        level: '',
+        profilePic: user.picture || '',
+        bio: '',
+        googleAuth: true
+      };
+      users.push(newUser);
+      saveAll();
+      currentUser = newUser;
+    } else {
+      existingUser.fullName = user.name || existingUser.fullName;
+      existingUser.profilePic = user.picture || existingUser.profilePic;
+      existingUser.googleAuth = true;
+      saveAll();
+      currentUser = existingUser;
+    }
+    localStorage.removeItem('studentnija_user');
+    renderApp();
+    addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
+  } catch (e) {
+    console.log('Error processing login:', e);
+    localStorage.removeItem('studentnija_user');
   }
 }
 
-// ======================== MAIN APP RENDER ========================
+export function checkForStoredUser() {
+  const userData = localStorage.getItem('studentnija_user');
+  if (userData) {
+    processUserData(userData);
+    return true;
+  }
+  return false;
+}
+
+if (typeof app !== 'undefined') {
+  app.OnResume = function() {
+    if (isWaitingForLogin) {
+      const userData = localStorage.getItem('studentnija_user');
+      if (userData) {
+        clearInterval(loginPoller);
+        loginPoller = null;
+        isWaitingForLogin = false;
+        processUserData(userData);
+      }
+    } else {
+      checkForStoredUser();
+    }
+  };
+}
+
+// ======================== RENDER APP ========================
+export function renderApp() {
+  if (!currentUser) renderAuth();
+  else renderMainApp();
+}
+
+// Flag to build the page structure only once
 let pagesBuilt = false;
 
 export function renderMainApp() {
@@ -318,7 +290,6 @@ export function renderMainApp() {
   }
   console.log('🔄 renderMainApp() called, currentPage =', currentPage);
 
-  // Attach tools to window
   window.openCalculator = openCalculator;
   window.openMathSolver = openMathSolver;
   window.openDictionary = openDictionary;
@@ -458,15 +429,15 @@ export function attachBottomNav() {
         if (navItems.includes(page)) {
           if (page === currentPage) return;
           if (page === 'ai') {
-            window.open('ai.html', '_blank');
+            window.open('AI.html', '_blank');
             return;
           }
           if (page === 'studygroups') {
-            window.open('studygroups.html', '_blank');
+            window.open('Chat.html', '_blank');
             return;
           }
           if (page === 'exams') {
-            window.open('exams.html', '_blank');
+            window.open('Exam.html', '_blank');
             return;
           }
           const overlay = document.getElementById('settingsOverlayAI');
@@ -662,6 +633,20 @@ if (!window._aiMessageListener) {
       handleAICommand(msg.action, msg.data, msg.requestId);
     }
 
+    // ---- Handle Google Sign-In success (postMessage from sync page) ----
+    if (msg && msg.type === 'google_login_success' && msg.user) {
+      console.log('✅ Google login success via postMessage!', msg.user);
+      // Process the user data directly
+      processUserData(msg.user);
+      // Stop the poller if it's running (since we already have the data)
+      if (loginPoller) {
+        clearInterval(loginPoller);
+        loginPoller = null;
+        isWaitingForLogin = false;
+      }
+      // Render the app (already handled by processUserData)
+    }
+
     if (msg && msg.type === 'navigateTo' && msg.page === 'home') {
       window.location.href = 'index.html';
     }
@@ -708,5 +693,21 @@ window.addEventListener('load', async () => {
   window.addEventListener('online', updateConnectionIndicator);
   window.addEventListener('offline', updateConnectionIndicator);
 
-  renderApp();
+  const remember = localStorage.getItem('studentnija_remember');
+  setTimeout(() => {
+    const loadingScreen = document.getElementById('loadingScreen');
+    if (loadingScreen) loadingScreen.classList.add('hide');
+    setTimeout(() => {
+      if (loadingScreen) loadingScreen.style.display = 'none';
+      const appRoot = document.getElementById('appRoot');
+      if (appRoot) appRoot.style.display = 'flex';
+      if (remember === 'true' && currentUser) {
+        renderApp();
+      } else if (currentUser) {
+        renderApp();
+      } else {
+        renderApp();
+      }
+    }, 500);
+  }, 1500);
 });
