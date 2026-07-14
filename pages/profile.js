@@ -2,17 +2,18 @@ import {
   currentUser, users, coursesData, plannerTasks, flashcards,
   userStats, settings, saveAll, addNotification,
   computeOverallCGPA, applyTheme, applyAccentColor,
-  logout, deleteAccount, changePassword, updateUserProfile,
   escapeHtml
 } from '../state.js';
 
 export function renderProfilePage() {
+  // Ensure studentId exists
   if (currentUser && !currentUser.studentId) {
     currentUser.studentId = '';
     saveAll();
   }
 
   const html = `
+    <!-- ====== PROFILE HEADER ====== -->
     <div class="profile-header glass-card" style="padding:24px; text-align:center; position:relative;">
       <div class="avatar-upload" id="avatarUpload">
         ${currentUser.profilePic ? `<img src="${currentUser.profilePic}">` : `<span>📷</span>`}
@@ -29,6 +30,7 @@ export function renderProfilePage() {
       </button>
     </div>
 
+    <!-- ====== STATS ROW ====== -->
     <div class="stats-row" style="margin:16px 0;">
       <div>
         <div class="stat-value">${Object.values(coursesData).reduce((acc, arr) => acc + arr.length, 0)}</div>
@@ -48,32 +50,38 @@ export function renderProfilePage() {
       </div>
     </div>
 
+    <!-- ====== PERSONAL INFORMATION CARD ====== -->
     <div class="glass-card" style="padding:20px; margin-bottom:16px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
         <span style="font-size:20px;">👤</span>
         <h3 style="margin:0; font-size:18px; font-weight:600;">Personal Information</h3>
       </div>
       <div class="profile-grid">
+        <!-- School -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">🏫 School</div>
           <div class="profile-grid-value" id="profileSchool">${escapeHtml(currentUser.school || 'Not set')}</div>
           <button class="edit-field-btn" data-field="school">✏️</button>
         </div>
+        <!-- Department -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">📚 Department</div>
           <div class="profile-grid-value" id="profileDept">${escapeHtml(currentUser.department || 'Not set')}</div>
           <button class="edit-field-btn" data-field="department">✏️</button>
         </div>
+        <!-- Level -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">📖 Level</div>
           <div class="profile-grid-value" id="profileLevel">${escapeHtml(currentUser.level || 'Not set')}</div>
           <button class="edit-field-btn" data-field="level">✏️</button>
         </div>
+        <!-- Student ID -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">🆔 Student ID</div>
           <div class="profile-grid-value" id="profileStudentId">${escapeHtml(currentUser.studentId || 'Not set')}</div>
           <button class="edit-field-btn" data-field="studentId">✏️</button>
         </div>
+        <!-- Bio (full width) -->
         <div class="profile-grid-item full-width">
           <div class="profile-grid-label">📝 Bio</div>
           <div class="profile-grid-value" id="profileBio">${escapeHtml(currentUser.bio || 'No bio yet')}</div>
@@ -82,6 +90,7 @@ export function renderProfilePage() {
       </div>
     </div>
 
+    <!-- ====== PREFERENCES ====== -->
     <div class="glass-card" style="padding:20px; margin-bottom:16px;">
       <h3 style="margin:0 0 12px;">⚙️ Preferences</h3>
       <div class="profile-pref-item">
@@ -113,6 +122,7 @@ export function renderProfilePage() {
       </div>
     </div>
 
+    <!-- ====== ACCOUNT ACTIONS ====== -->
     <div class="glass-card" style="padding:20px; margin-bottom:16px;">
       <h3 style="margin:0 0 12px;">🔐 Account</h3>
       <div style="display:flex; flex-direction:column; gap:8px;">
@@ -122,6 +132,7 @@ export function renderProfilePage() {
       </div>
     </div>
 
+    <!-- ====== ABOUT SECTION ====== -->
     <div class="glass-card" style="padding:0; overflow:hidden; margin-top:16px;">
       <div class="about-header-gradient" style="padding:20px; text-align:center;">
         <div style="font-size:28px; font-weight:800; color:white; letter-spacing:-0.5px; text-shadow:0 2px 8px rgba(0,0,0,0.15);">
@@ -131,7 +142,7 @@ export function renderProfilePage() {
           Study Smarter · Score Higher
         </div>
         <div style="display:flex; justify-content:center; gap:8px; margin-top:10px; flex-wrap:wrap;">
-          <span style="background:rgba(255,255,255,0.2); padding:2px 12px; border-radius:40px; font-size:11px; color:white;">v1.1.0</span>
+          <span style="background:rgba(255,255,255,0.2); padding:2px 12px; border-radius:40px; font-size:11px; color:white;">v1.2.0</span>
           <span style="background:rgba(255,255,255,0.2); padding:2px 12px; border-radius:40px; font-size:11px; color:white;">⌘ Android</span>
           <span style="background:rgba(255,255,255,0.2); padding:2px 12px; border-radius:40px; font-size:11px; color:white;">✦ AI-Powered</span>
         </div>
@@ -225,13 +236,29 @@ export function renderProfilePage() {
   });
 
   // ---- LOGOUT ----
-  document.getElementById('logoutBtn')?.addEventListener('click', () => {
-    logout();
+  document.getElementById('logoutBtn')?.addEventListener('click', function() {
+    // Use the global logout function (attached to window in app.js)
+    if (typeof window.logout === 'function') {
+      window.logout();
+    } else {
+      // Fallback: clear local storage and reload
+      localStorage.removeItem('studentnija_jwt');
+      localStorage.removeItem('studentnija_currentUser');
+      window.location.reload();
+    }
   });
 
   // ---- DELETE ACCOUNT ----
-  document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
-    deleteAccount();
+  document.getElementById('deleteAccountBtn')?.addEventListener('click', function() {
+    // Use the global deleteAccount (from state.js or app.js)
+    if (typeof window.deleteAccount === 'function') {
+      window.deleteAccount();
+    } else {
+      // Fallback: call the imported deleteAccount
+      import('../state.js').then(module => {
+        module.deleteAccount();
+      });
+    }
   });
 
   // ---- THEME SELECT ----
@@ -260,4 +287,19 @@ export function renderProfilePage() {
       dot.classList.add('active');
     }
   });
+
+  // ---- Expose updateUserProfile globally if not already ----
+  // (It should be attached to window in app.js, but just in case)
+  if (typeof window.updateUserProfile === 'undefined') {
+    window.updateUserProfile = function(data) {
+      // This is a fallback – should be defined in app.js
+      if (currentUser) {
+        Object.assign(currentUser, data);
+        localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
+        saveAll();
+        renderProfilePage();
+        addNotification('Profile', 'Profile updated');
+      }
+    };
+  }
 }
