@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>StudentNija · Error</title>
+  <style>
+    /* ─── Reset & Base ─── */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(ellipse at 50% 50%, #0A111F 0%, #040912 100%);
+      color: #FFFFFF;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      margin: 0;
+      text-align: center;
+    }
+
+    /* ─── Glass Card ─── */
+    .error-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border-radius: 40px;
+      padding: 48px 36px;
+      max-width: 420px;
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7);
+      animation: fadeInUp 0.7s cubic-bezier(0.2, 0.9, 0.4, 1) both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* ─── Icon ─── */
+    .error-icon {
+      font-size: 64px;
+      display: block;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 4px 12px rgba(255, 68, 68, 0.3));
+      animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-8px); }
+      40% { transform: translateX(8px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    /* ─── Brand ─── */
+    .brand {
+      font-size: 28px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #00C3FF 0%, #008751 50%, #F4B400 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.5px;
+      margin-bottom: 4px;
+    }
+
+    .tagline {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 2px;
+      font-weight: 400;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
+
+    /* ─── Message ─── */
+    .message {
+      font-size: 16px;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 28px;
+    }
+
+    .message strong {
+      color: #FF5252;
+      font-weight: 600;
+    }
+
+    /* ─── Buttons ─── */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 60px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+      border: none;
+      color: white;
+      min-height: 50px;
+      letter-spacing: 0.3px;
+      text-decoration: none;
+      touch-action: manipulation;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #008751, #00A86B);
+      box-shadow: 0 6px 20px rgba(0, 135, 81, 0.35);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 8px rgba(0, 135, 81, 0.2);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.8);
+    }
+
+    .btn-outline:active {
+      background: rgba(255, 255, 255, 0.05);
+      transform: scale(0.96);
+    }
+
+    /* ─── Hint & auto‑redirect ─── */
+    .hint {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.25);
+      line-height: 1.5;
+      margin-top: 16px;
+    }
+
+    .hint span {
+      color: #00C3FF;
+      font-weight: 600;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 480px) {
+      .error-card {
+        padding: 32px 24px;
+        border-radius: 32px;
+      }
+      .brand { font-size: 24px; }
+      .error-icon { font-size: 52px; }
+      .message { font-size: 15px; }
+      .btn { padding: 12px 22px; font-size: 15px; min-height: 44px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="error-card">
+    <span class="error-icon">⚠️</span>
+    <div class="brand">StudentNija</div>
+    <div class="tagline">Study Smarter · Score Higher</div>
+
+    <p class="message">
+      <strong>Oops!</strong> Something went wrong.<br>
+      The page you’re looking for might be missing,<br>
+      or a temporary error occurred.
+    </p>
+
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="window.location.reload()">
+        ⟳ Try Again
+      </button>
+      <a class="btn btn-outline" href="index.html">
+        ← Back to Home
+      </a>
+    </div>
+
+    <p class="hint">
+      Auto‑redirecting in <span id="countdown">8</span> seconds…<br>
+      <small style="opacity:0.6;">(click any button to cancel)</small>
+    </p>
+  </div>
+
+  <script>
+    // Auto‑redirect to home page after 8 seconds, unless user clicks a button
+    let seconds = 8;
+    const countdownEl = document.getElementById('countdown');
+    const redirectTimer = setInterval(() => {
+      seconds--;
+      if (seconds <= 0) {
+        clearInterval(redirectTimer);
+        window.location.href = 'index.html';
+      } else {
+        countdownEl.textContent = seconds;
+      }
+    }, 1000);
+
+    // If user clicks any button, cancel auto‑redirect
+    document.querySelector('.btn-group').addEventListener('click', () => {
+      clearInterval(redirectTimer);
+      document.querySelector('.hint').style.display = 'none';
+    }, { once: true });
+  </script>
+</body>
+</html>

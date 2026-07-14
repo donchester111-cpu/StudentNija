@@ -7,32 +7,267 @@
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/png" href="/icons/favicon.png">
   <link rel="manifest" href="manifest.json" />
-
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <!-- Google AdSense (async) -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2766834653586662"
      crossorigin="anonymous"></script>
+
+  <style>
+    /* ============================================================
+       PREMIUM MINIMAL LOADING SCREEN – Sleek & Elegant
+       ============================================================ */
+    :root {
+      --accent: #008751;
+      --accent-light: #00A86B;
+      --accent-glow: rgba(0, 135, 81, 0.3);
+      --bg-primary: #F5F7FA;
+      --text-primary: #0A1927;
+      --text-muted: #6B7F96;
+    }
+
+    .dark-theme {
+      --bg-primary: #0A111F;
+      --text-primary: #F0F4FA;
+      --text-muted: #8FA0B5;
+    }
+
+    .loading-screen {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--bg-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 1000;
+      transition: opacity 0.6s ease, visibility 0.6s;
+      overflow: hidden;
+    }
+
+    .loading-screen.hide {
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+    }
+
+    .loader-container {
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      padding: 0 32px;
+    }
+
+    /* ---- Logo with gentle pulse ---- */
+    .logo-wrapper {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .logo-icon {
+      font-size: 64px;
+      line-height: 1;
+      filter: drop-shadow(0 4px 12px var(--accent-glow));
+      animation: softPulse 2.2s ease-in-out infinite;
+    }
+
+    @keyframes softPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+
+    .logo-ring {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 80px; height: 80px;
+      margin-left: -40px; margin-top: -40px;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      border-top-color: var(--accent);
+      opacity: 0;
+      animation: ringSpin 2s linear infinite, ringFade 2s ease-in-out infinite;
+    }
+
+    @keyframes ringSpin {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes ringFade {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 0.7; }
+    }
+
+    /* ---- Title & subtitle ---- */
+    .loader-title {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin: 0;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .loader-subtitle {
+      font-size: 15px;
+      color: var(--text-muted);
+      font-weight: 500;
+      margin-top: -12px;
+      animation: fadeInUp 0.8s ease 0.1s both;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ---- Progress ring (SVG) ---- */
+    .progress-ring-container {
+      position: relative;
+      width: 100px;
+      height: 100px;
+    }
+
+    .progress-ring {
+      transform: rotate(-90deg);
+    }
+
+    .progress-ring-bg {
+      fill: none;
+      stroke: rgba(128,128,128,0.1);
+      stroke-width: 6;
+    }
+
+    .progress-ring-fill {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 6;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 6px var(--accent-glow));
+      transition: stroke-dashoffset 0.35s ease;
+    }
+
+    .progress-percent {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* ---- Tip text (static, elegant) ---- */
+    .loader-tip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-muted);
+      background: rgba(0,135,81,0.04);
+      padding: 10px 22px;
+      border-radius: 40px;
+      border: 1px solid rgba(0,135,81,0.1);
+      backdrop-filter: blur(4px);
+      animation: fadeInUp 0.8s ease 0.2s both;
+    }
+
+    .tip-icon {
+      font-size: 16px;
+    }
+
+    /* ---- Ad note ---- */
+    .loader-ad-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      opacity: 0.6;
+      margin-top: 8px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(0,0,0,0.06);
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .loader-ad-note small {
+      font-size: 10px;
+      opacity: 0.8;
+    }
+
+    /* ---- Minimal flash (elegant white fade) ---- */
+    .flash-overlay {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: white;
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.1s ease;
+    }
+    .flash-overlay.active {
+      opacity: 0.5;
+      transition: opacity 0s;
+    }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 480px) {
+      .logo-icon { font-size: 56px; }
+      .logo-ring { width: 70px; height: 70px; margin-left: -35px; margin-top: -35px; }
+      .loader-title { font-size: 26px; }
+      .loader-subtitle { font-size: 14px; }
+    }
+  </style>
 </head>
 <body class="light-theme">
 
-  <!-- Loading screen -->
+  <!-- Flash overlay -->
+  <div class="flash-overlay" id="flashOverlay"></div>
+
+  <!-- Loading Screen -->
   <div class="loading-screen" id="loadingScreen">
-    <div class="spinnerl"></div>
-    <p style="margin-top: 20px; color: #008751; font-weight: 700; font-size: 24px;">🇳🇬 StudentNija</p>
-    <p class="text-muted" style="margin-top: 8px;">Study Smarter. Score Higher.</p>
-    <p style="margin-top: 30px; font-size: 16px; color: #888; border-top: 1px solid rgba(0,0,0,0.1); padding-top: 20px; max-width: 300px; text-align: center;">
-      This app contains advertisements<br>
-      <span style="font-size: 11px; color: #aaa;">Ads help keep this app free for all students</span>
-    </p>
+    <div class="loader-container">
+      <!-- Logo with subtle pulse and ring -->
+      <div class="logo-wrapper">
+        <div class="logo-icon">🇳🇬</div>
+        <div class="logo-ring"></div>
+      </div>
+
+      <h1 class="loader-title">StudentNija</h1>
+      <p class="loader-subtitle">Study Smarter. Score Higher.</p>
+
+      <!-- Circular progress -->
+      <div class="progress-ring-container">
+        <svg width="100" height="100" viewBox="0 0 100 100" class="progress-ring">
+          <circle class="progress-ring-bg" cx="50" cy="50" r="42" />
+          <circle class="progress-ring-fill" id="progressRingFill" cx="50" cy="50" r="42"
+                  stroke-dasharray="263.89" stroke-dashoffset="263.89" />
+        </svg>
+        <div class="progress-percent" id="loaderPercent">0%</div>
+      </div>
+
+      <!-- Elegant tip -->
+      <div class="loader-tip">
+        <span class="tip-icon">💡</span>
+        <span id="tipText">Loading your study experience…</span>
+      </div>
+
+      <p class="loader-ad-note">
+        This app contains advertisements<br>
+        <small>Ads help keep it free for all students</small>
+      </p>
+    </div>
   </div>
 
   <!-- Main App -->
-  <div class="app-main" id="appRoot" style="display: none;">
+  <div class="app-main" id="appRoot">
     <div id="connectionIndicator" class="connection-indicator"></div>
     <div class="pages-container" id="pagesContainer"></div>
     <div class="bottom-nav" id="bottomNav"></div>
   </div>
 
-  <!-- Ad Unit (only one) -->
+  <!-- Ad Unit -->
   <ins class="adsbygoogle"
        style="display:block"
        data-ad-client="ca-pub-2766834653586662"
@@ -43,29 +278,91 @@
     (adsbygoogle = window.adsbygoogle || []).push({});
   </script>
 
-  <!-- ========== IMPORT MAP for ES Modules ========== -->
+  <!-- Import Map -->
   <script type="importmap">
-    {
-      "imports": {
-        "./state.js": "./state.js",
-        "./pages/": "./pages/",
-        "./tools/": "./tools/"
-      }
-    }
+    { "imports": { "./state.js": "./state.js", "./pages/": "./pages/", "./tools/": "./tools/" } }
   </script>
 
-  <!-- Service Worker (if supported) -->
+  <!-- Service Worker -->
   <script>
     if (typeof navigator.serviceWorker !== 'undefined') {
       navigator.serviceWorker.register('sw.js');
     }
   </script>
-
-  <!-- DroidScript notification bridge (optional) -->
   <script src="notifications.js"></script>
 
-  <!-- ========== MAIN APP – LOADED AS A MODULE ========== -->
-  <script type="module" src="app.js"></script>
+  <!-- ========== LOADING ANIMATION (SLOWED DOWN) ========== -->
+  <script>
+    (function() {
+      const loadingScreen = document.getElementById('loadingScreen');
+      const flashOverlay = document.getElementById('flashOverlay');
+      const progressRingFill = document.getElementById('progressRingFill');
+      const loaderPercent = document.getElementById('loaderPercent');
+      const tipText = document.getElementById('tipText');
 
+      const tips = [
+        "Use flashcards daily 📚",
+        "Set a timer for focused study ⏱️",
+        "Review past questions regularly ✅",
+        "Join a study group for motivation 💬",
+        "Stay hydrated during exams! 💧"
+      ];
+
+      // Change tip every 2.2 seconds
+      let tipIndex = 0;
+      setInterval(() => {
+        tipIndex = (tipIndex + 1) % tips.length;
+        tipText.textContent = tips[tipIndex];
+      }, 2200);
+
+      // Circular progress setup
+      const circumference = 2 * Math.PI * 42; // ~263.89
+      progressRingFill.style.strokeDasharray = circumference;
+      progressRingFill.style.strokeDashoffset = circumference;
+
+      function setProgress(percent) {
+        const offset = circumference - (percent / 100) * circumference;
+        progressRingFill.style.strokeDashoffset = offset;
+        loaderPercent.textContent = Math.round(percent) + '%';
+      }
+
+      // ---- SLOWER SIMULATED PROGRESS (takes ~5-6 seconds) ----
+      let progress = 0;
+      const progressInterval = setInterval(() => {
+        progress += Math.random() * 8 + 2;   // 2–10 % each tick (slower)
+        if (progress >= 100) {
+          progress = 100;
+          clearInterval(progressInterval);
+        }
+        setProgress(progress);
+      }, 400);   // tick every 400ms (was 300ms)
+
+      // Public function called by app.js when ready
+      window.hideLoadingScreen = function() {
+        // Elegant flash
+        flashOverlay.classList.add('active');
+        setTimeout(() => {
+          flashOverlay.classList.remove('active');
+          loadingScreen.classList.add('hide');
+        }, 120);
+
+        // Stop progress and jump to 100%
+        clearInterval(progressInterval);
+        setProgress(100);
+      };
+    })();
+  </script>
+
+  <!-- ========== MAIN APP MODULE ========== -->
+  <script type="module">
+    import { renderApp } from './app.js';
+
+    window.addEventListener('load', async () => {
+      await renderApp();
+      if (window.hideLoadingScreen) {
+        window.hideLoadingScreen();
+      }
+    });
+  </script>
 </body>
-  </html>
+</html>

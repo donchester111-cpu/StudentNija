@@ -37,6 +37,25 @@ import { openToolModal, closeToolModal } from './tools/modal.js';
 window.openToolModal = openToolModal;
 window.closeToolModal = closeToolModal;
 
+// ==== Error Handler ==============
+window.addEventListener('unhandledrejection', function(event) {
+  console.error('Unhandled promise rejection:', event.reason);
+  if (window.showToast) {
+    showToast('⚠️ An error occurred. Please try again.');
+  }
+  event.preventDefault();
+});
+
+window.onerror = function(message, source, lineno, colno, error) {
+  console.error('Global error:', message, 'at', source, ':', lineno);
+  // Optionally show a user‑friendly toast
+  if (window.showToast) {
+    showToast('⚠️ Something went wrong. Please reload.');
+  }
+  // Return true to prevent the default browser error dialog
+  return true;
+};
+
 // ======================== GLOBALS ========================
 export let currentPage = "home";
 window.currentPage = currentPage;
@@ -224,11 +243,9 @@ function processGoogleUser(userData) {
 }
 
 // ======================== RENDER APP ========================
-// This function is kept for compatibility (called after manual login, etc.)
 export function renderApp() {
   console.log('🔄 renderApp() called');
 
-  // Check for temporary Google user data (just in case it arrives after load)
   const tempUser = localStorage.getItem('studentnija_user');
   if (tempUser) {
     try {
@@ -241,11 +258,9 @@ export function renderApp() {
     }
   }
 
-  // After potential processing, decide based on currentUser
   if (currentUser && currentUser.email) {
     renderMainApp();
   } else {
-    // Fallback to stored currentUser
     const stored = localStorage.getItem('studentnija_currentUser');
     if (stored) {
       try {
@@ -329,20 +344,17 @@ export function renderMainApp() {
     return;
   }
 
+  // ---------- Changed: redirect in same tab instead of opening new window ----------
   const isSpecial = ['ai', 'studygroups', 'exams'].includes(currentPage);
-
   if (isSpecial) {
-    console.log(`⚠️ Special page ${currentPage} detected, opening in new tab.`);
     const pageMap = {
-      ai: 'AI.html',
-      studygroups: 'Chat.html',
-      exams: 'Exam.html'
+      ai: 'ai.html',
+      studygroups: 'studygroups.html',
+      exams: 'exams.html'
     };
-    window.open(pageMap[currentPage], '_blank');
-    currentPage = 'home';
-    window.currentPage = 'home';
-    renderMainApp();
-    return;
+    // Navigate away to the specialised page in the same tab (like the sync page)
+    window.location.href = pageMap[currentPage];
+    return; // Stop further rendering because we're leaving this page
   }
 
   activePage.style.display = 'block';
@@ -407,18 +419,21 @@ export function attachBottomNav() {
         const page = el.getAttribute('data-page');
         if (navItems.includes(page)) {
           if (page === currentPage) return;
+
+          // ---------- Changed: same‑tab navigation for specialised pages ----------
           if (page === 'ai') {
-            window.open('ai.html', '_blank');
+            window.location.href = 'ai.html';
             return;
           }
           if (page === 'studygroups') {
-            window.open('studygroups.html', '_blank');
+            window.location.href = 'studygroups.html';
             return;
           }
           if (page === 'exams') {
-            window.open('exams.html', '_blank');
+            window.location.href = 'exams.html';
             return;
           }
+
           currentPage = page;
           window.currentPage = page;
           renderMainApp();
@@ -428,8 +443,9 @@ export function attachBottomNav() {
   }
 }
 
-// ======================== AI BRIDGE ========================
-// ... (unchanged)
+// ======================== AI BRIDGE (unchanged) ========================
+// ... (keep the same AI bridge code as before)
+
 function getAppState() {
   return {
     user: currentUser,
@@ -586,17 +602,14 @@ window.sendAICommand = function(action, data) {
 
 // ======================== CLOSE FUNCTIONS ========================
 window.closeStudyGroups = function() {
-  console.log('🔄 closeStudyGroups called');
   window.location.href = 'index.html';
 };
 
 window.closeExamsPage = function() {
-  console.log('🔄 closeExamsPage called');
   window.location.href = 'index.html';
 };
 
 window.closeAIPage = function() {
-  console.log('🔄 closeAIPage called');
   window.location.href = 'index.html';
 };
 
@@ -628,58 +641,42 @@ if (!window._aiMessageListener) {
   window._aiMessageListener = true;
 }
 
-// ======================== BOOTSTRAP (FIXED) ========================
+// ======================== BOOTSTRAP ========================
 window.addEventListener('load', async () => {
   console.log('🚀 App bootstrapping...');
-
-  // Load all persisted data (users, courses, tasks, etc.)
   loadAll();
 
-  // ---------- NEW: Handle temporary Google user data (if any) ----------
-  // This catches the case where the OAuth page saved data but the user
-  // didn't yet have a session (very rare after the sync page update).
   const tempUser = localStorage.getItem('studentnija_user');
   if (tempUser) {
     try {
       const userData = JSON.parse(tempUser);
-      console.log('📦 Found temporary Google user data:', userData);
       processGoogleUser(userData);
       localStorage.removeItem('studentnija_user');
     } catch (e) {
-      console.warn('Failed to process temporary user', e);
       localStorage.removeItem('studentnija_user');
     }
   }
 
-  // ---------- Check if a user is already logged in ----------
-  // After loadAll, currentUser should be populated from studentnija_currentUser if the user was logged in before.
-  // If not, we still try to load from localStorage directly as a fallback.
   if (!currentUser || !currentUser.email) {
     const stored = localStorage.getItem('studentnija_currentUser');
     if (stored) {
       try {
         const user = JSON.parse(stored);
-        // Update the global currentUser (state.js uses this reference)
         Object.assign(currentUser, user);
-        console.log('👤 Restored stored user:', currentUser.fullName);
       } catch (_) {
         localStorage.removeItem('studentnija_currentUser');
       }
     }
   }
 
-  // ---------- Decide what to render ----------
   if (currentUser && currentUser.email) {
-    console.log('✅ User logged in:', currentUser.fullName);
     renderMainApp();
   } else {
-    console.log('❌ No user session – showing auth');
     renderAuth();
   }
 
-  // ---------- Rest of the boot sequence ----------
   window.addEventListener('app:logout', () => {
-    renderApp();   // renderApp will now show login if no user remains
+    renderApp();
   });
 
   if (typeof app !== 'undefined') {
@@ -700,7 +697,6 @@ window.addEventListener('load', async () => {
   window.addEventListener('online', updateConnectionIndicator);
   window.addEventListener('offline', updateConnectionIndicator);
 
-  // Fallback: hide loading screen after 3 seconds even if something fails
   setTimeout(() => {
     hideLoadingScreen();
   }, 3000);

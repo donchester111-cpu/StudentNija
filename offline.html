@@ -9,8 +9,8 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: #0A111F;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: radial-gradient(ellipse at 20% 50%, #0A111F 0%, #050A14 100%);
       color: #FFFFFF;
       min-height: 100vh;
       display: flex;
@@ -18,62 +18,113 @@
       justify-content: center;
       padding: 20px;
       margin: 0;
+      overflow-x: hidden;
+    }
+
+    /* ─── Subtle animated background dots ─── */
+    .bg-dots {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.05;
+      background-image: radial-gradient(circle at 20% 30%, #00C3FF 1px, transparent 1px),
+                        radial-gradient(circle at 80% 70%, #008751 1px, transparent 1px),
+                        radial-gradient(circle at 50% 90%, #F4B400 1px, transparent 1px);
+      background-size: 80px 80px, 120px 120px, 100px 100px;
+      animation: drift 20s linear infinite;
+    }
+
+    @keyframes drift {
+      0% { background-position: 0 0, 0 0, 0 0; }
+      100% { background-position: 80px 80px, -120px 120px, 100px -100px; }
     }
 
     /* ─── Glass Card ─── */
     .offline-card {
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-radius: 48px;
-      padding: 40px 32px;
+      position: relative;
+      z-index: 1;
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border-radius: 40px;
+      padding: 48px 36px;
       max-width: 420px;
       width: 100%;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.7), 0 0 40px rgba(0, 135, 81, 0.1);
       text-align: center;
-      animation: fadeInUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1) both;
+      animation: fadeInUp 0.7s cubic-bezier(0.2, 0.9, 0.4, 1) both;
     }
 
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(24px) scale(0.98); }
+      from { opacity: 0; transform: translateY(30px) scale(0.96); }
       to { opacity: 1; transform: translateY(0) scale(1); }
     }
 
-    /* ─── Icon ─── */
+    /* ─── Icon with animated ring ─── */
+    .icon-container {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 20px;
+    }
+
     .offline-icon {
       font-size: 64px;
       line-height: 1;
-      margin-bottom: 16px;
-      display: block;
+      filter: drop-shadow(0 4px 12px rgba(0, 195, 255, 0.3));
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .icon-ring {
+      position: absolute;
+      top: 50%; left: 50%;
+      width: 80px; height: 80px;
+      margin-left: -40px; margin-top: -40px;
+      border: 2px solid rgba(0, 195, 255, 0.2);
+      border-radius: 50%;
+      animation: ringPulse 2.5s ease-out infinite;
+    }
+
+    @keyframes ringPulse {
+      0% { transform: scale(1); opacity: 1; }
+      100% { transform: scale(1.8); opacity: 0; }
     }
 
     /* ─── Brand ─── */
     .brand {
-      font-size: 28px;
+      font-size: 30px;
       font-weight: 800;
-      background: linear-gradient(135deg, #00C3FF, #008751, #F4B400);
+      background: linear-gradient(135deg, #00C3FF 0%, #008751 50%, #F4B400 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
       letter-spacing: -0.5px;
-      margin-bottom: 4px;
+      margin-bottom: 6px;
     }
+
     .tagline {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.4);
-      letter-spacing: 1.5px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.35);
+      letter-spacing: 2px;
       font-weight: 400;
-      margin-bottom: 24px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
     }
 
     /* ─── Message ─── */
     .message {
       font-size: 16px;
-      line-height: 1.6;
-      color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 24px;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.65);
+      margin-bottom: 28px;
     }
+
     .message strong {
       color: #00C3FF;
       font-weight: 600;
@@ -81,8 +132,10 @@
 
     /* ─── Retry Button ─── */
     .retry-btn {
-      display: inline-block;
-      padding: 14px 32px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 16px 36px;
       border-radius: 60px;
       background: linear-gradient(135deg, #008751, #00A86B);
       border: none;
@@ -90,26 +143,42 @@
       font-weight: 600;
       font-size: 16px;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 4px 16px rgba(0, 135, 81, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s, background 0.3s;
+      box-shadow: 0 6px 20px rgba(0, 135, 81, 0.35);
       touch-action: manipulation;
-      min-height: 52px;
+      min-height: 54px;
+      letter-spacing: 0.3px;
     }
+
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(0, 135, 81, 0.5);
+    }
+
     .retry-btn:active {
       transform: scale(0.95);
       box-shadow: 0 2px 8px rgba(0, 135, 81, 0.2);
     }
+
     .retry-btn:focus-visible {
       outline: 2px solid #00C3FF;
-      outline-offset: 2px;
+      outline-offset: 3px;
     }
 
-    /* ─── Hints ─── */
+    .retry-btn .icon {
+      font-size: 20px;
+    }
+
+    /* ─── Hint ─── */
     .hint {
       font-size: 13px;
-      color: rgba(255, 255, 255, 0.25);
-      margin-top: 20px;
-      line-height: 1.5;
+      color: rgba(255, 255, 255, 0.2);
+      margin-top: 24px;
+      line-height: 1.6;
+    }
+
+    .hint span {
+      color: rgba(255, 255, 255, 0.35);
     }
 
     /* ─── Responsive ─── */
@@ -119,30 +188,39 @@
         border-radius: 32px;
       }
       .brand { font-size: 24px; }
-      .offline-icon { font-size: 48px; }
+      .offline-icon { font-size: 52px; }
+      .icon-ring { width: 70px; height: 70px; margin-left: -35px; margin-top: -35px; }
       .message { font-size: 15px; }
-      .retry-btn { padding: 12px 24px; font-size: 15px; min-height: 44px; }
+      .retry-btn { padding: 14px 28px; font-size: 15px; min-height: 46px; }
     }
   </style>
 </head>
 <body>
+  <!-- Subtle animated background -->
+  <div class="bg-dots"></div>
+
   <div class="offline-card">
-    <span class="offline-icon">📡</span>
+    <!-- Icon with animated ring -->
+    <div class="icon-container">
+      <span class="offline-icon">📡</span>
+      <div class="icon-ring"></div>
+    </div>
+
     <div class="brand">StudentNija</div>
     <div class="tagline">Study Smarter · Score Higher</div>
 
     <p class="message">
-      You’re <strong>offline</strong>.<br>
-      Please check your internet connection.<br>
-      We’ll be back as soon as you’re online.
+      You’re <strong>offline</strong> right now.<br>
+      Don’t worry – everything you saved is safe.<br>
+      We’ll be right back when you reconnect.
     </p>
 
     <button class="retry-btn" onclick="window.location.reload()">
-      ⟳ Retry
+      <span class="icon">⟳</span> Retry
     </button>
 
     <p class="hint">
-      💡 Your saved data is safe and will sync when you reconnect.
+      💡 <span>Pro tip:</span> Open a past paper or flashcard<br>they still work without internet!
     </p>
   </div>
 </body>

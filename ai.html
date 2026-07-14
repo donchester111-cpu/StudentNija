@@ -17,17 +17,17 @@
 
         :root {
             --bg-primary: #F5F7FA;
-            --bg-card: rgba(255, 255, 255, 0.82);
+            --bg-card: rgba(255, 255, 255, 0.75);
             --bg-card-solid: #FFFFFF;
             --text-primary: #0A1927;
             --text-muted: #6B7F96;
-            --border-light: rgba(0, 0, 0, 0.06);
+            --border-light: rgba(0, 0, 0, 0.08);
             --accent-green: #008751;
             --accent-green-light: #00A86B;
             --accent-gold: #F4B400;
-            --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.10);
-            --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.14);
+            --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 8px 28px rgba(0, 0, 0, 0.10);
+            --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.14);
             --radius-sm: 12px;
             --radius-md: 20px;
             --radius-lg: 28px;
@@ -38,11 +38,11 @@
 
         body.dark-theme {
             --bg-primary: #0A111F;
-            --bg-card: rgba(18, 28, 40, 0.88);
+            --bg-card: rgba(18, 28, 40, 0.85);
             --bg-card-solid: #122033;
             --text-primary: #F0F4FA;
             --text-muted: #8FA0B5;
-            --border-light: rgba(255, 255, 255, 0.06);
+            --border-light: rgba(255, 255, 255, 0.07);
             --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.5);
             --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.6);
@@ -72,7 +72,7 @@
         }
 
         /* ============================================================
-           HEADER
+           HEADER – glass‑morphic
            ============================================================ */
         .ai-header {
             background: var(--bg-card);
@@ -84,83 +84,87 @@
             justify-content: space-between;
             align-items: center;
             flex-shrink: 0;
-            min-height: 56px;
+            min-height: 58px;
             z-index: 10;
             gap: 8px;
+            box-shadow: var(--shadow-sm);
         }
 
         .ai-header .title {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 20px;
+            font-weight: 800;
             background: linear-gradient(135deg, var(--accent-green), var(--accent-gold));
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-            letter-spacing: 0.3px;
+            letter-spacing: -0.3px;
             white-space: nowrap;
         }
 
         .ai-header .back-btn,
         .ai-header .settings-btn {
-            background: none;
+            background: rgba(0,0,0,0.04);
             border: none;
             font-size: 20px;
             cursor: pointer;
-            padding: 4px 8px;
+            padding: 6px 10px;
             color: var(--text-primary);
-            min-width: 40px;
-            min-height: 40px;
+            min-width: 42px;
+            min-height: 42px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
+            border-radius: 14px;
             touch-action: manipulation;
-            transition: background 0.2s;
+            transition: background 0.2s, transform 0.15s;
         }
 
         .ai-header .back-btn:active,
         .ai-header .settings-btn:active {
-            background: rgba(0, 135, 81, 0.12);
+            background: rgba(0, 135, 81, 0.15);
+            transform: scale(0.92);
         }
 
         /* ============================================================
-           CHAT AREA
+           CHAT AREA – scrollable, takes remaining space
            ============================================================ */
         .ai-chat-area {
-            flex: 1;
+            flex: 1 1 0%;            /* grow and shrink, start from zero */
+            min-height: 0;           /* allow shrink */
             overflow-y: auto;
-            padding: 12px 14px;
+            padding: 16px 14px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
             -webkit-overflow-scrolling: touch;
-            min-height: 0;
-            height: 100%;
             background: var(--bg-primary);
+            scroll-behavior: smooth;
         }
 
         .ai-message {
-            max-width: 88%;
-            padding: 10px 14px;
-            border-radius: 18px;
-            line-height: 1.5;
-            animation: fadeInMsg 0.25s ease;
-            font-size: 14px;
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 22px;
+            line-height: 1.55;
+            animation: messageIn 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+            font-size: 14.5px;
             word-wrap: break-word;
-            transition: transform 0.1s;
+            position: relative;
+            transition: transform 0.1s, box-shadow 0.2s;
         }
 
         .ai-message.user {
             align-self: flex-end;
             background: linear-gradient(135deg, var(--accent-green), var(--accent-green-light));
             color: white;
+            box-shadow: 0 4px 14px rgba(0, 135, 81, 0.25);
         }
 
         .ai-message.assistant {
             align-self: flex-start;
             background: var(--bg-card-solid);
-            border: 0.5px solid var(--border-light);
-            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
         }
 
         .ai-message .message-content {
@@ -168,29 +172,28 @@
         }
 
         .ai-message .message-content code {
-            background: rgba(0, 0, 0, 0.06);
+            background: rgba(0,0,0,0.08);
             padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
+            border-radius: 6px;
+            font-size: 12.5px;
+        }
+        .dark-theme .ai-message .message-content code {
+            background: rgba(255,255,255,0.1);
         }
 
         .ai-message .message-content pre {
-            background: rgba(0, 0, 0, 0.05);
-            padding: 8px;
-            border-radius: 10px;
+            background: rgba(0,0,0,0.06);
+            padding: 10px 12px;
+            border-radius: 14px;
             overflow-x: auto;
-            margin: 4px 0;
+            margin: 6px 0;
             font-size: 12px;
         }
 
-        .ai-message .message-content strong {
-            font-weight: 600;
-        }
-
-        @keyframes fadeInMsg {
+        @keyframes messageIn {
             from {
                 opacity: 0;
-                transform: translateY(6px) scale(0.98);
+                transform: translateY(12px) scale(0.96);
             }
             to {
                 opacity: 1;
@@ -198,90 +201,84 @@
             }
         }
 
+        /* Typing indicator */
         .typing-indicator {
             align-self: flex-start;
             background: var(--bg-card-solid);
-            border: 0.5px solid var(--border-light);
-            padding: 10px 14px;
-            border-radius: 18px;
+            border: 1px solid var(--border-light);
+            padding: 12px 16px;
+            border-radius: 22px;
             display: flex;
-            gap: 4px;
+            gap: 5px;
             align-items: center;
             font-size: 14px;
             color: var(--text-muted);
+            box-shadow: var(--shadow-sm);
+            margin-top: 4px;
         }
 
         .typing-indicator .dot {
-            width: 8px;
-            height: 8px;
+            width: 9px;
+            height: 9px;
             background: var(--text-muted);
             border-radius: 50%;
             animation: typingDot 1.4s infinite both;
         }
-
-        .typing-indicator .dot:nth-child(1) {
-            animation-delay: 0s;
-        }
-        .typing-indicator .dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-        .typing-indicator .dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
+        .typing-indicator .dot:nth-child(1) { animation-delay: 0s; }
+        .typing-indicator .dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator .dot:nth-child(3) { animation-delay: 0.4s; }
 
         @keyframes typingDot {
-            0%, 80%, 100% {
-                transform: scale(0.6);
-                opacity: 0.4;
-            }
-            40% {
-                transform: scale(1);
-                opacity: 1;
-            }
+            0%,80%,100% { transform: scale(0.7); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
         }
 
         /* ============================================================
-           INPUT BAR
+           INPUT BAR – anchored at the bottom (never hidden)
            ============================================================ */
         .ai-input-wrapper {
-            position: relative;
-            display: flex;
-            flex-direction: column;
             flex-shrink: 0;
             background: var(--bg-primary);
             border-top: 1px solid var(--border-light);
             width: 100%;
             z-index: 10;
+            padding-bottom: var(--safe-bottom);
         }
 
         .ai-input-bar {
-            padding: 8px 10px calc(8px + var(--safe-bottom));
-            background: var(--bg-primary);
+            padding: 10px 12px;
             display: flex;
-            gap: 6px;
+            gap: 8px;
             align-items: center;
+            background: var(--bg-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 24px 24px 0 0;
+            box-shadow: var(--shadow-sm);
+            margin: 0 6px 6px 6px;
         }
 
         .ai-input-bar .icon-btn {
             background: var(--bg-card-solid);
             border: 1px solid var(--border-light);
-            border-radius: 30px;
-            padding: 8px 10px;
+            border-radius: 50%;
+            padding: 0;
+            width: 42px;
+            height: 42px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-muted);
-            transition: 0.1s;
-            min-width: 40px;
-            min-height: 40px;
+            transition: 0.15s;
             font-size: 18px;
+            flex-shrink: 0;
             touch-action: manipulation;
         }
 
         .ai-input-bar .icon-btn:active {
-            transform: scale(0.92);
-            background: rgba(0, 135, 81, 0.08);
+            transform: scale(0.9);
+            background: rgba(0, 135, 81, 0.1);
         }
 
         .ai-input-bar .icon-btn.recording {
@@ -291,133 +288,121 @@
         }
 
         @keyframes pulseRed {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.3);
-            }
-            50% {
-                box-shadow: 0 0 0 6px rgba(255, 68, 68, 0);
-            }
+            0%,100% { box-shadow: 0 0 0 0 rgba(255,68,68,0.3); }
+            50% { box-shadow: 0 0 0 8px rgba(255,68,68,0); }
         }
 
         .ai-input-bar input[type="text"] {
             flex: 1;
-            padding: 10px 14px;
-            border-radius: 30px;
+            padding: 10px 18px;
+            border-radius: 40px;
             border: 1px solid var(--border-light);
             background: var(--bg-card-solid);
             color: var(--text-primary);
             font-size: 14px;
             outline: none;
             margin: 0;
-            min-height: 40px;
+            min-height: 42px;
             font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
         }
 
         .ai-input-bar input[type="text"]:focus {
             border-color: var(--accent-green);
-            box-shadow: 0 0 0 3px rgba(0, 135, 81, 0.08);
-        }
-
-        .ai-input-bar input[type="text"]:disabled {
-            opacity: 0.6;
+            box-shadow: 0 0 0 3px rgba(0,135,81,0.1);
         }
 
         .ai-input-bar .send-btn {
             background: linear-gradient(135deg, var(--accent-green), var(--accent-green-light));
             border: none;
-            border-radius: 30px;
-            padding: 10px 18px;
+            border-radius: 40px;
+            padding: 0 20px;
             color: white;
             font-weight: 700;
             cursor: pointer;
             flex-shrink: 0;
-            min-width: 56px;
-            min-height: 40px;
-            font-size: 13px;
-            transition: var(--transition-smooth);
-            touch-action: manipulation;
+            min-width: 64px;
+            height: 42px;
+            font-size: 13.5px;
+            letter-spacing: 0.3px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0,135,81,0.3);
         }
 
         .ai-input-bar .send-btn:active {
             transform: scale(0.94);
+            box-shadow: 0 2px 8px rgba(0,135,81,0.3);
         }
 
         .ai-input-bar .send-btn:disabled {
             opacity: 0.5;
-            cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
+        /* Attach menu */
         .ai-attach-menu {
             position: absolute;
-            bottom: 64px;
-            left: 10px;
+            bottom: 74px;
+            left: 12px;
             background: var(--bg-card-solid);
             border: 1px solid var(--border-light);
             border-radius: var(--radius-md);
             padding: 6px;
-            width: 180px;
+            width: 200px;
             display: none;
             z-index: 50;
             flex-direction: column;
             box-shadow: var(--shadow-md);
+            backdrop-filter: blur(10px);
         }
-
-        .ai-attach-menu.show {
-            display: flex;
-        }
+        .ai-attach-menu.show { display: flex; }
 
         .ai-attach-menu .attach-item {
-            padding: 10px 12px;
-            border-radius: 12px;
+            padding: 12px 14px;
+            border-radius: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 13px;
-            min-height: 40px;
+            gap: 12px;
+            font-size: 14px;
+            min-height: 44px;
             touch-action: manipulation;
             color: var(--text-primary);
+            transition: background 0.15s;
         }
-
         .ai-attach-menu .attach-item:active {
-            background: rgba(0, 135, 81, 0.08);
+            background: rgba(0,135,81,0.08);
         }
 
         /* ============================================================
-           SETTINGS PANEL
+           SETTINGS PANEL – modern slide‑in
            ============================================================ */
         .ai-settings-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.4);
             z-index: 300;
             display: none;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(6px);
         }
-
-        .ai-settings-overlay.show {
-            display: block;
-        }
+        .ai-settings-overlay.show { display: block; }
 
         .ai-settings-panel {
             position: fixed;
             top: 0;
-            right: -360px;
-            width: min(340px, 88%);
+            right: -400px;
+            width: min(360px, 88%);
             height: 100%;
             background: var(--bg-card-solid);
             border-left: 1px solid var(--border-light);
-            padding: 24px 20px;
+            padding: 28px 20px;
             overflow-y: auto;
-            transition: right 0.3s cubic-bezier(0.2, 0.9, 0.4, 1);
+            transition: right 0.35s cubic-bezier(0.2, 0.9, 0.4, 1);
             z-index: 301;
             box-shadow: var(--shadow-lg);
         }
-
-        .ai-settings-panel.open {
-            right: 0;
-        }
+        .ai-settings-panel.open { right: 0; }
 
         .ai-settings-panel .close-btn {
             text-align: right;
@@ -430,23 +415,22 @@
             touch-action: manipulation;
         }
 
-        .ai-settings-panel .settings-group {
+        .ai-settings-panel .settings-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(10px);
+            border-radius: var(--radius-md);
+            padding: 16px;
             margin-bottom: 20px;
-            border-bottom: 1px solid var(--border-light);
-            padding-bottom: 16px;
-        }
-
-        .ai-settings-panel .settings-group:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
+            border: 1px solid var(--border-light);
+            box-shadow: var(--shadow-sm);
         }
 
         .ai-settings-panel h4 {
-            font-size: 13px;
+            font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 0.5px;
             color: var(--accent-green);
-            margin: 0 0 10px 0;
+            margin-bottom: 14px;
             font-weight: 700;
         }
 
@@ -455,15 +439,14 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
-            gap: 10px;
+            gap: 12px;
             font-size: 14px;
             color: var(--text-primary);
-            flex-wrap: wrap;
         }
 
         .ai-settings-panel .setting-row .label {
             font-weight: 500;
-            min-width: 100px;
+            min-width: 90px;
         }
 
         .ai-settings-panel .setting-row .value {
@@ -473,73 +456,58 @@
 
         .ai-settings-panel .switch {
             width: 44px;
-            height: 22px;
+            height: 24px;
             background: var(--text-muted);
-            border-radius: 22px;
+            border-radius: 24px;
             position: relative;
             cursor: pointer;
             flex-shrink: 0;
             transition: background 0.2s;
         }
-
-        .ai-settings-panel .switch.active {
-            background: var(--accent-green);
-        }
-
+        .ai-settings-panel .switch.active { background: var(--accent-green); }
         .ai-settings-panel .switch::after {
             content: "";
             position: absolute;
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             background: white;
             border-radius: 50%;
             top: 2px;
             left: 2px;
             transition: left 0.2s;
         }
-
-        .ai-settings-panel .switch.active::after {
-            left: 24px;
-        }
+        .ai-settings-panel .switch.active::after { left: 22px; }
 
         .ai-settings-panel select,
         .ai-settings-panel input[type="text"],
         .ai-settings-panel input[type="number"],
-        .ai-settings-panel input[type="range"] {
+        .ai-settings-panel input[type="range"],
+        .ai-settings-panel textarea {
             width: 100%;
-            padding: 10px 12px;
+            padding: 10px 14px;
             border-radius: var(--radius-sm);
             border: 1px solid var(--border-light);
             background: var(--bg-primary);
             color: var(--text-primary);
             margin: 4px 0 10px;
             font-size: 14px;
-            min-height: 40px;
             font-family: inherit;
-        }
-
-        .ai-settings-panel select:focus,
-        .ai-settings-panel input:focus {
-            outline: none;
-            border-color: var(--accent-green);
         }
 
         .ai-settings-panel .color-palette {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
-            margin: 6px 0 10px;
+            margin: 8px 0;
         }
-
         .ai-settings-panel .color-dot {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             cursor: pointer;
-            border: 2px solid transparent;
+            border: 3px solid transparent;
             transition: transform 0.2s, border-color 0.2s;
         }
-
         .ai-settings-panel .color-dot.active {
             border-color: var(--text-primary);
             transform: scale(1.12);
@@ -555,123 +523,57 @@
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition-smooth);
-            margin-top: 4px;
+            margin-top: 8px;
             font-size: 14px;
             touch-action: manipulation;
         }
-
         .ai-settings-panel .btn-outline:active {
-            background: rgba(0, 135, 81, 0.08);
+            background: rgba(0,135,81,0.08);
             transform: scale(0.97);
         }
-
         .ai-settings-panel .btn-danger {
             border-color: #ff4444;
             color: #ff4444;
         }
 
-        .ai-settings-panel .btn-danger:active {
-            background: rgba(255, 68, 68, 0.08);
-        }
-
         /* ============================================================
            SCROLLBAR
            ============================================================ */
-        ::-webkit-scrollbar {
-            width: 3px;
-            height: 3px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--accent-green);
-            border-radius: 10px;
-        }
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent-green) transparent;
-        }
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--accent-green); border-radius: 10px; }
+        * { scrollbar-width: thin; scrollbar-color: var(--accent-green) transparent; }
 
         /* ============================================================
            RESPONSIVE
            ============================================================ */
         @media (max-width: 480px) {
-            .ai-header {
-                padding: 8px 12px;
-                min-height: 48px;
-            }
-            .ai-header .title {
-                font-size: 15px;
-            }
-            .ai-input-bar {
-                padding: 6px 8px calc(6px + var(--safe-bottom));
-                gap: 4px;
-            }
-            .ai-input-bar .icon-btn {
-                min-width: 36px;
-                min-height: 36px;
-                font-size: 16px;
-                padding: 6px 8px;
-            }
-            .ai-input-bar input[type="text"] {
-                font-size: 13px;
-                min-height: 36px;
-                padding: 8px 12px;
-            }
-            .ai-input-bar .send-btn {
-                min-width: 48px;
-                min-height: 36px;
-                font-size: 12px;
-                padding: 8px 12px;
-            }
-            .ai-message {
-                max-width: 92%;
-                font-size: 13px;
-                padding: 8px 12px;
-            }
-            .ai-chat-area {
-                padding: 8px 10px;
-                gap: 6px;
-            }
-            .ai-settings-panel {
-                width: 90%;
-                padding: 16px;
-            }
-            .ai-settings-panel .setting-row {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 4px;
-            }
-            .ai-settings-panel .setting-row .label {
-                min-width: auto;
-            }
+            .ai-header { padding: 8px 12px; min-height: 52px; }
+            .ai-header .title { font-size: 17px; }
+            .ai-input-bar { margin: 0 4px 4px 4px; padding: 8px 8px; gap: 6px; }
+            .ai-input-bar .icon-btn { width: 36px; height: 36px; font-size: 16px; }
+            .ai-input-bar input[type="text"] { font-size: 13px; min-height: 38px; }
+            .ai-input-bar .send-btn { min-width: 52px; height: 38px; font-size: 12px; padding: 0 14px; }
+            .ai-message { max-width: 92%; font-size: 13.5px; padding: 10px 14px; }
+            .ai-chat-area { padding: 12px 10px; gap: 8px; }
+            .ai-settings-panel { width: 92%; padding: 20px 14px; }
+            .ai-settings-panel .setting-row { flex-direction: column; align-items: stretch; gap: 4px; }
+            .ai-settings-panel .setting-row .label { min-width: auto; }
         }
 
         @media (min-width: 768px) {
-            .ai-message {
-                max-width: 75%;
-            }
-            .ai-settings-panel {
-                width: min(400px, 60%);
-                padding: 32px 28px;
-            }
+            .ai-message { max-width: 75%; }
+            .ai-settings-panel { width: min(420px, 60%); padding: 36px 30px; }
         }
 
         @media (min-width: 1024px) {
-            .ai-message {
-                max-width: 65%;
-            }
+            .ai-message { max-width: 65%; }
         }
 
-        /* ---- Safe area ---- */
+        /* Safe area */
         @supports (padding: max(0px)) {
-            .ai-input-bar {
-                padding-bottom: max(8px, env(safe-area-inset-bottom));
-            }
-            .ai-settings-panel {
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
-            }
+            .ai-input-wrapper { padding-bottom: max(0px, env(safe-area-inset-bottom)); }
+            .ai-settings-panel { padding-bottom: max(20px, env(safe-area-inset-bottom)); }
         }
     </style>
 </head>
@@ -679,20 +581,20 @@
     <div id="app">
         <!-- HEADER -->
         <div class="ai-header">
-            <button class="back-btn" id="backBtn">←</button>
+            <button class="back-btn" id="backBtn" aria-label="Go back">←</button>
             <span class="title">🤖 StudentNija AI</span>
-            <button class="settings-btn" id="settingsBtn">⚙️</button>
+            <button class="settings-btn" id="settingsBtn" aria-label="Settings">⚙️</button>
         </div>
 
         <!-- CHAT AREA -->
         <div class="ai-chat-area" id="chatArea"></div>
 
-        <!-- INPUT BAR -->
+        <!-- INPUT BAR (always visible) -->
         <div class="ai-input-wrapper">
             <div class="ai-input-bar">
-                <button class="icon-btn" id="plusBtn">➕</button>
-                <button class="icon-btn" id="micBtn">🎤</button>
-                <input type="text" id="userInput" placeholder="Type your message..." />
+                <button class="icon-btn" id="plusBtn" aria-label="Attach">➕</button>
+                <button class="icon-btn" id="micBtn" aria-label="Voice input">🎤</button>
+                <input type="text" id="userInput" placeholder="Ask me anything..." />
                 <button class="send-btn" id="sendBtn">SEND</button>
             </div>
             <div class="ai-attach-menu" id="attachMenu">
@@ -708,7 +610,7 @@
     <div class="ai-settings-panel" id="settingsPanel">
         <div class="close-btn" id="settingsClose">✕</div>
 
-        <div class="settings-group">
+        <div class="settings-card">
             <h4>🧠 Model & Personality</h4>
             <div class="setting-row">
                 <span class="label">AI Model</span>
@@ -731,9 +633,11 @@
                 </select>
             </div>
             <div class="setting-row">
-                <span class="label">Creativity (Temp)</span>
-                <input type="range" id="tempSlider" min="0" max="1" step="0.05" value="0.7" />
-                <span class="value" id="tempDisplay">0.70</span>
+                <span class="label">Creativity</span>
+                <div style="display:flex; align-items:center; gap:8px; flex:1;">
+                    <input type="range" id="tempSlider" min="0" max="1" step="0.05" value="0.7" style="flex:1;" />
+                    <span class="value" id="tempDisplay" style="min-width:36px;">0.70</span>
+                </div>
             </div>
             <div class="setting-row">
                 <span class="label">Max Tokens</span>
@@ -741,7 +645,7 @@
             </div>
         </div>
 
-        <div class="settings-group">
+        <div class="settings-card">
             <h4>💾 Memory & Context</h4>
             <div class="setting-row">
                 <span class="label">Remember conversation</span>
@@ -753,11 +657,11 @@
             </div>
             <div class="setting-row">
                 <span class="label">Clear history</span>
-                <button class="btn-outline" id="clearChatBtn" style="width:auto; padding:6px 16px;">Clear</button>
+                <button class="btn-outline" id="clearChatBtn" style="width:auto; padding:8px 18px;">Clear</button>
             </div>
         </div>
 
-        <div class="settings-group">
+        <div class="settings-card">
             <h4>🎨 Appearance</h4>
             <div class="setting-row">
                 <span class="label">Neon Effect</span>
@@ -782,7 +686,7 @@
             </div>
         </div>
 
-        <div class="settings-group">
+        <div class="settings-card">
             <h4>🔊 Voice & Input</h4>
             <div class="setting-row">
                 <span class="label">Voice recognition</span>
@@ -790,41 +694,36 @@
             </div>
         </div>
 
-        <div class="settings-group">
+        <div class="settings-card">
             <h4>⚡ Advanced</h4>
-            <div class="setting-row">
-                <span class="label">System prompt (custom)</span>
-                <textarea id="systemPromptInput" rows="3" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-light); background:var(--bg-primary); color:var(--text-primary); font-size:13px; resize:vertical; font-family:inherit;"></textarea>
+            <div class="setting-row" style="flex-direction: column; align-items: stretch;">
+                <span class="label">Custom system prompt</span>
+                <textarea id="systemPromptInput" rows="3" style="width:100%; margin-top:6px;"></textarea>
             </div>
-            <button class="btn-outline" id="saveSystemPromptBtn">Save Custom Prompt</button>
+            <button class="btn-outline" id="saveSystemPromptBtn" style="margin-top:6px;">Save Custom Prompt</button>
             <button class="btn-outline btn-danger" id="resetSystemPromptBtn" style="margin-top:6px;">Reset to Default</button>
         </div>
     </div>
 
-    <!-- HIDDEN FILE INPUT -->
     <input type="file" id="fileInput" accept="image/*,text/plain" style="display:none" />
 
     <script>
         // ============================================================
-        // STUDENTNIJA AI v3.0 – Full Control & Customisation
+        // STUDENTNIJA AI v3.1 – Production UI + Fixed Input Visibility
         // ============================================================
- // ============================================================
-    // UNIFIED BACK FUNCTION – matches credit page exactly
-    // ============================================================
-    function goBack() {
-        if (window.history.length > 1) {
-            window.history.back();
-        } else {
-            if (typeof app !== 'undefined' && app.Close) {
-                app.Close();
+
+        // ---- Unified back function ----
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
             } else {
-                window.close();
+                if (typeof app !== 'undefined' && app.Close) {
+                    app.Close();
+                } else {
+                    window.close();
+                }
             }
         }
-    }
-
-    // ---- Back button listener ----
-    document.getElementById('backBtn').addEventListener('click', goBack);
 
         // ---- STATE ----
         let currentUser = null;
@@ -919,6 +818,39 @@
         }
         fetchAppState();
 
+        // ---- Theme detection & sync ----
+        function detectTheme() {
+            if (window.parent && window.parent.settings && window.parent.settings.theme) {
+                return window.parent.settings.theme;
+            }
+            const keys = ['studentnija_settings', 'studentnija_chat_settings_v3'];
+            for (const key of keys) {
+                const raw = localStorage.getItem(key);
+                if (raw) {
+                    try {
+                        const settings = JSON.parse(raw);
+                        if (settings.theme) return settings.theme;
+                    } catch (_) {}
+                }
+            }
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+            return 'light';
+        }
+
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.add('dark-theme');
+            } else {
+                document.body.classList.remove('dark-theme');
+            }
+        }
+
+        function syncThemeFromApp() {
+            if (!syncTheme) return;
+            const theme = detectTheme();
+            applyTheme(theme);
+        }
+
         // ---- Load settings ----
         function loadSettings() {
             const saved = localStorage.getItem('studentnija_ai_settings');
@@ -938,6 +870,7 @@
                     customSystemPrompt = s.customSystemPrompt || '';
                 } catch (e) {}
             }
+            syncThemeFromApp();
             applySettings();
         }
         loadSettings();
@@ -974,15 +907,7 @@
             systemPromptInput.value = customSystemPrompt;
             document.documentElement.style.setProperty('--ai-accent', aiAccentColor);
             document.body.classList.toggle('ai-neon', aiNeonEffect);
-            // Apply theme sync
-            if (syncTheme && window.parent && window.parent.settings && window.parent.settings.theme) {
-                const theme = window.parent.settings.theme;
-                if (theme === 'dark') {
-                    document.body.classList.add('dark-theme');
-                } else {
-                    document.body.classList.remove('dark-theme');
-                }
-            }
+            syncThemeFromApp();
         }
 
         // ---- Render messages ----
@@ -1008,7 +933,7 @@
             const div = document.createElement('div');
             div.className = 'typing-indicator';
             div.id = 'typingIndicator';
-            div.innerHTML = `<span>✦Thinking</span><span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
+            div.innerHTML = `<span>✦ Thinking</span><span class="dot"></span><span class="dot"></span><span class="dot"></span>`;
             chatArea.appendChild(div);
             chatArea.scrollTop = chatArea.scrollHeight;
         }
@@ -1145,7 +1070,6 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
                 const reply = await callAI(text);
                 hideTyping();
 
-                // Check for action JSON
                 const actionMatch = reply.match(/\{[\s\S]*"action"[\s\S]*\}/);
                 if (actionMatch) {
                     try {
@@ -1205,10 +1129,7 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
             }
         });
 
-        // ---- BACK BUTTON – UNIFIED BEHAVIOUR ----
-        backBtn.addEventListener('click', function() {
-            goBack();
-        });
+        backBtn.addEventListener('click', goBack);
 
         // ---- Settings ----
         settingsBtn.addEventListener('click', () => {
@@ -1224,7 +1145,6 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
             settingsPanel.classList.remove('open');
         });
 
-        // Memory switch
         memorySwitch.addEventListener('click', () => {
             aiMemoryEnabled = !aiMemoryEnabled;
             memorySwitch.classList.toggle('active', aiMemoryEnabled);
@@ -1232,7 +1152,6 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
             saveSettings();
         });
 
-        // Neon switch
         neonSwitch.addEventListener('click', () => {
             aiNeonEffect = !aiNeonEffect;
             neonSwitch.classList.toggle('active', aiNeonEffect);
@@ -1240,50 +1159,43 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
             saveSettings();
         });
 
-        // App data switch
         appDataSwitch.addEventListener('click', () => {
             includeAppData = !includeAppData;
             appDataSwitch.classList.toggle('active', includeAppData);
             saveSettings();
         });
 
-        // Sync theme switch
         syncThemeSwitch.addEventListener('click', () => {
             syncTheme = !syncTheme;
             syncThemeSwitch.classList.toggle('active', syncTheme);
             if (syncTheme) {
-                applySettings();
+                syncThemeFromApp();
             }
             saveSettings();
         });
 
-        // Voice switch
         voiceSwitch.addEventListener('click', () => {
             voiceEnabled = !voiceEnabled;
             voiceSwitch.classList.toggle('active', voiceEnabled);
             saveSettings();
         });
 
-        // Personality
         personalitySelect.addEventListener('change', () => {
             aiPersonality = personalitySelect.value;
             saveSettings();
         });
 
-        // Model
         modelSelect.addEventListener('change', () => {
             currentAIModel = modelSelect.value;
             saveSettings();
         });
 
-        // Temperature
         tempSlider.addEventListener('input', () => {
             aiTemperature = parseFloat(tempSlider.value);
             tempDisplay.textContent = aiTemperature.toFixed(2);
             saveSettings();
         });
 
-        // Max tokens
         maxTokensInput.addEventListener('change', () => {
             aiMaxTokens = parseInt(maxTokensInput.value) || 800;
             if (aiMaxTokens < 100) aiMaxTokens = 100;
@@ -1292,7 +1204,6 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
             saveSettings();
         });
 
-        // Clear chat
         clearChatBtn.addEventListener('click', () => {
             conversationHistory = [];
             renderMessages();
@@ -1302,7 +1213,6 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
             settingsPanel.classList.remove('open');
         });
 
-        // Color dots
         colorDots.forEach(dot => {
             dot.addEventListener('click', () => {
                 const color = dot.dataset.color;
@@ -1314,7 +1224,6 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
             });
         });
 
-        // Custom system prompt
         saveSystemPromptBtn.addEventListener('click', () => {
             customSystemPrompt = systemPromptInput.value.trim();
             saveSettings();
@@ -1338,20 +1247,17 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
             fileInput.accept = 'image/*';
             fileInput.click();
         });
-
         attachFile.addEventListener('click', () => {
             attachMenu.classList.remove('show');
             fileInput.accept = 'text/plain';
             fileInput.click();
         });
-
         attachWebSearch.addEventListener('click', () => {
             attachMenu.classList.remove('show');
             const query = userInput.value.trim() || "latest news";
             userInput.value = `🔍 Search web for: ${query}. Can you provide a summary?`;
             sendMessage();
         });
-
         fileInput.addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -1396,18 +1302,16 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
                 try { conversationHistory = JSON.parse(saved); } catch (e) { conversationHistory = []; }
             }
             if (conversationHistory.length === 0) {
-                conversationHistory.push({ role: "assistant", content: "StudentNija AI v3.0 – I have full access to your app. Ask me to add courses, tasks, update profile, or search anything!" });
+                conversationHistory.push({ role: "assistant", content: "StudentNija AI v3.1 – I have full access to your app. Ask me to add courses, tasks, update profile, or search anything!" });
             }
             renderMessages();
         }
         loadConversationHistory();
 
-        // ---- Save history on unload ----
         window.addEventListener('beforeunload', () => {
             localStorage.setItem('studentnija_ai_history_standalone', JSON.stringify(conversationHistory));
         });
 
-        // ---- Simple notification ----
         function addNotification(title, message) {
             if (window.parent && window.parent.addNotification) {
                 window.parent.addNotification(title, message);
@@ -1416,7 +1320,19 @@ ${context ? `\n---\nApp data:\n${context}` : ''}`;
             }
         }
 
-        console.log('✅ StudentNija AI v3.0 loaded.');
+        // ---- Listen for theme changes from parent ----
+        window.addEventListener('message', (event) => {
+            const msg = event.data;
+            if (msg && msg.type === 'themeChanged' && syncTheme) {
+                applyTheme(msg.theme);
+            }
+        });
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (syncTheme) syncThemeFromApp();
+        });
+
+        console.log('✅ StudentNija AI v3.1 production UI ready.');
     </script>
 </body>
 </html>
