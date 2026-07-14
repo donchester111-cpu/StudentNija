@@ -5,12 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Sign in with Google</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
         /* ---- Theme variables (synced with main app) ---- */
         :root {
             --bg-primary: #0A111F;
@@ -27,8 +21,6 @@
             --radius: 28px;
             --transition: 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         }
-
-        /* Light theme */
         body.light-theme {
             --bg-primary: #F0F4FA;
             --bg-secondary: #FFFFFF;
@@ -39,7 +31,7 @@
             --shadow: 0 8px 40px rgba(0, 0, 0, 0.07);
             --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
         }
-
+        * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family: 'Inter', -apple-system, system-ui, sans-serif;
             background: var(--bg-primary);
@@ -54,7 +46,6 @@
             transition: background var(--transition), color var(--transition);
             background-image: radial-gradient(ellipse at 50% 0%, var(--accent-glow) 0%, transparent 70%);
         }
-
         .container {
             max-width: 400px;
             width: 100%;
@@ -68,143 +59,25 @@
             transition: background var(--transition), box-shadow var(--transition), border-color var(--transition);
             animation: fadeUp 0.6s ease forwards;
         }
-
         @keyframes fadeUp {
-            from {
-                opacity: 0;
-                transform: translateY(24px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-
-        .logo {
-            font-size: 72px;
-            display: inline-block;
-            filter: drop-shadow(0 8px 32px var(--accent-glow));
-            animation: float 6s ease-in-out infinite;
-            line-height: 1;
-            margin-bottom: 4px;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        h1 {
-            font-size: 28px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            margin-bottom: 4px;
-            background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent-light));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .sub {
-            font-size: 15px;
-            color: var(--text-muted);
-            margin-bottom: 28px;
-            font-weight: 400;
-        }
-
-        #status {
-            margin: 8px 0 16px;
-            font-size: 14px;
-            color: var(--text-muted);
-            min-height: 24px;
-            transition: color 0.2s;
-        }
-
-        .google-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 14px;
-            width: 100%;
-            padding: 16px 20px;
-            border-radius: 60px;
-            background: #ffffff;
-            color: #0A111F;
-            border: none;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            transition: transform 0.15s, box-shadow 0.2s, background 0.2s;
-            font-family: inherit;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-        }
-
-        .google-btn:hover {
-            background: #f5f5f5;
-        }
-
-        .google-btn:active {
-            transform: scale(0.96);
-        }
-
-        .google-btn img {
-            width: 22px;
-            height: 22px;
-        }
-
-        .back-link {
-            display: inline-block;
-            margin-top: 20px;
-            color: var(--text-muted);
-            font-size: 14px;
-            cursor: pointer;
-            text-decoration: none;
-            transition: color 0.2s;
-            font-weight: 500;
-            padding: 6px 12px;
-            border-radius: 30px;
-            background: rgba(255,255,255,0.03);
-        }
-
-        .back-link:hover {
-            color: var(--text-primary);
-            background: rgba(255,255,255,0.06);
-        }
-
-        .spinner {
-            width: 28px;
-            height: 28px;
-            border: 3px solid rgba(255,255,255,0.1);
-            border-top: 3px solid var(--accent);
-            border-radius: 50%;
-            animation: spin 0.9s linear infinite;
-            margin: 8px auto;
-            display: none;
-        }
-
-        .spinner.show {
-            display: block;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ---- Responsive tweaks ---- */
-        @media (max-width: 480px) {
-            .container {
-                padding: 32px 18px 24px;
-            }
-            .logo {
-                font-size: 56px;
-            }
-            h1 {
-                font-size: 24px;
-            }
-            .sub {
-                font-size: 14px;
-            }
-        }
+        .logo { font-size: 72px; display: inline-block; filter: drop-shadow(0 8px 32px var(--accent-glow)); animation: float 6s ease-in-out infinite; line-height: 1; margin-bottom: 4px; }
+        @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 4px; background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .sub { font-size: 15px; color: var(--text-muted); margin-bottom: 28px; font-weight: 400; }
+        #status { margin: 8px 0 16px; font-size: 14px; color: var(--text-muted); min-height: 24px; transition: color 0.2s; }
+        .google-btn { display: flex; align-items: center; justify-content: center; gap: 14px; width: 100%; padding: 16px 20px; border-radius: 60px; background: #ffffff; color: #0A111F; border: none; font-weight: 600; font-size: 16px; cursor: pointer; transition: transform 0.15s, box-shadow 0.2s, background 0.2s; font-family: inherit; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+        .google-btn:hover { background: #f5f5f5; }
+        .google-btn:active { transform: scale(0.96); }
+        .google-btn img { width: 22px; height: 22px; }
+        .back-link { display: inline-block; margin-top: 20px; color: var(--text-muted); font-size: 14px; cursor: pointer; text-decoration: none; transition: color 0.2s; font-weight: 500; padding: 6px 12px; border-radius: 30px; background: rgba(255,255,255,0.03); }
+        .back-link:hover { color: var(--text-primary); background: rgba(255,255,255,0.06); }
+        .spinner { width: 28px; height: 28px; border: 3px solid rgba(255,255,255,0.1); border-top: 3px solid var(--accent); border-radius: 50%; animation: spin 0.9s linear infinite; margin: 8px auto; display: none; }
+        .spinner.show { display: block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 480px) { .container { padding: 32px 18px 24px; } .logo { font-size: 56px; } h1 { font-size: 24px; } .sub { font-size: 14px; } }
     </style>
 </head>
 <body>
@@ -241,7 +114,6 @@
                 const APP_KEY = 'studentnija_settings';
                 const CHAT_KEY = 'studentnija_chat_settings_v3';
                 let theme = null;
-
                 try {
                     const appRaw = localStorage.getItem(APP_KEY);
                     if (appRaw) {
@@ -249,7 +121,6 @@
                         if (appSettings.theme) theme = appSettings.theme;
                     }
                 } catch (_) {}
-
                 if (!theme) {
                     try {
                         const chatRaw = localStorage.getItem(CHAT_KEY);
@@ -259,24 +130,18 @@
                         }
                     } catch (_) {}
                 }
-
                 if (!theme) {
                     const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
                     theme = prefersLight ? 'light' : 'dark';
                 }
-
                 document.body.classList.toggle('light-theme', theme === 'light');
             }
-
-            // Load theme on page load and listen for storage changes (if user changes theme in another tab)
             loadTheme();
             window.addEventListener('storage', function(e) {
-                if (e.key === APP_KEY || e.key === CHAT_KEY) {
-                    loadTheme();
-                }
+                if (e.key === APP_KEY || e.key === CHAT_KEY) loadTheme();
             });
 
-            // ---- If this page is loaded in a popup and has a URL fragment ----
+            // ---- If this page is loaded in a popup and has a URL fragment (token response) ----
             if (window.opener && window.location.hash) {
                 const hash = window.location.hash.substring(1);
                 const params = new URLSearchParams(hash);
@@ -307,14 +172,23 @@
                         name: data.name || data.given_name || 'Google User',
                         picture: data.picture || ''
                     };
+
+                    // ---- Save to localStorage (fallback) ----
                     localStorage.setItem('studentnija_user', JSON.stringify(userData));
-                    statusEl.textContent = '✅ Signed in as ' + userData.name + '!';
-                    spinner.classList.remove('show');
+
+                    // ---- Send to opener via postMessage (primary) ----
                     if (window.opener && !window.opener.closed) {
-                        window.opener.postMessage({ type: 'google_oauth_response', success: true }, '*');
+                        window.opener.postMessage({
+                            type: 'google_login_success',
+                            user: userData
+                        }, window.location.origin);
+                        statusEl.textContent = '✅ Login successful! Returning to app...';
+                        spinner.classList.remove('show');
                         setTimeout(() => window.close(), 500);
                     } else {
+                        // Standalone mode – show success and allow user to close
                         statusEl.textContent = '✅ Login successful! You can close this window.';
+                        spinner.classList.remove('show');
                         setTimeout(() => window.close(), 2000);
                     }
                 } catch (err) {
@@ -344,12 +218,8 @@
 
                 const handleMessage = (event) => {
                     if (event.data && event.data.type === 'google_oauth_response') {
-                        const { access_token, error, success } = event.data;
-                        if (success) {
-                            statusEl.textContent = '✅ Login successful! Returning to app...';
-                            spinner.classList.remove('show');
-                            setTimeout(() => window.close(), 1000);
-                        } else if (error) {
+                        const { access_token, error } = event.data;
+                        if (error) {
                             statusEl.textContent = '❌ Error: ' + error;
                             spinner.classList.remove('show');
                         } else if (access_token) {

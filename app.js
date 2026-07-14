@@ -173,11 +173,9 @@ export function showAuthForm(formType) {
 
 // ======================== GOOGLE SIGN-IN ========================
 export function startGoogleSignIn() {
-  // Use relative path – assumes studentnija_sync.html is in the same folder
   const loginUrl = "studentnija_sync.html";
 
   if (typeof app !== 'undefined' && app.CreateIntent && app.StartActivity) {
-    // DroidScript – open in system browser
     var intent = app.CreateIntent();
     intent.SetAction("android.intent.action.VIEW");
     intent.SetData(loginUrl);
@@ -185,7 +183,6 @@ export function startGoogleSignIn() {
     app.StartActivity(intent);
     addNotification('Sign In', 'Please complete login in your browser, then return to the app.');
   } else {
-    // Web – open in new tab
     window.open(loginUrl, '_blank');
     addNotification('Sign In', 'Please complete login in the new tab, then return here.');
   }
@@ -214,7 +211,7 @@ export function startLoginPoller() {
 
 export function processUserData(userData) {
   try {
-    const user = JSON.parse(userData);
+    const user = typeof userData === 'string' ? JSON.parse(userData) : userData;
     if (!user || !user.email) {
       localStorage.removeItem('studentnija_user');
       return;
@@ -432,15 +429,15 @@ export function attachBottomNav() {
         if (navItems.includes(page)) {
           if (page === currentPage) return;
           if (page === 'ai') {
-            window.open('AI.html', '_blank');
+            window.open('ai.html', '_blank');
             return;
           }
           if (page === 'studygroups') {
-            window.open('Chat.html', '_blank');
+            window.open('studygroups.html', '_blank');
             return;
           }
           if (page === 'exams') {
-            window.open('Exam.html', '_blank');
+            window.open('exams.html', '_blank');
             return;
           }
           const overlay = document.getElementById('settingsOverlayAI');
@@ -636,20 +633,18 @@ if (!window._aiMessageListener) {
       handleAICommand(msg.action, msg.data, msg.requestId);
     }
 
-    // ---- Handle Google Sign-In success message from sync page ----
-    if (msg && msg.type === 'google_oauth_response' && msg.success) {
-      console.log('✅ Google Sign-In success message received!');
-      // Force a check of localStorage
-      const userData = localStorage.getItem('studentnija_user');
-      if (userData) {
-        processUserData(userData);
-      } else {
-        // If the sync page sent success but data isn't there yet, wait a bit
-        setTimeout(() => {
-          const data = localStorage.getItem('studentnija_user');
-          if (data) processUserData(data);
-        }, 500);
+    // ---- Handle Google Sign-In success (postMessage from sync page) ----
+    if (msg && msg.type === 'google_login_success' && msg.user) {
+      console.log('✅ Google login success via postMessage!', msg.user);
+      // Process the user data directly
+      processUserData(msg.user);
+      // Stop the poller if it's running (since we already have the data)
+      if (loginPoller) {
+        clearInterval(loginPoller);
+        loginPoller = null;
+        isWaitingForLogin = false;
       }
+      // Render the app (already handled by processUserData)
     }
 
     if (msg && msg.type === 'navigateTo' && msg.page === 'home') {
