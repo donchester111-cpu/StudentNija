@@ -8,7 +8,7 @@ import {
   originalAddExam, originalAddClass, rescheduleAllFromStorage,
   escapeHtml, initCoursesData, initScholarships, initAchievements,
   showLoadingOverlay, hideLoadingOverlay,
-  registerUser, loginUser, updateUserProfile, changePassword, logout, deleteAccount,
+  registerUser, loginUser, changePassword,
   updateConnectionIndicator
 } from './state.js';
 
@@ -41,8 +41,190 @@ window.closeToolModal = closeToolModal;
 export let currentPage = "home";
 window.currentPage = currentPage;
 
-export let isWaitingForLogin = false;
-export let loginPoller = null;
+// JWT and user storage keys
+const JWT_STORAGE_KEY = 'studentnija_jwt';
+const USER_STORAGE_KEY = 'studentnija_currentUser';
+const API_BASE_URL = 'https://studentnija-public-chat.onrender.com'; // Replace with your Render backend URL
+
+// ======================== GOOGLE AUTH (GIS) with reliable loading ========================
+let authInitialized = false;
+
+function waitForGoogleAuth() {
+  return new Promise((resolve) => {
+    if (typeof google !== 'undefined' && google.accounts) {
+      resolve();
+      return;
+    }
+    const checkInterval = setInterval(() => {
+      if (typeof google !== 'undefined' && google.accounts) {
+        clearInterval(checkInterval);
+        resolve();
+      }
+    }, 100);
+    setTimeout(() => {
+      clearInterval(checkInterval);
+      console.warn('Google Identity Services did not load within 10 seconds.');
+      resolve();
+    }, 10000);
+  });
+}
+
+async function initGoogleAuth() {
+  if (authInitialized) return;
+  await waitForGoogleAuth();
+  
+  if (typeof google === 'undefined' || !google.accounts) {
+    console.error('Google Identity Services not available.');
+    const container = document.getElementById('googleButtonContainer');
+    if (container) {
+      container.innerHTML = `<p style="color: var(--accent-red); font-size: 14px;">⚠️ Google Sign-In not available. Please try again later.</p>`;
+    }
+    return;
+  }
+  
+  authInitialized = true;
+  const clientId = '738668428340-gpf3ctm26fkfpj441ra00ra1h65gelov.apps.googleusercontent.com';
+  google.accounts.id.initialize({
+    client_id: clientId,
+    callback: handleCredentialResponse,
+    cancel_on_tap_outside: false,
+    auto_select: false,
+  });
+}
+
+async function renderGoogleButton(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  await waitForGoogleAuth();
+  
+  if (typeof google === 'undefined' || !google.accounts) {
+    container.innerHTML = `<p style="color: var(--accent-red); font-size: 14px;">⚠️ Google Sign-In not available. Please try again later.</p>`;
+    return;
+  }
+  
+  container.innerHTML = '';
+  google.accounts.id.renderButton(container, {
+    type: 'standard',
+    theme: 'outline',
+    size: 'large',
+    width: '100%',
+    text: 'signin_with',
+    shape: 'pill',
+    logo_alignment: 'left',
+  });
+}
+
+async function handleCredentialResponse(response) {
+  const idToken = response.credential;
+  showLoadingOverlay('Signing in...');
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken }),
+    });
+
+    if (!res.ok) {
+      const error = await res.json();
+      throw new Error(error.error || 'Authentication failed');
+    }
+
+    const data = await res.json();
+    
+    if (data.success && data.token && data.user) {
+      localStorage.setItem(JWT_STORAGE_KEY, data.token);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+      Object.assign(currentUser, data.user);
+      hideLoadingOverlay();
+      addNotification('Welcome', `Hello ${data.user.fullName}!`);
+      renderApp();
+    } else {
+      throw new Error('Invalid response from server');
+    }
+  } catch (err) {
+    hideLoadingOverlay();
+    addNotification('Error', 'Sign-in failed: ' + err.message);
+    alert('Sign-in failed: ' + err.message);
+  }
+}
+
+// ---- Session restoration ----
+async function restoreSession() {
+  const token = localStorage.getItem(JWT_STORAGE_KEY);
+  if (!token) return false;
+  
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (!response.ok) {
+      localStorage.removeItem(JWT_STORAGE_KEY);
+      localStorage.removeItem(USER_STORAGE_KEY);
+      return false;
+    }
+    
+    const data = await response.json();
+    if (data.user) {
+      Object.assign(currentUser, data.user);
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.warn('Session restore failed:', e);
+    localStorage.removeItem(JWT_STORAGE_KEY);
+    localStorage.removeItem(USER_STORAGE_KEY);
+    return false;
+  }
+}
+
+// ---- Logout (JWT-based) ----
+function logout() {
+  localStorage.removeItem(JWT_STORAGE_KEY);
+  localStorage.removeItem(USER_STORAGE_KEY);
+  Object.keys(currentUser).forEach(key => delete currentUser[key]);
+  fetch(`${API_BASE_URL}/api/auth/logout`, { method: 'POST' }).catch(() => {});
+  renderApp();
+  addNotification('Logout', 'You have been logged out.');
+}
+window.logout = logout;
+
+// ---- UpdateUserProfile (JWT-based) ----
+export function updateUserProfile(updatedData) {
+  if (currentUser) {
+    Object.assign(currentUser, updatedData);
+    const stored = JSON.parse(localStorage.getItem(USER_STORAGE_KEY) || '{}');
+    Object.assign(stored, updatedData);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(stored));
+    saveAll();
+    renderMainApp();
+    addNotification("Profile", "Profile updated");
+  }
+}
+window.updateUserProfile = updateUserProfile;
+
+// ---- DeleteAccount (JWT-based) ----
+export function deleteAccount() {
+  if (!currentUser) return;
+  if (confirm('⚠️ Are you sure you want to permanently delete your account?\n\nThis action cannot be undone. All your data will be lost.')) {
+    showLoadingOverlay('Deleting account...');
+    setTimeout(() => {
+      const index = users.findIndex(u => u.id === currentUser.id);
+      if (index !== -1) users.splice(index, 1);
+      localStorage.removeItem(JWT_STORAGE_KEY);
+      localStorage.removeItem(USER_STORAGE_KEY);
+      Object.keys(currentUser).forEach(key => delete currentUser[key]);
+      saveAll();
+      hideLoadingOverlay();
+      renderApp();
+      addNotification('Account', 'Your account has been permanently deleted.');
+    }, 800);
+  }
+}
+window.deleteAccount = deleteAccount;
 
 // ======================== AUTH ========================
 export function renderAuth() {
@@ -83,11 +265,14 @@ export function showAuthForm(formType) {
         <span style="padding:0 12px; color:var(--text-muted); font-size:12px;">OR</span>
         <hr style="flex:1; border:0; border-top:1px solid var(--border-light);">
       </div>
-      <button class="btn-outline" id="googleSignInBtn" style="width:100%; display:flex; align-items:center; justify-content:center; gap:8px; border-color:#4285F4; color:#4285F4; padding:12px; border-radius:60px; font-weight:500; font-size:16px; cursor:pointer; transition:0.2s; background:transparent;">
-        <span style="font-size:18px; font-weight:bold;">G</span> Sign in with Google
-      </button>
+      <div id="googleButtonContainer" style="width:100%;"></div>
       <button class="btn-outline" id="gotoRegister" style="margin-top:8px;">Create Account</button>
     `;
+
+    // Initialize and render Google button (with reliable loading)
+    initGoogleAuth().then(() => {
+      renderGoogleButton('googleButtonContainer');
+    });
 
     document.getElementById('doLogin')?.addEventListener('click', function() {
       const email = document.getElementById('loginEmail').value;
@@ -98,10 +283,6 @@ export function showAuthForm(formType) {
       } else {
         alert('Invalid credentials');
       }
-    });
-
-    document.getElementById('googleSignInBtn')?.addEventListener('click', function() {
-      startGoogleSignIn();
     });
 
     document.getElementById('gotoRegister')?.addEventListener('click', function() {
@@ -171,116 +352,34 @@ export function showAuthForm(formType) {
   }
 }
 
-// ======================== GOOGLE SIGN-IN ========================
-export function startGoogleSignIn() {
-  const loginUrl = "studentnija_sync.html";
-
-  if (typeof app !== 'undefined' && app.CreateIntent && app.StartActivity) {
-    var intent = app.CreateIntent();
-    intent.SetAction("android.intent.action.VIEW");
-    intent.SetData(loginUrl);
-    intent.AddFlags(0x10000000);
-    app.StartActivity(intent);
-    addNotification('Sign In', 'Please complete login in your browser, then return to the app.');
-  } else {
-    window.open(loginUrl, '_blank');
-    addNotification('Sign In', 'Please complete login in the new tab, then return here.');
-  }
-
-  isWaitingForLogin = true;
-  startLoginPoller();
-}
-
-export function startLoginPoller() {
-  if (loginPoller) return;
-  loginPoller = setInterval(function() {
-    if (!isWaitingForLogin) {
-      clearInterval(loginPoller);
-      loginPoller = null;
-      return;
-    }
-    const userData = localStorage.getItem('studentnija_user');
-    if (userData) {
-      clearInterval(loginPoller);
-      loginPoller = null;
-      isWaitingForLogin = false;
-      processUserData(userData);
-    }
-  }, 2000);
-}
-
-export function processUserData(userData) {
-  try {
-    const user = typeof userData === 'string' ? JSON.parse(userData) : userData;
-    if (!user || !user.email) {
-      localStorage.removeItem('studentnija_user');
-      return;
-    }
-    let existingUser = users.find(u => u.email === user.email);
-    if (!existingUser) {
-      const newUser = {
-        id: Date.now(),
-        fullName: user.name || 'Google User',
-        email: user.email,
-        password: 'oauth_' + Date.now(),
-        school: '',
-        department: '',
-        level: '',
-        profilePic: user.picture || '',
-        bio: '',
-        googleAuth: true
-      };
-      users.push(newUser);
-      saveAll();
-      currentUser = newUser;
-    } else {
-      existingUser.fullName = user.name || existingUser.fullName;
-      existingUser.profilePic = user.picture || existingUser.profilePic;
-      existingUser.googleAuth = true;
-      saveAll();
-      currentUser = existingUser;
-    }
-    localStorage.removeItem('studentnija_user');
-    renderApp();
-    addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
-  } catch (e) {
-    console.log('Error processing login:', e);
-    localStorage.removeItem('studentnija_user');
-  }
-}
-
-export function checkForStoredUser() {
-  const userData = localStorage.getItem('studentnija_user');
-  if (userData) {
-    processUserData(userData);
-    return true;
-  }
-  return false;
-}
-
-if (typeof app !== 'undefined') {
-  app.OnResume = function() {
-    if (isWaitingForLogin) {
-      const userData = localStorage.getItem('studentnija_user');
-      if (userData) {
-        clearInterval(loginPoller);
-        loginPoller = null;
-        isWaitingForLogin = false;
-        processUserData(userData);
-      }
-    } else {
-      checkForStoredUser();
-    }
-  };
-}
-
 // ======================== RENDER APP ========================
 export function renderApp() {
-  if (!currentUser) renderAuth();
-  else renderMainApp();
+  if (!currentUser || !currentUser.id) {
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        Object.assign(currentUser, user);
+      } catch(e) { /* ignore */ }
+    }
+  }
+
+  if (currentUser && currentUser.id) {
+    restoreSession().then(valid => {
+      if (!valid) {
+        Object.keys(currentUser).forEach(key => delete currentUser[key]);
+        localStorage.removeItem(USER_STORAGE_KEY);
+        localStorage.removeItem(JWT_STORAGE_KEY);
+        renderAuth();
+      }
+    });
+    renderMainApp();
+  } else {
+    renderAuth();
+  }
 }
 
-// Flag to build the page structure only once
+// ======================== MAIN APP RENDER ========================
 let pagesBuilt = false;
 
 export function renderMainApp() {
@@ -429,15 +528,15 @@ export function attachBottomNav() {
         if (navItems.includes(page)) {
           if (page === currentPage) return;
           if (page === 'ai') {
-            window.open('ai.html', '_blank');
+            window.open('AI.html', '_blank');
             return;
           }
           if (page === 'studygroups') {
-            window.open('studygroups.html', '_blank');
+            window.open('Chat.html', '_blank');
             return;
           }
           if (page === 'exams') {
-            window.open('exams.html', '_blank');
+            window.open('Exam.html', '_blank');
             return;
           }
           const overlay = document.getElementById('settingsOverlayAI');
@@ -633,20 +732,6 @@ if (!window._aiMessageListener) {
       handleAICommand(msg.action, msg.data, msg.requestId);
     }
 
-    // ---- Handle Google Sign-In success (postMessage from sync page) ----
-    if (msg && msg.type === 'google_login_success' && msg.user) {
-      console.log('✅ Google login success via postMessage!', msg.user);
-      // Process the user data directly
-      processUserData(msg.user);
-      // Stop the poller if it's running (since we already have the data)
-      if (loginPoller) {
-        clearInterval(loginPoller);
-        loginPoller = null;
-        isWaitingForLogin = false;
-      }
-      // Render the app (already handled by processUserData)
-    }
-
     if (msg && msg.type === 'navigateTo' && msg.page === 'home') {
       window.location.href = 'index.html';
     }
@@ -693,21 +778,5 @@ window.addEventListener('load', async () => {
   window.addEventListener('online', updateConnectionIndicator);
   window.addEventListener('offline', updateConnectionIndicator);
 
-  const remember = localStorage.getItem('studentnija_remember');
-  setTimeout(() => {
-    const loadingScreen = document.getElementById('loadingScreen');
-    if (loadingScreen) loadingScreen.classList.add('hide');
-    setTimeout(() => {
-      if (loadingScreen) loadingScreen.style.display = 'none';
-      const appRoot = document.getElementById('appRoot');
-      if (appRoot) appRoot.style.display = 'flex';
-      if (remember === 'true' && currentUser) {
-        renderApp();
-      } else if (currentUser) {
-        renderApp();
-      } else {
-        renderApp();
-      }
-    }, 500);
-  }, 1500);
+  renderApp();
 });
