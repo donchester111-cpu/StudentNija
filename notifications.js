@@ -2,7 +2,7 @@
 
 let swRegistration = null;
 const VAPID_PUBLIC_KEY = 'BDD0-BVNaAthsdxHLXa5VmeR8F9NrGRhPw4gu-N2mRp3SpO7sZBZ6cML0MGTQARRRppvAllZlu-WJccKoBx31ro';
-const BACKEND_URL = 'https://studentnija-public-chat.onrender.com'; // ← CHANGE THIS to your Render URL
+const BACKEND_URL = 'https://studentnija-public-chat.onrender.com';
 
 async function initNotifications() {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) {
@@ -34,10 +34,21 @@ async function subscribeToPush() {
       applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY)
     });
     console.log('Push subscribed:', subscription);
-    await fetch(`${BACKEND_URL}/api/subscribe`, {
+
+    // Get current user ID from localStorage
+    let userId = null;
+    try {
+      const userData = JSON.parse(localStorage.getItem('studentnija_currentUser') || '{}');
+      userId = userData.id || null;
+    } catch (_) {}
+
+    await fetch(`${BACKEND_URL}/api/push/subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(subscription)
+      body: JSON.stringify({
+        ...subscription.toJSON(),
+        userId
+      })
     });
     console.log('Subscription saved on server');
   } catch (err) {
@@ -65,6 +76,25 @@ function scheduleUniversalNotification(title, message, targetTimestamp) {
   }
 }
 
+// Sync an alarm to the server (so it fires even when the app is closed)
+async function syncAlarmToServer(title, body, scheduledTime) {
+  try {
+    const userData = JSON.parse(localStorage.getItem('studentnija_currentUser') || '{}');
+    const userId = userData.id;
+    if (!userId) return false;
+
+    await fetch(`${BACKEND_URL}/api/alarms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, title, body, scheduledTime })
+    });
+    return true;
+  } catch (err) {
+    console.error('Failed to sync alarm', err);
+    return false;
+  }
+}
+
 function urlB64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
@@ -87,7 +117,8 @@ window.NotifBridge = {
   scheduleAndroidAlarm: () => false,
   testNotification,
   requestNotificationPermission: initNotifications,
-  subscribeToPush
+  subscribeToPush,
+  syncAlarmToServer   // <-- new function
 };
 
 document.addEventListener('DOMContentLoaded', () => {
