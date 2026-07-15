@@ -1,3 +1,10 @@
+// Sync an alarm to the backend so it fires even when the app is closed
+async function syncAlarmToServer(title, body, scheduledTime) {
+  if (window.NotifBridge && window.NotifBridge.syncAlarmToServer) {
+    await window.NotifBridge.syncAlarmToServer(title, body, scheduledTime);
+  }
+}
+
 // ============================================================
 // PLANNER PAGE – Upgraded UI & Functionality
 // ============================================================
@@ -367,32 +374,67 @@ export function renderPlannerPage() {
     }
   });
 
-  // Add class
+  //=========== Add class==========================
   document.getElementById('addClassBtn')?.addEventListener('click', () => {
-    const day = prompt('Day (e.g., Monday):');
-    if (!day) return;
-    const time = prompt('Time (HH:MM, 24h):');
-    if (!time) return;
-    const subject = prompt('Subject:');
-    if (!subject) return;
-    const location = prompt('Location (optional):');
-    originalAddClass(day, time, subject, location);
-    renderTimetable();
-    updateUpcomingSummary();
-    addNotification('Planner', 'Class added');
-  });
+  const day = prompt('Day (e.g., Monday):');
+  if (!day) return;
+  const time = prompt('Time (HH:MM, 24h):');
+  if (!time) return;
+  const subject = prompt('Subject:');
+  if (!subject) return;
+  const location = prompt('Location (optional):');
+  originalAddClass(day, time, subject, location);
 
-  // Add exam
+  // 🔔 Sync alarm to server (15 minutes before class)
+  const now = new Date();
+  const dayMap = { sunday:0, monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6 };
+  const targetDay = dayMap[day.toLowerCase()];
+  if (targetDay !== undefined) {
+    const [hours, minutes] = time.split(':').map(Number);
+    if (!isNaN(hours) && !isNaN(minutes)) {
+      let alarmDate = new Date(now);
+      alarmDate.setDate(alarmDate.getDate() + ((targetDay + 7 - now.getDay()) % 7));
+      alarmDate.setHours(hours, minutes - 15, 0, 0); // 15 minutes before
+      if (alarmDate > now) {
+        syncAlarmToServer(
+          `📖 ${subject} in 15 minutes`,
+          `Your ${subject} class is about to start${location ? ' in ' + location : ''}.`,
+          alarmDate.toISOString()
+        );
+      }
+    }
+  }
+
+  renderTimetable();
+  updateUpcomingSummary();
+  addNotification('Planner', 'Class added');
+});
+
+  //========== Add exam==============================
   document.getElementById('addExamBtn2')?.addEventListener('click', () => {
-    const name = prompt('Course name:');
-    if (!name) return;
-    const date = prompt('Exam date (YYYY-MM-DD):');
-    if (!date) return;
-    originalAddExam(name, date);
-    renderExamsList();
-    updateUpcomingSummary();
-    addNotification('Planner', 'Exam added');
-  });
+  const name = prompt('Course name:');
+  if (!name) return;
+  const date = prompt('Exam date (YYYY-MM-DD):');
+  if (!date) return;
+  originalAddExam(name, date);
+
+  // 🔔 Sync alarm to server (fire a reminder 1 day before the exam)
+  const examDate = new Date(date);
+  const reminderDate = new Date(examDate.getTime() - 24 * 60 * 60 * 1000); // 1 day before
+  const now = new Date();
+  // Only create the alarm if the reminder is in the future
+  if (reminderDate > now) {
+    syncAlarmToServer(
+      `📝 ${name} Exam Tomorrow`,
+      `You have your ${name} exam tomorrow. Time to review!`,
+      reminderDate.toISOString()
+    );
+  }
+
+  renderExamsList();
+  updateUpcomingSummary();
+  addNotification('Planner', 'Exam added');
+});
 
   // Test notification
   document.getElementById('testNotifBtn')?.addEventListener('click', () => {
