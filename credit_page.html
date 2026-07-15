@@ -8,50 +8,37 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet" />
   <style>
-    /* ===== RESET & BASE ===== */
-    *,
-    *::before,
-    *::after {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin:0; padding:0; box-sizing:border-box; }
     :root {
-      --bg-primary: #f0f4fa;
-      --bg-secondary: #ffffff;
-      --bg-card: rgba(255, 255, 255, 0.55);
-      --bg-solid: #e8ecf2;
-      --text-primary: #0a1927;
-      --text-secondary: #1a2d3e;
-      --text-muted: #5b6e8c;
+      --bg-primary: #F5F7FA;
+      --bg-secondary: #FFFFFF;
+      --bg-card: rgba(255,255,255,0.75);
+      --bg-solid: #E8ECF2;
+      --text-primary: #0A1927;
+      --text-muted: #5B6E8C;
       --accent: #008751;
-      --accent-light: #00a86b;
-      --accent-glow: rgba(0, 135, 81, 0.20);
-      --accent-dark: #006b3f;
-      --shadow: 0 8px 40px rgba(0, 0, 0, 0.07);
-      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.04);
-      --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.10);
-      --radius: 28px;
-      --radius-sm: 16px;
-      --radius-xs: 10px;
-      --transition: 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --accent-light: #00A86B;
+      --accent-glow: rgba(0,135,81,0.25);
+      --shadow-sm: 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-md: 0 8px 32px rgba(0,0,0,0.10);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,0.14);
+      --radius-sm: 14px;
+      --radius-md: 20px;
+      --radius-lg: 28px;
+      --radius-xl: 40px;
+      --transition: 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
       --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
-    .dark {
-      --bg-primary: #0a111f;
-      --bg-secondary: #121c28;
-      --bg-card: rgba(255, 255, 255, 0.04);
-      --bg-solid: #1a2a3a;
-      --text-primary: #f0f4fa;
-      --text-secondary: #dce4ed;
-      --text-muted: #8fa0b5;
-      --shadow: 0 8px 40px rgba(0, 0, 0, 0.50);
-      --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.30);
-      --shadow-lg: 0 16px 64px rgba(0, 0, 0, 0.60);
-    }
-    html {
-      scroll-behavior: smooth;
+    body.dark-theme {
+      --bg-primary: #0A111F;
+      --bg-secondary: #121C28;
+      --bg-card: rgba(255,255,255,0.04);
+      --bg-solid: #1A2A3A;
+      --text-primary: #F0F4FA;
+      --text-muted: #8FA0B5;
+      --shadow-sm: 0 4px 16px rgba(0,0,0,0.3);
+      --shadow-md: 0 8px 32px rgba(0,0,0,0.5);
+      --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
     }
     body {
       font-family: var(--font);
@@ -59,1080 +46,654 @@
       color: var(--text-primary);
       min-height: 100vh;
       transition: background var(--transition), color var(--transition);
-      padding: 0;
-      margin: 0;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      padding: 20px;
     }
-    a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-    img {
-      max-width: 100%;
-      display: block;
-    }
-
-    /* ===== SCROLLBAR ===== */
-    ::-webkit-scrollbar {
-      width: 5px;
-    }
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: var(--accent);
-      border-radius: 30px;
-    }
-    * {
-      scrollbar-width: thin;
-      scrollbar-color: var(--accent) transparent;
-    }
-
-    /* ===== LAYOUT ===== */
     .container {
-      max-width: 820px;
+      max-width: 860px;
       margin: 0 auto;
-      padding: 20px 18px 40px;
-      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      padding-bottom: 40px;
     }
-
-    /* ===== BACK BUTTON ===== */
-    .back-link {
+    .back-btn, .theme-btn {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       padding: 10px 20px;
       border-radius: 60px;
       background: var(--bg-secondary);
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(128,128,128,0.1);
       color: var(--text-muted);
-      font-size: 14px;
       font-weight: 500;
       cursor: pointer;
-      transition: background var(--transition), color var(--transition), transform 0.15s, box-shadow var(--transition);
+      transition: all var(--transition);
+      font-family: var(--font);
       box-shadow: var(--shadow-sm);
-      margin-bottom: 28px;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      width: fit-content;
-      font-family: var(--font);
-    }
-    .back-link:hover {
-      background: var(--bg-solid);
-      color: var(--text-primary);
-    }
-    .back-link:active {
-      transform: scale(0.94);
-    }
-    .back-link svg {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-    }
-
-    /* ===== THEME TOGGLE (floating) ===== */
-    .theme-toggle {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1000;
-      background: var(--bg-secondary);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 60px;
-      padding: 10px 18px;
-      color: var(--text-primary);
       font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
+    }
+    .back-btn:hover, .theme-btn:hover { background: var(--bg-solid); color: var(--text-primary); }
+    .back-btn:active, .theme-btn:active { transform: scale(0.94); }
+    .header-row {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      gap: 8px;
-      box-shadow: var(--shadow-sm);
-      transition: background var(--transition), color var(--transition), transform 0.15s, box-shadow var(--transition);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      font-family: var(--font);
-      letter-spacing: 0.2px;
+      flex-wrap: wrap;
+      gap: 12px;
     }
-    .theme-toggle:hover {
-      background: var(--bg-solid);
-    }
-    .theme-toggle:active {
-      transform: scale(0.92);
-    }
-    .theme-toggle .icon {
-      font-size: 18px;
-    }
-
-    /* ===== HERO ===== */
     .hero {
       text-align: center;
-      padding: 20px 0 32px;
+      padding: 20px 0 24px;
       position: relative;
-    }
-    .hero::after {
-      content: '';
-      position: absolute;
-      top: -40%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 120%;
-      max-width: 600px;
-      height: 300px;
-      background: radial-gradient(ellipse at center, var(--accent-glow), transparent 70%);
-      pointer-events: none;
-      z-index: 0;
-    }
-    .hero>* {
-      position: relative;
-      z-index: 1;
     }
     .hero .logo {
       font-size: 72px;
-      display: inline-block;
-      filter: drop-shadow(0 8px 32px var(--accent-glow));
-      animation: float 6s ease-in-out infinite;
       line-height: 1;
+      display: block;
+      filter: drop-shadow(0 8px 24px var(--accent-glow));
+      animation: float 5s ease-in-out infinite;
     }
     @keyframes float {
-      0%,
-      100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
+      0%,100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
-    .hero .app-name {
-      font-size: 44px;
+    .hero h1 {
+      font-size: 42px;
       font-weight: 900;
       letter-spacing: -1px;
-      margin-top: 4px;
-      background: linear-gradient(135deg, var(--text-primary) 40%, var(--accent-light));
+      margin: 8px 0 4px;
+      background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-light));
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
     }
-    .hero .version-badge {
+    .version-chip {
       display: inline-block;
-      margin-top: 8px;
+      padding: 6px 18px;
+      border-radius: 60px;
       background: var(--accent);
       color: white;
-      font-size: 12px;
       font-weight: 700;
-      padding: 4px 18px;
-      border-radius: 60px;
+      font-size: 12px;
       letter-spacing: 0.5px;
       text-transform: uppercase;
-      box-shadow: 0 4px 16px var(--accent-glow);
+      box-shadow: 0 4px 12px var(--accent-glow);
+      margin-bottom: 8px;
     }
     .hero .tagline {
-      font-size: 18px;
+      font-size: 16px;
       color: var(--text-muted);
-      margin-top: 12px;
-      font-weight: 400;
-      letter-spacing: 0.2px;
+      font-weight: 500;
     }
-    .hero .divider {
-      width: 60px;
-      height: 4px;
-      border-radius: 4px;
-      background: linear-gradient(90deg, var(--accent), var(--accent-light));
-      margin: 16px auto 0;
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: var(--radius-lg);
+      padding: 24px 24px;
+      border: 1px solid rgba(128,128,128,0.08);
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.2s, box-shadow var(--transition);
+      animation: fadeUp 0.5s ease both;
     }
-
-    /* ===== GLASS CARD ===== */
-    .glass-card {
-      background: var(--bg-secondary);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-radius: var(--radius);
-      padding: 28px 24px;
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255, 255, 255, 0.04);
-      transition: background var(--transition), box-shadow var(--transition), transform 0.25s;
-      margin-bottom: 24px;
-    }
-    .glass-card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-    .glass-card .card-title {
-      font-size: 20px;
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .card-title {
+      font-size: 19px;
       font-weight: 700;
       margin-bottom: 16px;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
     }
-    .glass-card .card-title .emoji {
-      font-size: 26px;
+    .card-title .icon { font-size: 22px; }
+    @keyframes fadeUp {
+      from { opacity:0; transform: translateY(20px); }
+      to { opacity:1; transform: translateY(0); }
     }
-
-    /* ===== FOUNDER CARD ===== */
-    .founder-card {
+    .founder-row {
       display: flex;
       gap: 20px;
-      align-items: flex-start;
       flex-wrap: wrap;
+      align-items: center;
     }
     .founder-avatar {
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      flex-shrink: 0;
-      overflow: hidden;
       background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      box-shadow: 0 8px 24px var(--accent-glow);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 32px;
       font-weight: 700;
+      font-size: 30px;
       color: white;
-      border: 3px solid var(--bg-secondary);
-      transition: border-color var(--transition);
+      flex-shrink: 0;
+      overflow: hidden;
+      box-shadow: 0 8px 24px var(--accent-glow);
     }
-    .dark .founder-avatar {
-      border-color: var(--bg-secondary);
-    }
-    .founder-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .founder-avatar .fallback {
-      display: none;
-      font-size: 32px;
-      font-weight: 700;
-      color: white;
-    }
-    .founder-avatar img[src=""] + .fallback,
-    .founder-avatar img:not([src]) + .fallback,
-    .founder-avatar img.error + .fallback {
-      display: flex;
-    }
-    .founder-avatar img.error {
-      display: none;
-    }
-    .founder-info {
-      flex: 1;
-      min-width: 180px;
-    }
+    .founder-avatar img { width:100%; height:100%; object-fit:cover; }
     .founder-info .name {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       display: flex;
       align-items: center;
       gap: 10px;
       flex-wrap: wrap;
     }
-    .founder-info .name .verified {
+    .verified {
       background: var(--accent);
       color: white;
       font-size: 10px;
+      padding: 3px 12px;
+      border-radius: 30px;
       font-weight: 700;
-      padding: 2px 14px;
-      border-radius: 60px;
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
     }
-    .founder-info .title {
-      font-size: 14px;
+    .founder-info .role {
+      font-size: 13px;
       color: var(--text-muted);
-      margin-top: 2px;
+      margin: 2px 0 8px;
     }
     .founder-info .bio {
       font-size: 15px;
-      line-height: 1.7;
-      color: var(--text-secondary);
-      margin-top: 10px;
-      max-width: 580px;
+      line-height: 1.6;
+      color: var(--text-muted);
     }
-    .dark .founder-info .bio {
-      color: var(--text-secondary);
-    }
-
-    /* ===== MISSION ===== */
-    .mission-text {
-      font-size: 17px;
-      line-height: 1.8;
-      color: var(--text-secondary);
-      font-weight: 400;
-      padding: 4px 0;
-      max-width: 700px;
-      margin: 0 auto;
-      text-align: center;
-    }
-    .dark .mission-text {
-      color: var(--text-secondary);
-    }
-
-    /* ===== STATS ===== */
     .stats-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(120px,1fr));
+      gap: 12px;
     }
     .stat-item {
-      background: var(--bg-primary);
+      background: var(--bg-solid);
       border-radius: var(--radius-sm);
-      padding: 20px 12px;
+      padding: 16px 10px;
       text-align: center;
-      transition: background var(--transition), transform 0.2s;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-    }
-    .stat-item:hover {
-      transform: scale(1.03);
-    }
-    .stat-item .stat-icon {
-      font-size: 32px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .stat-item .stat-label {
-      font-size: 14px;
       font-weight: 600;
-      color: var(--text-primary);
+      transition: transform 0.2s;
+      border: 1px solid rgba(128,128,128,0.06);
     }
-
-    /* ===== TECH GRID ===== */
+    .stat-item:hover { transform: translateY(-2px); }
+    .stat-item .icon { font-size: 28px; display: block; margin-bottom: 4px; }
     .tech-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(100px,1fr));
+      gap: 10px;
     }
-    .tech-item {
-      background: var(--bg-primary);
-      border-radius: var(--radius-xs);
-      padding: 16px 10px;
+    .tech-chip {
+      background: var(--bg-solid);
+      border-radius: var(--radius-sm);
+      padding: 12px 8px;
       text-align: center;
-      font-size: 13px;
       font-weight: 600;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      transition: background var(--transition), transform 0.2s, box-shadow var(--transition);
-      cursor: default;
-    }
-    .tech-item:hover {
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-sm);
-    }
-    .tech-item .tech-icon {
-      font-size: 28px;
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    /* ===== OPEN SOURCE ===== */
-    .oss-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-    .oss-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-    }
-    .oss-item:last-child {
-      border-bottom: none;
-    }
-    .oss-item .oss-icon {
-      font-size: 22px;
-      width: 36px;
-      text-align: center;
-    }
-    .oss-item .oss-name {
-      font-weight: 600;
-      font-size: 15px;
-    }
-    .oss-item .oss-desc {
       font-size: 13px;
+      border: 1px solid rgba(128,128,128,0.06);
+      transition: transform 0.2s;
+    }
+    .tech-chip:hover { transform: translateY(-2px); }
+    .license-container {
+      max-height: 280px;
+      overflow-y: auto;
+      padding-right: 6px;
+      font-size: 13px;
+      line-height: 1.7;
       color: var(--text-muted);
+      white-space: pre-wrap;
+      background: var(--bg-solid);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      border: 1px solid rgba(128,128,128,0.06);
+      margin-top: 12px;
+      transition: max-height 0.4s ease;
     }
-
-    /* ===== COMMUNITY ===== */
-    .community-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 12px;
+    .license-container.expanded {
+      max-height: 2000px;
     }
-    .community-item {
-      background: var(--bg-primary);
-      border-radius: var(--radius-xs);
-      padding: 16px 10px;
-      text-align: center;
+    .license-toggle {
+      display: inline-block;
+      margin-top: 10px;
+      background: transparent;
+      border: 1.5px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 18px;
+      border-radius: 30px;
       font-weight: 600;
-      font-size: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.03);
-      transition: background var(--transition), transform 0.2s;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: var(--font);
     }
-    .community-item:hover {
-      transform: scale(1.04);
-    }
-    .community-item .cm-icon {
-      font-size: 28px;
-      display: block;
-      margin-bottom: 4px;
-    }
-
-    /* ===== CONTACT CARDS ===== */
+    .license-toggle:hover { background: var(--accent); color: white; }
     .contact-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px;
+      grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+      gap: 12px;
     }
     .contact-card {
-      background: var(--bg-primary);
+      background: var(--bg-solid);
       border-radius: var(--radius-sm);
-      padding: 20px 16px;
+      padding: 18px;
       text-align: center;
-      transition: background var(--transition), transform 0.2s, box-shadow var(--transition);
-      border: 1px solid rgba(255, 255, 255, 0.03);
       cursor: pointer;
+      transition: transform 0.2s, box-shadow var(--transition);
+      border: 1px solid rgba(128,128,128,0.06);
     }
-    .contact-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-sm);
-    }
-    .contact-card:active {
-      transform: scale(0.96);
-    }
-    .contact-card .cc-icon {
-      font-size: 32px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .contact-card .cc-label {
-      font-weight: 700;
-      font-size: 15px;
-    }
-    .contact-card .cc-detail {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 4px;
-      word-break: break-word;
-    }
-
-    /* ===== VERSION FOOTER CARD ===== */
-    .version-box {
+    .contact-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+    .contact-card .cc-icon { font-size: 28px; margin-bottom: 6px; }
+    .contact-card .cc-label { font-weight: 700; font-size: 14px; }
+    .contact-card .cc-detail { font-size: 12px; color: var(--text-muted); }
+    .footer-note {
       text-align: center;
-      padding: 16px;
-    }
-    .version-box .version-main {
-      font-size: 28px;
-      font-weight: 900;
-      background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .version-box .version-sub {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-    .version-box .version-badge-lg {
-      display: inline-block;
-      margin-top: 8px;
-      background: var(--accent);
-      color: white;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 20px;
-      border-radius: 60px;
-      letter-spacing: 0.5px;
-    }
-
-    /* ===== FOOTER ===== */
-    .app-footer {
-      text-align: center;
-      padding: 28px 16px 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.04);
-      margin-top: 12px;
-    }
-    .app-footer .footer-brand {
-      font-size: 18px;
-      font-weight: 800;
-      color: var(--text-primary);
-    }
-    .app-footer .footer-brand span {
-      color: var(--accent);
-    }
-    .app-footer .footer-tagline {
-      font-size: 14px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-    .app-footer .footer-credit {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-top: 8px;
-    }
-    .app-footer .footer-copy {
       font-size: 12px;
       color: var(--text-muted);
-      opacity: 0.6;
-      margin-top: 6px;
+      opacity: 0.7;
+      margin-top: 8px;
     }
-
-    /* ===== ANIMATIONS ===== */
-    .fade-up {
-      opacity: 0;
-      transform: translateY(30px);
-      animation: fadeUp 0.7s ease forwards;
-    }
-    @keyframes fadeUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-    .fade-up:nth-child(2) {
-      animation-delay: 0.06s;
-    }
-    .fade-up:nth-child(3) {
-      animation-delay: 0.12s;
-    }
-    .fade-up:nth-child(4) {
-      animation-delay: 0.18s;
-    }
-    .fade-up:nth-child(5) {
-      animation-delay: 0.24s;
-    }
-    .fade-up:nth-child(6) {
-      animation-delay: 0.30s;
-    }
-    .fade-up:nth-child(7) {
-      animation-delay: 0.36s;
-    }
-    .fade-up:nth-child(8) {
-      animation-delay: 0.42s;
-    }
-    .fade-up:nth-child(9) {
-      animation-delay: 0.48s;
-    }
-    .fade-up:nth-child(10) {
-      animation-delay: 0.54s;
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 600px) {
-      .container {
-        padding: 14px 12px 30px;
-      }
-      .hero .logo {
-        font-size: 56px;
-      }
-      .hero .app-name {
-        font-size: 32px;
-      }
-      .hero .tagline {
-        font-size: 16px;
-      }
-      .glass-card {
-        padding: 20px 16px;
-        border-radius: 22px;
-      }
-      .glass-card .card-title {
-        font-size: 18px;
-      }
-      .founder-card {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-      }
-      .founder-avatar {
-        width: 100px;
-        height: 100px;
-        font-size: 40px;
-      }
-      .founder-info .name {
-        justify-content: center;
-      }
-      .founder-info .bio {
-        text-align: center;
-      }
-      .stats-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .tech-grid {
-        grid-template-columns: repeat(3, 1fr);
-      }
-      .community-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .contact-grid {
-        grid-template-columns: 1fr;
-      }
-      .theme-toggle {
-        top: 12px;
-        right: 12px;
-        padding: 8px 14px;
-        font-size: 13px;
-      }
-      .theme-toggle .icon {
-        font-size: 16px;
-      }
-      .back-link {
-        font-size: 13px;
-        padding: 8px 16px;
-      }
-      .version-box .version-main {
-        font-size: 22px;
-      }
-    }
-    @media (max-width: 400px) {
-      .tech-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .stats-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-      .hero .logo {
-        font-size: 44px;
-      }
-      .hero .app-name {
-        font-size: 26px;
-      }
-    }
-
-    /* ===== ACCESSIBILITY ===== */
-    @media (prefers-reduced-motion: reduce) {
-      *,
-      *::before,
-      *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-      }
-    }
-    :focus-visible {
-      outline: 2px solid var(--accent);
-      outline-offset: 3px;
-    }
-
-    /* ===== TOAST ===== */
-    .toast-message {
-      position: fixed;
-      bottom: 30px;
-      left: 50%;
-      transform: translateX(-50%) translateY(16px);
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      padding: 14px 28px;
-      border-radius: 60px;
-      box-shadow: var(--shadow-lg);
-      font-family: var(--font);
-      font-size: 15px;
-      font-weight: 500;
-      z-index: 9999;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      transition: opacity 0.3s ease, transform 0.3s ease;
-      max-width: 90%;
-      text-align: center;
-      opacity: 0;
-      pointer-events: none;
-    }
-    .toast-message.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
+    .footer-note span { color: var(--accent); font-weight: 600; }
+    @media (max-width:600px) {
+      body { padding: 12px; }
+      .hero .logo { font-size: 56px; }
+      .hero h1 { font-size: 30px; }
+      .founder-row { flex-direction: column; text-align: center; }
+      .founder-avatar { width: 90px; height: 90px; }
+      .founder-info .name { justify-content: center; }
+      .card { padding: 20px 16px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ===== FLOATING THEME TOGGLE ===== -->
-  <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-    <span class="icon" id="themeIcon">🌙</span>
-    <span id="themeLabel">Dark</span>
-  </button>
-
-  <!-- ===== MAIN CONTAINER ===== -->
   <div class="container">
+    <!-- Header row: Back + Theme Toggle -->
+    <div class="header-row">
+      <button class="back-btn" onclick="goBack()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="15 18 9 12 15 6"/></svg>
+        Back to App
+      </button>
+      <button class="theme-btn" id="themeToggle">
+        <span id="themeIcon">🌙</span> <span id="themeLabel">Dark</span>
+      </button>
+    </div>
 
-    <!-- ===== BACK LINK ===== -->
-    <button class="back-link" id="backLink" aria-label="Go back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="15 18 9 12 15 6"></polyline>
-      </svg>
-      Back to App
-    </button>
-
-    <!-- ===== HERO ===== -->
-    <section class="hero fade-up">
-      <div class="logo">🇳🇬</div>
-      <h1 class="app-name">StudentNija</h1>
-      <div class="version-badge">v1.4.0</div>
+    <!-- Hero -->
+    <div class="hero" style="animation: fadeUp 0.5s ease both;">
+      <span class="logo">🇳🇬</span>
+      <h1>StudentNija</h1>
+      <span class="version-chip">v1.4.0</span>
       <p class="tagline">Study Smarter, Score Higher</p>
-      <div class="divider"></div>
-    </section>
+    </div>
 
-    <!-- ===== FOUNDER SPOTLIGHT ===== -->
-    <section class="glass-card fade-up">
-      <div class="card-title"><span class="emoji">👨‍💻</span> Founder &amp; Creator</div>
-      <div class="founder-card">
-        <div class="founder-avatar" id="founderAvatar">
-          <img src="/icons/founder.png" alt="Godwin Julius" id="founderImg" onerror="this.classList.add('error'); document.getElementById('fallbackInitials').style.display='flex';" />
-          <span class="fallback" id="fallbackInitials">GJ</span>
+    <!-- Founder Card -->
+    <div class="card" style="animation-delay:0.05s">
+      <div class="card-title"><span class="icon">👨‍💻</span> Founder &amp; Creator</div>
+      <div class="founder-row">
+        <div class="founder-avatar">
+          <img src="/icons/founder.png" alt="Godwin Julius" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <span style="display:none;">GJ</span>
         </div>
         <div class="founder-info">
-          <div class="name">
-            Godwin Julius
-            <span class="verified">✓</span>
-          </div>
-          <div class="title">Founder, Lead Developer &amp; Designer</div>
+          <div class="name">Godwin Julius <span class="verified">✓</span></div>
+          <div class="role">Founder, Lead Developer &amp; Designer</div>
           <p class="bio">
-            StudentNija was founded and developed by Godwin Julius with the vision of helping Nigerian students access quality educational resources, AI-powered assistance, and modern learning tools through one unified platform.
+            StudentNija was founded and built by Godwin Julius to bring quality educational resources, AI-powered assistance, and modern learning tools to every Nigerian student.
           </p>
         </div>
       </div>
-    </section>
+    </div>
 
-    <!-- ===== MISSION ===== -->
-    <section class="glass-card fade-up">
-      <div class="card-title"><span class="emoji">🎯</span> Our Mission</div>
-      <p class="mission-text">
-        Empowering Nigerian students through technology by providing AI-powered learning tools, educational resources, and a supportive academic community.
+    <!-- Mission -->
+    <div class="card" style="animation-delay:0.1s">
+      <div class="card-title"><span class="icon">🎯</span> Our Mission</div>
+      <p style="font-size:16px; line-height:1.7; color:var(--text-muted);">
+        Empowering Nigerian students through technology by providing AI‑powered learning tools, exam preparation, and a supportive academic community.
       </p>
-    </section>
+    </div>
 
-    <!-- ===== STATISTICS ===== -->
-    <section class="glass-card fade-up">
-      <div class="card-title"><span class="emoji">📊</span> Platform Statistics</div>
+    <!-- Platform Statistics -->
+    <div class="card" style="animation-delay:0.15s">
+      <div class="card-title"><span class="icon">📊</span> Platform Highlights</div>
       <div class="stats-grid">
-        <div class="stat-item">
-          <span class="stat-icon">🇳🇬</span>
-          <span class="stat-label">Built for Nigeria</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">🧠</span>
-          <span class="stat-label">AI Powered</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">📚</span>
-          <span class="stat-label">Education First</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-icon">⚡</span>
-          <span class="stat-label">Modern Technology</span>
-        </div>
+        <div class="stat-item"><span class="icon">🇳🇬</span> Built for Nigeria</div>
+        <div class="stat-item"><span class="icon">🧠</span> AI Powered</div>
+        <div class="stat-item"><span class="icon">📚</span> Education First</div>
+        <div class="stat-item"><span class="icon">⚡</span> Modern Tech</div>
       </div>
-    </section>
+    </div>
 
-    <!-- ===== TECHNOLOGY STACK ===== -->
-    <section class="glass-card fade-up">
-      <div class="card-title"><span class="emoji">🛠️</span> Technology Stack</div>
+    <!-- Technology Stack -->
+    <div class="card" style="animation-delay:0.2s">
+      <div class="card-title"><span class="icon">🛠️</span> Technology Stack</div>
       <div class="tech-grid">
-        <div class="tech-item"><span class="tech-icon">🌐</span>HTML5</div>
-        <div class="tech-item"><span class="tech-icon">🎨</span>CSS3</div>
-        <div class="tech-item"><span class="tech-icon">⚡</span>JavaScript</div>
-        <div class="tech-item"><span class="tech-icon">🚀</span>Node.js</div>
-        <div class="tech-item"><span class="tech-icon">📦</span>Express</div>
-        <div class="tech-item"><span class="tech-icon">🔌</span>Socket.IO</div>
-        <div class="tech-item"><span class="tech-icon">🧠</span>Groq AI</div>
-        <div class="tech-item"><span class="tech-icon">☁️</span>Render</div>
+        <div class="tech-chip">HTML5</div>
+        <div class="tech-chip">CSS3</div>
+        <div class="tech-chip">JavaScript</div>
+        <div class="tech-chip">Node.js</div>
+        <div class="tech-chip">Express</div>
+        <div class="tech-chip">Socket.IO</div>
+        <div class="tech-chip">Groq AI</div>
+        <div class="tech-chip">Cloudflare</div>
+        <div class="tech-chip">Render</div>
       </div>
-    </section>
+    </div>
 
-    <!-- ===== OPEN SOURCE CREDITS ===== -->
-    <section class="glass-card fade-up">
-      <div class="card-title"><span class="emoji">📚</span> Open Source Credits</div>
-      <div class="oss-list">
-        <div class="oss-item">
-          <span class="oss-icon">🔌</span>
-          <div><span class="oss-name">Socket.IO Client</span><div class="oss-desc">Real‑time bidirectional communication</div></div>
-        </div>
-        <div class="oss-item">
-          <span class="oss-icon">📦</span>
-          <div><span class="oss-name">Express Framework</span><div class="oss-desc">Fast, unopinionated web framework</div></div>
-        </div>
-        <div class="oss-item">
-          <span class="oss-icon">🔤</span>
-          <div><span class="oss-name">Google Fonts (Inter)</span><div class="oss-desc">Modern, clean typography</div></div>
-        </div>
-        <div class="oss-item">
-          <span class="oss-icon">🌐</span>
-          <div><span class="oss-name">CORS Middleware</span><div class="oss-desc">Cross‑origin resource sharing</div></div>
-        </div>
+    <!-- License Section -->
+    <div class="card" style="animation-delay:0.25s">
+      <div class="card-title"><span class="icon">📜</span> License</div>
+      <p style="color:var(--text-muted); font-size:14px; margin-bottom:8px;">
+        StudentNija is protected by a proprietary license. By using the app, you agree to the terms below.
+      </p>
+      <div class="license-container" id="licenseBox">
+STUDENTNIJA PROPRIETARY SOFTWARE LICENSE
+
+Version 1.0 – July 2026
+
+Copyright © 2024–2026 StudentNija. All Rights Reserved.
+
+This StudentNija Proprietary Software License ("License") is a legal agreement between you ("User") and the copyright holder ("Licensor") governing your access to and use of the StudentNija software, website, services, source code, object code, documentation, graphics, user interface, APIs, databases, trademarks, branding, and all related materials (collectively, the "Software").
+
+By accessing, installing, downloading, using, copying, or otherwise interacting with the Software, you acknowledge that you have read, understood, and agree to be bound by this License. If you do not agree to these terms, you must not access or use the Software.
+
+---
+
+1. GRANT OF LICENSE
+
+Subject to your compliance with this License, the Licensor grants you a limited, non-exclusive, non-transferable, non-sublicensable, revocable license to use the Software solely for your personal, non-commercial educational purposes through the official StudentNija platform.
+
+This License grants only a right to use the Software. It does not transfer ownership of the Software or any intellectual property rights.
+
+---
+
+2. RESTRICTIONS
+
+Unless expressly authorized in writing by the Licensor, you shall NOT:
+
+a. Copy, reproduce, mirror, duplicate, archive, or clone the Software or any substantial portion of it.
+
+b. Upload, publish, host, or redistribute the Software on any website, server, repository, marketplace, application store, or cloud service.
+
+c. Sell, rent, lease, sublicense, license, assign, transfer, or commercially exploit the Software.
+
+d. Modify, adapt, translate, merge, create derivative works from, or otherwise alter the Software.
+
+e. Reverse engineer, decompile, disassemble, decode, or attempt to discover the source code, algorithms, architecture, or internal design of the Software except where such restrictions are prohibited by applicable law.
+
+f. Remove, alter, or obscure any copyright notices, trademark notices, license notices, or proprietary markings.
+
+g. Use the Software to build, train, improve, benchmark, or develop competing products or services.
+
+h. Use automated tools, bots, crawlers, scrapers, or similar technologies to copy, extract, collect, or harvest any portion of the Software or its content without prior written permission.
+
+i. Circumvent or attempt to bypass security mechanisms, authentication systems, licensing controls, or access restrictions.
+
+j. Use the Software in any unlawful manner or in violation of applicable laws or regulations.
+
+---
+
+3. OWNERSHIP
+
+The Software is licensed, not sold.
+
+All rights, title, and interest in and to the Software, including all copyrights, patents, trademarks, trade secrets, database rights, designs, documentation, user interface designs, graphics, source code, object code, APIs, logos, branding, and all other intellectual property rights remain the exclusive property of the Licensor.
+
+No ownership rights are transferred under this License.
+
+---
+
+4. TRADEMARKS
+
+"StudentNija", the StudentNija name, logo, branding, icons, slogans, and all related marks are the exclusive property of the Licensor.
+
+Nothing contained in this License grants any right to use any StudentNija trademark, trade name, logo, or branding without prior written permission.
+
+---
+
+5. CONFIDENTIALITY
+
+To the extent any non-public portion of the Software is made available to you, you agree to keep such information confidential and not disclose it to any third party without prior written permission.
+
+---
+
+6. INTELLECTUAL PROPERTY PROTECTION
+
+The Software is protected by copyright laws, trademark laws, international intellectual property treaties, and other applicable laws.
+
+Unauthorized copying, redistribution, publication, modification, or commercial use may result in civil and/or criminal legal action where permitted by applicable law.
+
+---
+
+7. UPDATES
+
+The Licensor may release updates, upgrades, patches, bug fixes, or new versions of the Software at any time.
+
+The Licensor has no obligation to provide updates or support.
+
+Continued use of updated versions constitutes acceptance of the updated Software and any revised License.
+
+---
+
+8. TERMINATION
+
+This License remains effective until terminated.
+
+The Licensor may immediately terminate this License if you violate any provision of it.
+
+Upon termination, you must immediately:
+
+- Stop using the Software;
+- Destroy all copies in your possession or control;
+- Remove any unauthorized copies from your devices or servers.
+
+Termination does not limit any legal rights or remedies available to the Licensor.
+
+---
+
+9. DISCLAIMER OF WARRANTIES
+
+THE SOFTWARE IS PROVIDED "AS IS" AND "AS AVAILABLE."
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, THE LICENSOR DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE, INCLUDING WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, NON-INFRINGEMENT, ACCURACY, SECURITY, RELIABILITY, OR AVAILABILITY.
+
+YOU ASSUME ALL RISKS ARISING FROM THE USE OF THE SOFTWARE.
+
+---
+
+10. LIMITATION OF LIABILITY
+
+TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THE LICENSOR SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, PUNITIVE, OR CONSEQUENTIAL DAMAGES, INCLUDING LOSS OF DATA, LOSS OF PROFITS, BUSINESS INTERRUPTION, LOSS OF GOODWILL, OR PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES ARISING FROM OR RELATED TO THE USE OF OR INABILITY TO USE THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+---
+
+11. INDEMNIFICATION
+
+You agree to indemnify, defend, and hold harmless the Licensor from any claims, liabilities, damages, losses, costs, and expenses arising out of your violation of this License or misuse of the Software.
+
+---
+
+12. GOVERNING LAW
+
+This License shall be governed by and construed in accordance with the laws of the Federal Republic of Nigeria.
+
+Any dispute arising under or relating to this License shall be subject to the exclusive jurisdiction of the competent courts of Nigeria.
+
+---
+
+13. SEVERABILITY
+
+If any provision of this License is found to be invalid, illegal, or unenforceable, the remaining provisions shall remain in full force and effect.
+
+---
+
+14. ENTIRE AGREEMENT
+
+This License constitutes the entire agreement between the User and the Licensor regarding the Software and supersedes all prior agreements, understandings, or communications relating to its subject matter.
+
+---
+
+15. CHANGES TO THIS LICENSE
+
+The Licensor reserves the right to revise or update this License at any time.
+
+Updated versions will be published through the official StudentNija website.
+
+Continued use of the Software after publication of an updated License constitutes acceptance of the revised License.
+
+---
+
+16. CONTACT
+
+For licensing inquiries, commercial permissions, or legal matters, contact:
+
+Email: donchester111@gmail.com
+
+Official Website: https://studentnija.pages.dev
+
+---
+
+Unauthorized copying, reproduction, redistribution, commercial use, or creation of derivative works of the StudentNija Software is prohibited except as expressly permitted under this License.
+
+© 2024–2026 StudentNija. All Rights Reserved.
       </div>
-    </section>
+      <button class="license-toggle" id="licenseToggle">Read Full License</button>
+    </div>
 
-    <!-- ===== COMMUNITY APPRECIATION ===== -->
-    <section class="glass-card fade-up">
-      <div class="card-title"><span class="emoji">🙏</span> Community Appreciation</div>
-      <div class="community-grid">
-        <div class="community-item"><span class="cm-icon">🎓</span>Nigerian Students</div>
-        <div class="community-item"><span class="cm-icon">🧪</span>Testers</div>
-        <div class="community-item"><span class="cm-icon">🤝</span>Contributors</div>
-        <div class="community-item"><span class="cm-icon">❤️</span>Supporters</div>
+    <!-- Open Source Credits -->
+    <div class="card" style="animation-delay:0.3s">
+      <div class="card-title"><span class="icon">📚</span> Open Source Credits</div>
+      <div style="display:flex; flex-direction:column; gap:10px; color:var(--text-muted);">
+        <div><strong>Socket.IO</strong> – Real‑time communication</div>
+        <div><strong>Express</strong> – Web framework</div>
+        <div><strong>Google Fonts (Inter)</strong> – Typography</div>
+        <div><strong>Cloudflare Pages</strong> – Hosting & deployment</div>
+        <div><strong>Render</strong> – Backend services</div>
       </div>
-    </section>
+    </div>
 
-    <!-- ===== CONTACT & SUPPORT ===== -->
-    <section class="glass-card fade-up">
-      <div class="card-title"><span class="emoji">📬</span> Contact &amp; Support</div>
+    <!-- Community Appreciation -->
+    <div class="card" style="animation-delay:0.35s">
+      <div class="card-title"><span class="icon">🙏</span> Community Appreciation</div>
+      <div class="stats-grid">
+        <div class="stat-item"><span class="icon">🎓</span>Nigerian Students</div>
+        <div class="stat-item"><span class="icon">🧪</span>Testers</div>
+        <div class="stat-item"><span class="icon">🤝</span>Contributors</div>
+        <div class="stat-item"><span class="icon">❤️</span>Supporters</div>
+      </div>
+    </div>
+
+    <!-- Contact & Support -->
+    <div class="card" style="animation-delay:0.4s">
+      <div class="card-title"><span class="icon">📬</span> Contact &amp; Support</div>
       <div class="contact-grid">
-
-        <div class="contact-card" id="emailCard" role="button" tabindex="0" aria-label="Email support">
-          <span class="cc-icon">✉️</span>
+        <div class="contact-card" onclick="copyEmail()">
+          <div class="cc-icon">✉️</div>
           <div class="cc-label">Email Support</div>
           <div class="cc-detail">donchester111@gmail.com</div>
         </div>
-
-        <div class="contact-card" id="feedbackCard" role="button" tabindex="0" aria-label="Send feedback">
-          <span class="cc-icon">💬</span>
-          <div class="cc-label">Feedback &amp; Suggestions</div>
-          <div class="cc-detail">Click to send feedback</div>
+        <div class="contact-card" onclick="window.location.href='mailto:donchester111@gmail.com?subject=StudentNija%20Feedback'">
+          <div class="cc-icon">💬</div>
+          <div class="cc-label">Send Feedback</div>
+          <div class="cc-detail">We listen to you</div>
         </div>
-
-        <div class="contact-card" id="websiteCard" role="button" tabindex="0" aria-label="Visit website">
-          <span class="cc-icon">🌍</span>
+        <div class="contact-card" onclick="window.open('https://studentnija.pages.dev/','_blank')">
+          <div class="cc-icon">🌍</div>
           <div class="cc-label">Website</div>
           <div class="cc-detail">studentnija.pages.dev</div>
         </div>
-
       </div>
-    </section>
+    </div>
 
-    <!-- ===== VERSION INFORMATION ===== -->
-    <section class="glass-card fade-up">
-      <div class="version-box">
-        <div class="version-main">StudentNija v1.2.0</div>
-        <div class="version-sub">Production Release</div>
-        <div class="version-badge-lg">✓ Stable</div>
+    <!-- Version -->
+    <div class="card" style="text-align:center; animation-delay:0.45s">
+      <div style="font-size:24px; font-weight:800; background:linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+        StudentNija v1.4.0
       </div>
-    </section>
+      <div style="font-size:13px; color:var(--text-muted); margin-top:4px;">Production Release · Stable</div>
+    </div>
 
-    <!-- ===== FOOTER ===== -->
-    <footer class="app-footer fade-up">
-      <div class="footer-brand">Student<span>Nija</span></div>
-      <div class="footer-tagline">Empowering Nigerian Students Through Technology</div>
-      <div class="footer-credit">Designed &amp; Developed by Godwin Julius</div>
-      <div class="footer-copy">&copy; 2026 StudentNija. All Rights Reserved.</div>
-    </footer>
-
+    <div class="footer-note">
+      &copy; 2026 StudentNija. Designed &amp; Developed by <span>Godwin Julius</span>. All Rights Reserved.
+    </div>
   </div>
 
-  <!-- ===== SCRIPT ===== -->
   <script>
-    (function() {
-      'use strict';
-
-      // ---- DOM refs ----
+    (function(){
+      // Theme management
+      const APP_KEY = 'studentnija_settings';
+      const CHAT_KEY = 'studentnija_chat_settings_v3';
       const themeToggle = document.getElementById('themeToggle');
       const themeIcon = document.getElementById('themeIcon');
       const themeLabel = document.getElementById('themeLabel');
-      const backLink = document.getElementById('backLink');
-      const emailCard = document.getElementById('emailCard');
-      const feedbackCard = document.getElementById('feedbackCard');
-      const websiteCard = document.getElementById('websiteCard');
 
-      // ---- Theme keys ----
-      const APP_STORAGE_KEY = 'studentnija_settings';        // main app
-      const CHAT_STORAGE_KEY = 'studentnija_chat_settings_v3'; // chat / unified
-
-      let currentTheme = 'dark';
-      let currentAccent = 'green';
-
-      // ---- Read settings from both keys, with priority: app settings > chat settings ----
-      function readThemeFromStorage() {
+      function getTheme() {
         let theme = null;
-        let accent = null;
-
         try {
-          // 1) Try main app settings
-          const appRaw = localStorage.getItem(APP_STORAGE_KEY);
-          if (appRaw) {
-            const appSettings = JSON.parse(appRaw);
-            if (appSettings.theme) theme = appSettings.theme;
-            if (appSettings.accentColor) accent = appSettings.accentColor;
-          }
-        } catch (_) {}
-
-        // 2) Fallback to chat settings if not found
+          const app = JSON.parse(localStorage.getItem(APP_KEY) || '{}');
+          if (app.theme) theme = app.theme;
+        } catch(_){}
         if (!theme) {
           try {
-            const chatRaw = localStorage.getItem(CHAT_STORAGE_KEY);
-            if (chatRaw) {
-              const chatSettings = JSON.parse(chatRaw);
-              if (chatSettings.theme) theme = chatSettings.theme;
-              if (chatSettings.accent) accent = chatSettings.accent;
-            }
-          } catch (_) {}
+            const chat = JSON.parse(localStorage.getItem(CHAT_KEY) || '{}');
+            if (chat.theme) theme = chat.theme;
+          } catch(_){}
         }
-
-        // 3) System preference fallback
-        if (!theme) {
-          const prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
-          theme = prefersLight ? 'light' : 'dark';
-        }
-        if (!accent) accent = 'green';
-
-        return { theme, accent };
+        return theme || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
       }
 
-      function loadTheme() {
-        const { theme, accent } = readThemeFromStorage();
-        currentTheme = theme;
-        currentAccent = accent;
-        applyTheme();
+      function applyTheme(t) {
+        document.body.classList.toggle('dark-theme', t==='dark');
+        themeIcon.textContent = t==='dark' ? '🌙' : '☀️';
+        themeLabel.textContent = t==='dark' ? 'Dark' : 'Light';
       }
 
-      function applyTheme() {
-        const isDark = currentTheme === 'dark';
-        document.documentElement.classList.toggle('dark', isDark);
-        document.body.classList.toggle('dark', isDark);
-
-        // Update toggle button
-        if (isDark) {
-          themeIcon.textContent = '🌙';
-          themeLabel.textContent = 'Dark';
-        } else {
-          themeIcon.textContent = '☀️';
-          themeLabel.textContent = 'Light';
-        }
-
-        // Save to both keys for consistency
-        saveThemeToAll();
-      }
-
-      function saveThemeToAll() {
-        // Save to main app settings
-        try {
-          let appSettings = {};
-          const raw = localStorage.getItem(APP_STORAGE_KEY);
-          if (raw) {
-            try { appSettings = JSON.parse(raw); } catch (_) {}
-          }
-          appSettings.theme = currentTheme;
-          appSettings.accentColor = currentAccent;
-          localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(appSettings));
-        } catch (_) {}
-
-        // Save to chat settings
-        try {
-          let chatSettings = {};
-          const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-          if (raw) {
-            try { chatSettings = JSON.parse(raw); } catch (_) {}
-          }
-          chatSettings.theme = currentTheme;
-          chatSettings.accent = currentAccent;
-          localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatSettings));
-        } catch (_) {}
-      }
-
-      function toggleTheme() {
-        currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        applyTheme();
-      }
-
-      // ---- Event listeners ----
-      themeToggle.addEventListener('click', toggleTheme);
-
-      // ---- Back link ----
-      backLink.addEventListener('click', function(e) {
-        e.preventDefault();
-        // Try to go back; if that fails, close the window (works in DroidScript)
-        if (window.history.length > 1) {
-          window.history.back();
-        } else {
-          // For DroidScript we can use app.Close() if available
-          if (typeof app !== 'undefined' && app.Close) {
-            app.Close();
-          } else {
-            window.close();
-          }
-        }
-      });
-
-      // ---- Contact cards ----
-      emailCard.addEventListener('click', function() {
-        const email = 'donchester111@gmail.com';
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(email).then(() => {
-            showToast('Email copied to clipboard!');
-          }).catch(() => {
-            window.location.href = 'mailto:' + email;
-          });
-        } else {
-          window.location.href = 'mailto:' + email;
-        }
-      });
-
-      feedbackCard.addEventListener('click', function() {
-        window.location.href = 'mailto:donchester111@gmail.com?subject=StudentNija%20Feedback';
-      });
-
-      websiteCard.addEventListener('click', function() {
-        window.open('https://studentnija.pages.dev/', '_blank');
-      });
-
-      // ---- Keyboard support ----
-      document.querySelectorAll('.contact-card').forEach(function(card) {
-        card.addEventListener('keydown', function(e) {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            this.click();
-          }
+      function setTheme(t) {
+        applyTheme(t);
+        [APP_KEY, CHAT_KEY].forEach(key => {
+          try {
+            const obj = JSON.parse(localStorage.getItem(key) || '{}');
+            obj.theme = t;
+            obj.accentColor = obj.accentColor || 'green';
+            localStorage.setItem(key, JSON.stringify(obj));
+          } catch(_){}
         });
-      });
-
-      // ---- Toast ----
-      function showToast(message) {
-        const existing = document.querySelector('.toast-message');
-        if (existing) existing.remove();
-
-        const toast = document.createElement('div');
-        toast.className = 'toast-message';
-        toast.textContent = message;
-        document.body.appendChild(toast);
-        toast.offsetHeight; // force reflow
-        toast.classList.add('show');
-
-        setTimeout(function() {
-          toast.classList.remove('show');
-          setTimeout(function() {
-            if (toast.parentNode) toast.remove();
-          }, 350);
-        }, 2800);
       }
 
-      // ---- Founder image fallback ----
-      const founderImg = document.getElementById('founderImg');
-      const fallback = document.getElementById('fallbackInitials');
-      if (founderImg) {
-        founderImg.onerror = function() {
-          this.classList.add('error');
-          fallback.style.display = 'flex';
-        };
-        founderImg.onload = function() {
-          fallback.style.display = 'none';
-        };
-        if (founderImg.complete && founderImg.naturalWidth > 0) {
-          fallback.style.display = 'none';
-        }
-      }
-
-      // ---- Init ----
-      loadTheme();
-
-      // Listen for storage changes from other tabs (keep in sync)
-      window.addEventListener('storage', function(e) {
-        if (e.key === APP_STORAGE_KEY || e.key === CHAT_STORAGE_KEY) {
-          loadTheme();
-        }
+      let currentTheme = getTheme();
+      applyTheme(currentTheme);
+      themeToggle.addEventListener('click', ()=>{
+        currentTheme = currentTheme==='dark' ? 'light' : 'dark';
+        setTheme(currentTheme);
       });
 
-      console.log('🎓 StudentNija About & Credits page loaded – theme unified with main app.');
+      // License expand
+      const licenseBox = document.getElementById('licenseBox');
+      const licenseToggle = document.getElementById('licenseToggle');
+      licenseToggle.addEventListener('click', ()=>{
+        licenseBox.classList.toggle('expanded');
+        licenseToggle.textContent = licenseBox.classList.contains('expanded') ? 'Show Less' : 'Read Full License';
+      });
+
+      // Back
+      window.goBack = function() {
+        if (window.history.length > 1) window.history.back();
+        else if (typeof app !== 'undefined' && app.Close) app.Close();
+        else window.close();
+      };
+
+      // Copy email
+      window.copyEmail = function() {
+        const email = 'donchester111@gmail.com';
+        navigator.clipboard.writeText(email).then(()=> alert('Email copied to clipboard!'));
+      };
+
+      // Storage sync
+      window.addEventListener('storage', (e) => {
+        if (e.key === APP_KEY || e.key === CHAT_KEY) {
+          currentTheme = getTheme();
+          applyTheme(currentTheme);
+        }
+      });
     })();
   </script>
 </body>
-</html>
+          </html>
