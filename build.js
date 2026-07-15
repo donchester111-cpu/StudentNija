@@ -1,4 +1,4 @@
-// build.js – Minify all assets without bundling (safe for imports)
+// build.js – Minify all assets without bundling (no import errors)
 const fs = require('fs-extra');
 const path = require('path');
 const { minify: minifyHTML } = require('html-minifier');
@@ -10,7 +10,7 @@ const OUT_DIR = 'dist';
 // Clean output directory
 fs.emptyDirSync(OUT_DIR);
 
-// 1. Minify HTML files (updated list to match your actual files)
+// 1. Minify HTML files (updated list – make sure these names match your repo exactly)
 const htmlFiles = [
   'index.html',
   'ai.html',
@@ -20,7 +20,7 @@ const htmlFiles = [
   '404.html',
   '505.html',
   'errors.html',
-  'credit_page.html',   // assuming it's credit_page.html
+  'credit_page.html',      // ensure this is the exact filename
   'studentnija_sync.html',
 ];
 
@@ -30,7 +30,7 @@ htmlFiles.forEach(file => {
     return;
   }
   let html = fs.readFileSync(file, 'utf8');
-  // Remove importmap from index.html (not needed for minified output)
+  // Remove importmap from index.html (not needed)
   if (file === 'index.html') {
     html = html.replace(/<script type="importmap">[\s\S]*?<\/script>/, '');
   }
@@ -38,14 +38,14 @@ htmlFiles.forEach(file => {
     collapseWhitespace: true,
     removeComments: true,
     minifyCSS: true,
-    minifyJS: false,   // we'll handle JS separately
+    minifyJS: false,         // we handle JS separately
   });
   fs.writeFileSync(path.join(OUT_DIR, file), result);
   console.log(`✅ ${file} minified`);
 });
 
 // 2. Minify CSS files
-const cssFiles = ['style.css'];   // add any other CSS files here
+const cssFiles = ['style.css'];   // add others if you have them
 cssFiles.forEach(file => {
   if (!fs.existsSync(file)) {
     console.warn(`⚠️  ${file} not found, skipping.`);
@@ -59,7 +59,7 @@ cssFiles.forEach(file => {
 
 // 3. Minify all JavaScript files individually (no bundling, no import errors)
 const jsFiles = fs.readdirSync('.')
-  .filter(f => f.endsWith('.js') && f !== 'build.js');   // exclude the build script itself
+  .filter(f => f.endsWith('.js') && f !== 'build.js');   // exclude build script itself
 
 (async () => {
   for (const file of jsFiles) {
@@ -68,7 +68,7 @@ const jsFiles = fs.readdirSync('.')
       const result = await esbuild.transform(input, {
         loader: 'js',
         minify: true,
-        format: 'esm',    // keep ES module syntax
+        format: 'esm',      // keep ES module syntax
         target: 'es2020',
       });
       fs.writeFileSync(path.join(OUT_DIR, file), result.code);
