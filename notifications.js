@@ -6,43 +6,75 @@ const BACKEND_URL = 'https://studentnija-public-chat.onrender.com';
 
 async function initNotifications() {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) {
-    console.warn('Notifications not supported');
+    console.warn('❌ Notifications or Service Workers not supported');
     return;
   }
+
   if (!swRegistration) {
     try {
       swRegistration = await navigator.serviceWorker.register('/sw.js');
-      console.log('✅ SW registered');
+      console.log('✅ Service Worker registered:', swRegistration.scope);
     } catch (err) {
-      console.error('SW registration failed:', err);
+      console.error('❌ SW registration failed:', err);
       return;
     }
   }
+
   if (Notification.permission === 'default') {
+    console.log('🔔 Requesting notification permission...');
     const perm = await Notification.requestPermission();
     if (perm === 'granted') {
+      console.log('✅ Permission granted, subscribing to push...');
       await subscribeToPush();
+    } else {
+      console.warn('❌ Permission denied');
+    }
+  } else if (Notification.permission === 'granted') {
+    // Already granted, but maybe subscription not saved
+    const existingSub = await swRegistration.pushManager.getSubscription();
+    if (!existingSub) {
+      console.log('📡 No existing push subscription, creating one...');
+      await subscribeToPush();
+    } else {
+      console.log('✅ Already subscribed:', existingSub.endpoint);
     }
   }
 }
 
 async function subscribeToPush() {
-  if (!swRegistration) return;
+  if (!swRegistration) {
+    console.error('❌ No service worker registration');
+    return;
+  }
+
   try {
+    console.log('📡 Subscribing to push...');
     const subscription = await swRegistration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlB64ToUint8Array(VAPID_PUBLIC_KEY)
     });
-    console.log('Push subscribed:', subscription);
+    console.log('✅ Push subscription created:', subscription.endpoint);
 
-    // Get current user ID from localStorage
+    // Wait for user ID to be available (retry up to 5 seconds)
     let userId = null;
-    try {
-      const userData = JSON.parse(localStorage.getItem('studentnija_currentUser') || '{}');
-      userId = userData.id || null;
-    } catch (_) {}
+    for (let i = 0; i < 50; i++) {
+      try {
+        const userData = JSON.parse(localStorage.getItem('studentnija_currentUser') || '{}');
+        if (userData.id) {
+          userId = userData.id;
+          break;
+        }
+      } catch (_) {}
+      await new Promise(r => setTimeout(r, 100));
+    }
 
-    await fetch(`${BACKEND_URL}/api/push/subscribe`, {
+    if (!userId) {
+      console.error('❌ No user ID found in localStorage. User might not be logged in.');
+      return;
+    }
+
+    console.log('👤 Sending subscription to server for user:', userId);
+    const response = await fetch(`${BACKEND_URL}/api/push/subscribe`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -50,9 +82,16 @@ async function subscribeToPush() {
         userId
       })
     });
-    console.log('Subscription saved on server');
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('✅ Server response:', data);
+    } else {
+      const text = await response.text();
+      console.error('❌ Server error:', response.status, text);
+    }
   } catch (err) {
-    console.error('Push subscription failed:', err);
+    console.error('❌ Push subscription failed:', err.name, err.message);
   }
 }
 
@@ -118,7 +157,7 @@ window.NotifBridge = {
   testNotification,
   requestNotificationPermission: initNotifications,
   subscribeToPush,
-  syncAlarmToServer   // <-- new function
+  syncAlarmToServer
 };
 
 document.addEventListener('DOMContentLoaded', () => {
