@@ -1,16 +1,15 @@
-// build.js – Minify all assets (HTML + CSS + JS) without import errors
+// build.js – Minify assets (HTML + CSS + JS) using Terser (no esbuild)
 const fs = require('fs-extra');
 const path = require('path');
 const { minify: minifyHTML } = require('html-minifier');
 const CleanCSS = require('clean-css');
-const { minify: minifyJS } = require('terser');   // <-- Terser instead of esbuild
+const { minify: minifyJS } = require('terser');   // <-- only Terser
 
 const OUT_DIR = 'dist';
 
-// Clean output
 fs.emptyDirSync(OUT_DIR);
 
-// 1. Minify HTML files
+// 1. Minify HTML files (update names if needed)
 const htmlFiles = [
   'index.html',
   'ai.html',
@@ -20,7 +19,7 @@ const htmlFiles = [
   '404.html',
   '505.html',
   'errors.html',
-  'credit_page.html',    
+  'credit_page.html',
   'studentnija_sync.html',
 ];
 
@@ -30,7 +29,6 @@ htmlFiles.forEach(file => {
     return;
   }
   let html = fs.readFileSync(file, 'utf8');
-  // Remove importmap from index.html (not needed after minification)
   if (file === 'index.html') {
     html = html.replace(/<script type="importmap">[\s\S]*?<\/script>/, '');
   }
@@ -38,14 +36,14 @@ htmlFiles.forEach(file => {
     collapseWhitespace: true,
     removeComments: true,
     minifyCSS: true,
-    minifyJS: false,    // we minify JS separately
+    minifyJS: false,
   });
   fs.writeFileSync(path.join(OUT_DIR, file), result);
   console.log(`✅ ${file} minified`);
 });
 
-// 2. Minify CSS files
-const cssFiles = ['style.css'];   // add any other CSS files here
+// 2. Minify CSS
+const cssFiles = ['style.css'];
 cssFiles.forEach(file => {
   if (!fs.existsSync(file)) {
     console.warn(`⚠️  ${file} not found, skipping.`);
@@ -57,7 +55,7 @@ cssFiles.forEach(file => {
   console.log(`✅ ${file} minified`);
 });
 
-// 3. Minify JavaScript files individually with Terser (no bundling, no import errors)
+// 3. Minify JavaScript files with Terser (ignores import rules)
 const jsFiles = fs.readdirSync('.')
   .filter(f => f.endsWith('.js') && f !== 'build.js');
 
@@ -69,13 +67,13 @@ const jsFiles = fs.readdirSync('.')
         compress: true,
         mangle: true,
         output: { comments: false },
-        module: false,   // treat as regular script so Terser doesn't check imports
+        module: false,
       });
       if (result.code) {
         fs.writeFileSync(path.join(OUT_DIR, file), result.code);
         console.log(`✅ ${file} minified`);
       } else {
-        console.warn(`⚠️  ${file} produced no output, skipping.`);
+        console.warn(`⚠️  ${file} produced no output`);
       }
     } catch (err) {
       console.error(`❌ Failed to minify ${file}:`, err.message);
