@@ -1,16 +1,16 @@
-// build.js – Minify all assets without bundling (no import errors)
+// build.js – Minify all assets (HTML + CSS + JS) without import errors
 const fs = require('fs-extra');
 const path = require('path');
 const { minify: minifyHTML } = require('html-minifier');
 const CleanCSS = require('clean-css');
-const esbuild = require('esbuild');
+const { minify: minifyJS } = require('terser');   // <-- Terser instead of esbuild
 
 const OUT_DIR = 'dist';
 
-// Clean output directory
+// Clean output
 fs.emptyDirSync(OUT_DIR);
 
-// 1. Minify HTML files (updated list – make sure these names match your repo exactly)
+// 1. Minify HTML files
 const htmlFiles = [
   'index.html',
   'ai.html',
@@ -20,7 +20,7 @@ const htmlFiles = [
   '404.html',
   '505.html',
   'errors.html',
-  'credit_page.html',      // ensure this is the exact filename
+  'credit_page.html',    
   'studentnija_sync.html',
 ];
 
@@ -30,7 +30,7 @@ htmlFiles.forEach(file => {
     return;
   }
   let html = fs.readFileSync(file, 'utf8');
-  // Remove importmap from index.html (not needed)
+  // Remove importmap from index.html (not needed after minification)
   if (file === 'index.html') {
     html = html.replace(/<script type="importmap">[\s\S]*?<\/script>/, '');
   }
@@ -38,14 +38,14 @@ htmlFiles.forEach(file => {
     collapseWhitespace: true,
     removeComments: true,
     minifyCSS: true,
-    minifyJS: false,         // we handle JS separately
+    minifyJS: false,    // we minify JS separately
   });
   fs.writeFileSync(path.join(OUT_DIR, file), result);
   console.log(`✅ ${file} minified`);
 });
 
 // 2. Minify CSS files
-const cssFiles = ['style.css'];   // add others if you have them
+const cssFiles = ['style.css'];   // add any other CSS files here
 cssFiles.forEach(file => {
   if (!fs.existsSync(file)) {
     console.warn(`⚠️  ${file} not found, skipping.`);
@@ -57,22 +57,26 @@ cssFiles.forEach(file => {
   console.log(`✅ ${file} minified`);
 });
 
-// 3. Minify all JavaScript files individually (no bundling, no import errors)
+// 3. Minify JavaScript files individually with Terser (no bundling, no import errors)
 const jsFiles = fs.readdirSync('.')
-  .filter(f => f.endsWith('.js') && f !== 'build.js');   // exclude build script itself
+  .filter(f => f.endsWith('.js') && f !== 'build.js');
 
 (async () => {
   for (const file of jsFiles) {
     const input = fs.readFileSync(file, 'utf8');
     try {
-      const result = await esbuild.transform(input, {
-        loader: 'js',
-        minify: true,
-        format: 'esm',      // keep ES module syntax
-        target: 'es2020',
+      const result = await minifyJS(input, {
+        compress: true,
+        mangle: true,
+        output: { comments: false },
+        module: false,   // treat as regular script so Terser doesn't check imports
       });
-      fs.writeFileSync(path.join(OUT_DIR, file), result.code);
-      console.log(`✅ ${file} minified`);
+      if (result.code) {
+        fs.writeFileSync(path.join(OUT_DIR, file), result.code);
+        console.log(`✅ ${file} minified`);
+      } else {
+        console.warn(`⚠️  ${file} produced no output, skipping.`);
+      }
     } catch (err) {
       console.error(`❌ Failed to minify ${file}:`, err.message);
     }
