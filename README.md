@@ -54,7 +54,8 @@ studentnija/
 ├── manifest.json              # PWA manifest
 ├── pages/                     # Page modules (home, academics, etc.)
 ├── tools/                     # Standalone tool modules (calculator, library, etc.)
-└── README.md
+└── README.md & LICENSE
+
 
 ```
 
@@ -64,7 +65,7 @@ studentnija/
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-org/studentnija.git
+   git clone https://github.com/donchester111-cpu/StudentNija.git
    cd studentnija
 ```
 
