@@ -5,7 +5,6 @@
     "build": "node build.js"
   },
   "devDependencies": {
-    "esbuild": "^0.19.0",
     "html-minifier": "^4.0.0",
     "clean-css-cli": "^5.6.3",
     "fs-extra": "^11.2.0",
