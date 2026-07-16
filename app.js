@@ -97,7 +97,42 @@ export async function trackEvent(eventType, payload = {}) {
   } catch (e) { /* ignore */ }
 }
 
-// ==== Error Handler ==============
+// ======================== CLEAN PREVIOUS SESSION DATA ========================
+function clearPreviousUserData() {
+  // Remove all user‑specific data keys, but keep settings/theme
+  const keysToRemove = [
+    'studentnija_courses',
+    'studentnija_tasks',
+    'studentnija_timetable',
+    'studentnija_exams',
+    'studentnija_flashcards',
+    'studentnija_notes',
+    'studentnija_notifications',
+    'studentnija_user_stats',
+    'studentnija_achievements',
+    'studentnija_planner_tasks',
+    'studentnija_coursesData',
+    // Add any other keys used for user data
+  ];
+  keysToRemove.forEach(key => localStorage.removeItem(key));
+  
+  // Also clear the in‑memory state objects so they don't carry over old data
+  Object.keys(coursesData).forEach(k => delete coursesData[k]);
+  plannerTasks.length = 0;
+  timetableEvents.length = 0;
+  exams.length = 0;
+  flashcards.length = 0;
+  savedNotes.length = 0;
+  notifications.length = 0;
+  // Reset userStats to defaults (if needed)
+  if (userStats) {
+    userStats.studyStreak = 0;
+    // other stats reset if required
+  }
+  // Also clear any other in‑memory arrays/objects that hold user data
+}
+
+// ======================== ERROR HANDLERS ========================
 window.addEventListener('unhandledrejection', function(event) {
   console.error('Unhandled promise rejection:', event.reason);
   if (window.showToast) {
@@ -270,6 +305,10 @@ function processGoogleUser(userData) {
     console.warn('Invalid Google user data:', userData);
     return;
   }
+
+  // Clear any data from a previous session (prevents data leakage)
+  clearPreviousUserData();
+
   let existingUser = users.find(u => u.email === userData.email);
   if (!existingUser) {
     const newUser = {
@@ -296,12 +335,17 @@ function processGoogleUser(userData) {
     currentUser = existingUser;
     console.log('✅ Existing user updated:', currentUser.fullName);
   }
+
   localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
   addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
 
-  // Cloud sync & push subscription
-  syncUserDataToCloud();
-  loadCloudData(currentUser.id);
+  // Load cloud data for this user (no immediate upload – we'll sync later)
+  loadCloudData(currentUser.id).then(() => {
+    // After cloud data is merged, we may want to re‑render the app
+    // but renderApp will be called by the caller.
+  });
+
+  // Push subscription
   if (window.NotifBridge && window.NotifBridge.subscribeToPush) {
     window.NotifBridge.subscribeToPush();
   }
@@ -325,6 +369,7 @@ export function renderApp() {
   }
 
   if (currentUser && currentUser.email) {
+    // If already logged in, just show main app
     renderMainApp();
   } else {
     const stored = localStorage.getItem('studentnija_currentUser');
@@ -332,8 +377,7 @@ export function renderApp() {
       try {
         const user = JSON.parse(stored);
         Object.assign(currentUser, user);
-        loadCloudData(currentUser.id); // load cloud data in background
-        renderMainApp();
+        loadCloudData(currentUser.id).then(() => renderMainApp());
       } catch (_) {
         localStorage.removeItem('studentnija_currentUser');
         renderAuth();
@@ -411,7 +455,6 @@ export function renderMainApp() {
     return;
   }
 
-  // ---------- Changed: redirect in same tab instead of opening new window ----------
   const isSpecial = ['ai', 'studygroups', 'exams'].includes(currentPage);
   if (isSpecial) {
     const pageMap = {
@@ -726,20 +769,25 @@ window.addEventListener('load', async () => {
       try {
         const user = JSON.parse(stored);
         Object.assign(currentUser, user);
-        loadCloudData(currentUser.id); // load cloud data in background
+        loadCloudData(currentUser.id).then(() => {
+          renderMainApp();
+        }).catch(() => {
+          renderMainApp();
+        });
       } catch (_) {
         localStorage.removeItem('studentnija_currentUser');
+        renderAuth();
       }
+    } else {
+      renderAuth();
     }
-  }
-
-  if (currentUser && currentUser.email) {
-    renderMainApp();
   } else {
-    renderAuth();
+    renderMainApp();
   }
 
   window.addEventListener('app:logout', () => {
+    clearPreviousUserData();
+    localStorage.removeItem('studentnija_currentUser');
     renderApp();
   });
 
@@ -764,4 +812,4 @@ window.addEventListener('load', async () => {
   setTimeout(() => {
     hideLoadingScreen();
   }, 3000);
-});
+  });
