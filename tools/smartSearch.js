@@ -1,13 +1,13 @@
 import { openToolModal } from './modal.js';
-import { callAIHelper } from './helpers.js';
-import { savedNotes, flashcards, coursesData, plannerTasks, escapeHtml } from '../state.js';
+import { apiGet } from '../api.js';
+import { escapeHtml } from '../state.js';
 
 export function openSmartSearch() {
   const html = `
     <div class="smart-search">
-      <h3>🔍 Smart Search (Notes, Flashcards, Courses)</h3>
+      <h3>🔍 Smart Search (Notes & Flashcards)</h3>
       <div style="display:flex; gap:12px; margin:12px 0;">
-        <input type="text" id="searchQuery" placeholder="Ask a question or search for keywords..." style="flex:1;">
+        <input type="text" id="searchQuery" placeholder="Search your notes and flashcards..." style="flex:1;">
         <button id="searchBtn" class="btn-primary" style="width:auto;">Search</button>
       </div>
       <div id="searchResults" class="search-results" style="max-height:60vh; overflow-y:auto;"></div>
@@ -24,18 +24,56 @@ export function openSmartSearch() {
     if (!query) return;
     resultsDiv.innerHTML = '<div class="text-muted">🔎 Searching...</div>';
 
-    const allNotes = savedNotes.map(n => `Note: ${n.title} - ${n.content}`).join('\n');
-    const allFlashcards = flashcards.map(c => `Flashcard: Q: ${c.question} A: ${c.answer}`).join('\n');
-    const allCourses = Object.entries(coursesData).map(([sem, courses]) => 
-      `Semester ${sem}: ${courses.map(c => `${c.code} (${c.unit} units, grade ${c.grade})`).join('; ')}`
-    ).join('\n');
-    const allTasks = plannerTasks.map(t => `Task: ${t.title} (${t.completed ? 'done' : 'pending'})`).join('\n');
-    const combinedText = `Notes:\n${allNotes}\n\nFlashcards:\n${allFlashcards}\n\nCourses:\n${allCourses}\n\nTasks:\n${allTasks}`;
+    // Get user ID from localStorage
+    const userData = JSON.parse(localStorage.getItem('studentnija_currentUser') || '{}');
+    const userId = userData.id;
+    if (!userId) {
+      resultsDiv.innerHTML = '<div class="text-muted">⚠️ You must be logged in to search.</div>';
+      return;
+    }
 
-    const prompt = `Given the following search query: "${query}", search through the user's data below and return the most relevant passages. List each result with a brief context and the source (Note/Flashcard/Course/Task). If nothing is found, say so.\n\n${combinedText}`;
     try {
-      const result = await callAIHelper(prompt, 'chat');
-      resultsDiv.innerHTML = `<div style="position:relative;"><div class="glass-card" style="padding:16px; white-space:pre-wrap;">${escapeHtml(result)}</div><button class="copy-btn" data-text="${escapeHtml(result)}" style="position:absolute; top:10px; right:10px;">📋 Copy</button></div>`;
+      const resp = await apiGet(`/api/search?q=${encodeURIComponent(query)}&userId=${userId}`);
+      const { notes, flashcards: flashcardResults } = resp;
+
+      let html = '';
+      if (notes && notes.length) {
+        html += `<h4 style="margin:12px 0 6px;">📝 Notes (${notes.length})</h4>`;
+        notes.forEach(note => {
+          html += `
+            <div style="margin-bottom:10px; background:var(--bg-card); border-radius:12px; padding:10px;">
+              <strong>${escapeHtml(note.title || 'Untitled')}</strong>
+              <p style="font-size:13px; color:var(--text-muted);">${escapeHtml(note.content.substring(0, 120))}...</p>
+              <button class="copy-btn" data-text="${escapeHtml(note.content)}" style="font-size:12px;">📋</button>
+            </div>`;
+        });
+      }
+      if (flashcardResults && flashcardResults.length) {
+        html += `<h4 style="margin:12px 0 6px;">🃏 Flashcards (${flashcardResults.length})</h4>`;
+        flashcardResults.forEach(card => {
+          html += `
+            <div style="margin-bottom:10px; background:var(--bg-card); border-radius:12px; padding:10px;">
+              <strong>Q: ${escapeHtml(card.question)}</strong>
+              <p style="font-size:13px; color:var(--text-muted);">A: ${escapeHtml(card.answer.substring(0, 120))}...</p>
+              <button class="copy-btn" data-text="${escapeHtml(card.answer)}" style="font-size:12px;">📋</button>
+            </div>`;
+        });
+      }
+      if (!html) {
+        html = '<div class="text-muted">No results found.</div>';
+      }
+      resultsDiv.innerHTML = html;
+
+      // Copy button events
+      document.querySelectorAll('.copy-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const text = btn.dataset.text;
+          navigator.clipboard.writeText(text).then(() => {
+            btn.textContent = '✅';
+            setTimeout(() => { btn.textContent = '📋'; }, 1500);
+          });
+        });
+      });
     } catch (err) {
       resultsDiv.innerHTML = '<div class="text-muted">Search service unavailable. Please try again later.</div>';
     }
