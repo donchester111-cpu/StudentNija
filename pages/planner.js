@@ -14,7 +14,7 @@ import {
   originalAddExam, originalAddClass,
   escapeHtml
 } from '../state.js';
-
+import { apiPost } from '../api.js';
 export function renderPlannerPage() {
   // ─────────────────────────────────────────────────
   // Inject custom CSS (once)
@@ -173,8 +173,11 @@ export function renderPlannerPage() {
         <button id="addExamBtn2" class="btn-outline" style="width:100%; margin-bottom:10px;">+ Add Exam</button>
         <div id="examListView"></div>
       </div>
-
-      <!-- Recent Alerts (right) -->
+<div class="planner-card" style="grid-column: 1 / -1;">
+  <button id="generatePlanBtn" class="btn-primary" style="width:100%;">✦ Generate Study Plan</button>
+  <div id="studyPlanDisplay" style="margin-top:12px; white-space:pre-wrap; background:var(--bg-card); border-radius:12px; padding:12px;"></div>
+</div>
+      <!--p Recent Alerts (right) -->
       <div class="planner-card">
         <div class="section-title"><span class="icon">📢</span> Recent Alerts</div>
         <div id="recentNotifList" style="max-height:220px; overflow-y:auto;"></div>
@@ -451,6 +454,25 @@ export function renderPlannerPage() {
     settings.examNotifications = e.target.checked;
     saveAll();
   });
+
+// ✦Ai Generate plain
+
+document.getElementById('generatePlanBtn')?.addEventListener('click', async () => {
+  const userId = currentUser?.id;
+  if (!userId) return alert('Please log in first');
+  const subjects = Object.values(coursesData).flat().map(c => c.code).join(', ');
+  const upcomingExams = exams.map(e => `${e.courseName} on ${e.examDate}`).join(', ');
+  const planDiv = document.getElementById('studyPlanDisplay');
+  planDiv.textContent = '⏳ Generating your personalised study plan...';
+  try {
+    const resp = await apiPost('/api/study-plan/generate', { userId, subjects, examDates: upcomingExams });
+    planDiv.textContent = resp.plan || 'No plan generated.';
+  } catch (e) {
+    planDiv.textContent = '❌ Failed to generate plan. Please try again.';
+  }
+});
+
+
 
   // Initial render
   renderTasks();
