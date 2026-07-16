@@ -1,211 +1,216 @@
-// Sync an alarm to the backend so it fires even when the app is closed
-async function syncAlarmToServer(title, body, scheduledTime) {
-  if (window.NotifBridge && window.NotifBridge.syncAlarmToServer) {
-    await window.NotifBridge.syncAlarmToServer(title, body, scheduledTime);
-  }
-}
-
-// ============================================================
-// PLANNER PAGE – Upgraded UI & Functionality
-// ============================================================
 import {
   plannerTasks, timetableEvents, exams, notifications,
   settings, saveAll, addNotification,
-  originalAddExam, originalAddClass,
-  escapeHtml
+  originalAddExam, originalAddClass, currentUser,
+  escapeHtml, coursesData
 } from '../state.js';
-import { apiPost } from '../api.js';
+
+function scheduleCloudSync() {
+  if (window.scheduleCloudSync) window.scheduleCloudSync();
+}
+function trackEvent(eventType, payload = {}) {
+  if (window.trackEvent) window.trackEvent(eventType, payload);
+}
+
+const API_BASE = 'https://studentnija-public-chat.onrender.com';
+async function apiPost(path, body) {
+  const res = await fetch(API_BASE + path, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  return res.json();
+}
+
 export function renderPlannerPage() {
-  // ─────────────────────────────────────────────────
-  // Inject custom CSS (once)
-  // ─────────────────────────────────────────────────
-  if (!document.getElementById('planner-custom-css')) {
-    const style = document.createElement('style');
-    style.id = 'planner-custom-css';
-    style.textContent = `
-      .planner-grid {
+  const container = document.getElementById('plannerContent');
+  const weekDays = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const today = new Date().getDay();
+
+  // Build weekly grid – each cell shows day name + events
+  const weeklyGridHTML = weekDays.map((day, idx) => {
+    const dayEvents = timetableEvents.filter(e => e.day === day);
+    const isToday = idx === today;
+    return `
+      <div class="week-cell ${isToday ? 'today' : ''}">
+        <div class="day-label ${isToday ? 'today-label' : ''}">${day.substring(0,3)}</div>
+        <div class="day-events">
+          ${dayEvents.map(ev => `
+            <div class="event-chip">
+              <span class="event-time">${ev.time}</span>
+              <span class="event-subject">${escapeHtml(ev.subject)}</span>
+            </div>
+          `).join('') || '<div class="no-events">—</div>'}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const html = `
+    <style>
+      /* ---- Weekly Calendar Styles ---- */
+      .week-grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 6px;
+        overflow-x: auto;
+        padding-bottom: 4px;
       }
-      .planner-card {
+      .week-cell {
         background: var(--bg-card);
-        backdrop-filter: blur(16px);
-        -webkit-backdrop-filter: blur(16px);
-        border-radius: 20px;
-        padding: 18px;
-        border: 1px solid var(--border-light);
-        box-shadow: var(--shadow-sm);
-        transition: transform 0.2s, box-shadow var(--transition);
-      }
-      .planner-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-      .planner-card .section-title {
-        font-size: 16px;
-        font-weight: 700;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-      .planner-card .section-title .icon { font-size: 20px; }
-      .task-item, .timetable-item, .exam-item, .notif-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        border-bottom: 0.5px solid var(--border-light);
-      }
-      .task-item:last-child, .timetable-item:last-child, .exam-item:last-child, .notif-item:last-child {
-        border-bottom: none;
-      }
-      .priority-badge {
-        display: inline-block;
-        padding: 2px 8px;
         border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
-        margin-left: 8px;
+        padding: 8px 6px;
+        min-height: 90px;
+        border: 1px solid rgba(255,255,255,0.04);
+        transition: background 0.2s;
       }
-      .priority-high { background: #ff4444; color: white; }
-      .priority-medium { background: var(--accent-gold); color: #0A1927; }
-      .priority-low { background: var(--accent); color: white; }
-      .task-checkbox { margin-right: 8px; transform: scale(1.2); accent-color: var(--accent); }
-      .quick-add-row {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 12px;
+      .week-cell.today {
+        background: rgba(0,135,81,0.1);
+        border-color: var(--accent);
       }
-      .quick-add-row input {
-        flex: 1;
-        padding: 8px 14px;
-        border-radius: 30px;
-        border: 1px solid var(--border-light);
-        background: var(--bg-primary);
-        color: var(--text-primary);
-        font-size: 14px;
-        outline: none;
-        transition: border-color 0.2s;
-      }
-      .quick-add-row input:focus { border-color: var(--accent); }
-      .quick-add-row button {
-        background: var(--accent);
-        border: none;
-        color: white;
-        border-radius: 30px;
-        padding: 8px 16px;
-        font-weight: 600;
-        cursor: pointer;
-        white-space: nowrap;
-        transition: transform 0.1s;
-      }
-      .quick-add-row button:active { transform: scale(0.95); }
-      .upcoming-summary {
-        background: rgba(0,135,81,0.06);
-        border-radius: 16px;
-        padding: 14px;
-        margin-bottom: 12px;
-        border: 1px solid var(--border-light);
-      }
-      .countdown-days {
+      .day-label {
         font-weight: 700;
+        font-size: 13px;
+        margin-bottom: 6px;
+        text-align: center;
+      }
+      .day-label.today-label {
         color: var(--accent);
       }
-      .delete-btn {
-        background: none;
-        border: none;
+      .day-events {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .event-chip {
+        font-size: 11px;
+        padding: 2px 0;
+        display: flex;
+        flex-direction: column;
+        border-bottom: 0.5px solid var(--border-light);
+      }
+      .event-time {
+        font-weight: 600;
+      }
+      .event-subject {
         color: var(--text-muted);
-        cursor: pointer;
-        padding: 4px 6px;
-        border-radius: 8px;
-        transition: background 0.2s, color 0.2s;
       }
-      .delete-btn:hover { color: var(--accent-red); background: rgba(255,68,68,0.08); }
-      @media (max-width: 600px) {
-        .planner-grid { grid-template-columns: 1fr; }
+      .no-events {
+        font-size: 11px;
+        color: var(--text-muted);
+        text-align: center;
+        padding: 4px 0;
       }
-    `;
-    document.head.appendChild(style);
-  }
+      /* On small screens, allow horizontal scroll */
+      @media (max-width: 500px) {
+        .week-grid {
+          grid-template-columns: repeat(7, minmax(70px, 1fr));
+        }
+        .week-cell {
+          min-width: 70px;
+        }
+      }
+    </style>
 
-  // ─────────────────────────────────────────────────
-  // Main HTML
-  // ─────────────────────────────────────────────────
-  const html = `
-    <div class="planner-grid">
-      <!-- Smart Notifications (spans both columns) -->
-      <div class="planner-card" style="grid-column: 1 / -1;">
-        <div class="flex-between">
-          <span class="section-title"><span class="icon">🔔</span> Smart Notifications</span>
-          <button id="testNotifBtn" class="btn-outline" style="width:auto; padding:8px 16px;">Test Alert</button>
-        </div>
-        <p class="text-muted" style="margin-bottom:12px;">
-          ${window.NotifBridge?.isDroidScript ? "✓ Native Android alarms: notifications work even when app is closed." : "ℹ️ Web notifications work while app is open."}
-        </p>
-        <div class="flex-between" style="margin-top:10px;">
-          <label><input type="checkbox" id="classNotifTogglePlan" ${settings.classNotifications ? 'checked' : ''}> Class Reminders</label>
-          <label><input type="checkbox" id="examNotifTogglePlan" ${settings.examNotifications ? 'checked' : ''}> Exam Reminders</label>
-        </div>
+    <!-- ========== Smart Notifications Card ========== -->
+    <div class="glass-card" style="padding:18px; margin-bottom:16px;">
+      <div class="flex-between">
+        <span class="section-title">🔔 Smart Notifications</span>
+        <button id="testNotifBtn" class="btn-outline" style="width:auto; padding:8px 16px;">Test Alert</button>
       </div>
-
-      <!-- Tasks (left) -->
-      <div class="planner-card">
-        <div class="section-title"><span class="icon">✅</span> Study Tasks</div>
-        <div class="quick-add-row">
-          <input type="text" id="quickTaskInput" placeholder="Add a task...">
-          <button id="quickAddTaskBtn">+ Add</button>
-        </div>
-        <div id="taskList"></div>
-        <button id="clearCompletedBtn" class="btn-outline" style="width:100%; margin-top:12px;">Clear Completed</button>
-      </div>
-
-      <!-- Schedule (right) -->
-      <div class="planner-card">
-        <div class="section-title"><span class="icon">⏰</span> Today's Schedule</div>
-        <div id="upcomingSummary" class="upcoming-summary text-muted">Loading...</div>
-        <div class="section-title" style="margin-top:12px;"><span class="icon">📅</span> Weekly Timetable</div>
-        <button id="addClassBtn" class="btn-outline" style="width:100%; margin-bottom:10px;">+ Add Class</button>
-        <div id="timetableView"></div>
-      </div>
-
-      <!-- Exams (left) -->
-      <div class="planner-card">
-        <div class="section-title"><span class="icon">📝</span> Exam Countdown</div>
-        <button id="addExamBtn2" class="btn-outline" style="width:100%; margin-bottom:10px;">+ Add Exam</button>
-        <div id="examListView"></div>
-      </div>
-<div class="planner-card" style="grid-column: 1 / -1;">
-  <button id="generatePlanBtn" class="btn-primary" style="width:100%;">✦ Generate Study Plan</button>
-  <div id="studyPlanDisplay" style="margin-top:12px; white-space:pre-wrap; background:var(--bg-card); border-radius:12px; padding:12px;"></div>
-</div>
-      <!--p Recent Alerts (right) -->
-      <div class="planner-card">
-        <div class="section-title"><span class="icon">📢</span> Recent Alerts</div>
-        <div id="recentNotifList" style="max-height:220px; overflow-y:auto;"></div>
+      <p class="text-muted" style="margin-bottom:12px;">
+        ${window.NotifBridge?.isDroidScript ? "✓ Native Android alarms" : "ℹ️ Web notifications work while app is open"}
+      </p>
+      <div class="flex-between" style="margin-top:10px;">
+        <label><input type="checkbox" id="classNotifTogglePlan" ${settings.classNotifications ? 'checked' : ''}> Class Reminders</label>
+        <label><input type="checkbox" id="examNotifTogglePlan" ${settings.examNotifications ? 'checked' : ''}> Exam Reminders</label>
       </div>
     </div>
-  `;
-  document.getElementById('plannerContent').innerHTML = html;
 
-  // ─────────────────────────────────────────────────
-  // Render functions
-  // ─────────────────────────────────────────────────
+    <!-- ========== Weekly Overview ========== -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+      <div style="font-weight:700; font-size:16px; margin-bottom:12px;">📅 This Week</div>
+      <div class="week-grid" id="weekGrid">
+        ${weeklyGridHTML}
+      </div>
+    </div>
+
+    <!-- ========== Quick Add Task ========== -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+      <div style="font-weight:700; margin-bottom:10px;">🔁 Quick Add Task</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <input type="text" id="quickRecurTask" placeholder="Task name" style="flex:2; min-width:150px;">
+        <select id="recurType" style="flex:1; min-width:100px;">
+          <option value="none">Once</option>
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+        </select>
+        <button id="addRecurTaskBtn" class="btn-primary" style="flex:0 0 auto;">+ Add</button>
+      </div>
+    </div>
+
+    <!-- ========== Tasks ========== -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+      <div class="flex-between" style="margin-bottom:12px;">
+        <span style="font-weight:700; font-size:16px;">✅ Study Tasks</span>
+        <button id="addTaskBtn" class="btn-outline" style="width:auto; padding:6px 14px;">+ Task</button>
+      </div>
+      <div id="taskList"></div>
+    </div>
+
+    <!-- ========== Timetable ========== -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+      <div class="flex-between" style="margin-bottom:12px;">
+        <span style="font-weight:700; font-size:16px;">📅 Weekly Timetable</span>
+        <button id="addClassBtn" class="btn-outline" style="width:auto; padding:6px 14px;">+ Class</button>
+      </div>
+      <div id="timetableView"></div>
+    </div>
+
+    <!-- ========== Exams ========== -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+      <div class="flex-between" style="margin-bottom:12px;">
+        <span style="font-weight:700; font-size:16px;">📝 Exam Countdown</span>
+        <button id="addExamBtn2" class="btn-outline" style="width:auto; padding:6px 14px;">+ Exam</button>
+      </div>
+      <div id="examListView"></div>
+    </div>
+
+    <!-- ========== AI Study Plan ========== -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+      <div style="font-weight:700; margin-bottom:10px;">⌬ Generate Study Plan</div>
+      <button id="generatePlanBtn" class="btn-primary" style="width:100%;">Generate Study Plan</button>
+      <div id="studyPlanDisplay" style="margin-top:12px; white-space:pre-wrap; background:var(--bg-card); border-radius:12px; padding:12px; display:none;"></div>
+    </div>
+
+    <!-- ========== Recent Alerts ========== -->
+    <div class="glass-card" style="padding:16px;">
+      <div style="font-weight:700; font-size:16px; margin-bottom:8px;">📢 Recent Alerts</div>
+      <div id="recentNotifList" style="max-height:200px; overflow-y:auto;"></div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+  // ---- Render functions ----
   function renderTasks() {
-    const container = document.getElementById('taskList');
-    if (!container) return;
-    container.innerHTML = plannerTasks.length === 0
+    const cont = document.getElementById('taskList');
+    if (!cont) return;
+    cont.innerHTML = plannerTasks.length === 0
       ? '<div class="text-muted" style="padding:8px;">No tasks yet. Add one above!</div>'
       : plannerTasks.map(t => `
-        <div class="task-item">
+        <div class="task-item flex-between">
           <div style="display:flex; align-items:center; flex:1;">
             <input type="checkbox" class="task-checkbox" ${t.completed ? 'checked' : ''} data-id="${t.id}">
             <span style="${t.completed ? 'text-decoration:line-through;opacity:0.6;' : ''} margin-left:8px;">
               ${escapeHtml(t.title)}
+              ${t.recurrence && t.recurrence !== 'none' ? `<span class="badge" style="margin-left:8px;">↻ ${t.recurrence}</span>` : ''}
             </span>
             <span class="priority-badge priority-${t.priority.toLowerCase()}">${t.priority}</span>
           </div>
           <div style="display:flex; gap:6px;">
-            <button class="edit-task-btn delete-btn" data-id="${t.id}" title="Edit">✏️</button>
-            <button class="delTask delete-btn" data-id="${t.id}" title="Delete">🗑️</button>
+            <button class="delete-btn edit-task-btn" data-id="${t.id}" title="Edit">✏️</button>
+            <button class="delete-btn delTask" data-id="${t.id}" title="Delete">🗑️</button>
           </div>
         </div>
       `).join('');
@@ -213,19 +218,19 @@ export function renderPlannerPage() {
   }
 
   function attachTaskEvents() {
-    // Delete
     document.querySelectorAll('.delTask').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.getAttribute('data-id'));
         if (confirm('Delete this task?')) {
           plannerTasks = plannerTasks.filter(t => t.id !== id);
           saveAll();
+          scheduleCloudSync();
+          trackEvent('task_deleted');
           renderTasks();
           addNotification('Planner', 'Task deleted');
         }
       });
     });
-    // Edit
     document.querySelectorAll('.edit-task-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.getAttribute('data-id'));
@@ -239,13 +244,13 @@ export function renderPlannerPage() {
               task.priority = newPriority;
             }
             saveAll();
+            scheduleCloudSync();
             renderTasks();
             addNotification('Planner', 'Task updated');
           }
         }
       });
     });
-    // Checkbox
     document.querySelectorAll('#taskList input[type="checkbox"]').forEach(cb => {
       cb.addEventListener('change', (e) => {
         const id = parseInt(cb.getAttribute('data-id'));
@@ -253,6 +258,7 @@ export function renderPlannerPage() {
         if (task) {
           task.completed = cb.checked;
           saveAll();
+          scheduleCloudSync();
           addNotification('Planner', `Task ${task.completed ? 'completed' : 'reopened'}`);
         }
       });
@@ -260,17 +266,17 @@ export function renderPlannerPage() {
   }
 
   function renderTimetable() {
-    const container = document.getElementById('timetableView');
-    if (!container) return;
-    container.innerHTML = timetableEvents.length === 0
+    const cont = document.getElementById('timetableView');
+    if (!cont) return;
+    cont.innerHTML = timetableEvents.length === 0
       ? '<div class="text-muted" style="padding:8px;">No classes scheduled.</div>'
       : timetableEvents.map(ev => `
-        <div class="timetable-item">
+        <div class="timetable-item flex-between">
           <div style="flex:1;">
             <strong>${ev.day} ${ev.time}</strong> - ${escapeHtml(ev.subject)}
             ${ev.location ? ` <span class="text-muted">(${escapeHtml(ev.location)})</span>` : ''}
           </div>
-          <button class="delTt delete-btn" data-id="${ev.id}">❌</button>
+          <button class="delete-btn delTt" data-id="${ev.id}">❌</button>
         </div>
       `).join('');
     document.querySelectorAll('.delTt').forEach(btn => {
@@ -279,28 +285,29 @@ export function renderPlannerPage() {
         if (confirm('Remove this class?')) {
           timetableEvents = timetableEvents.filter(e => e.id !== id);
           saveAll();
+          scheduleCloudSync();
           renderTimetable();
-          updateUpcomingSummary();
+          addNotification('Planner', 'Class removed');
         }
       });
     });
   }
 
   function renderExamsList() {
-    const container = document.getElementById('examListView');
-    if (!container) return;
-    container.innerHTML = exams.length === 0
+    const cont = document.getElementById('examListView');
+    if (!cont) return;
+    cont.innerHTML = exams.length === 0
       ? '<div class="text-muted" style="padding:8px;">No exams added.</div>'
       : exams.map(ex => {
           const daysLeft = Math.ceil((new Date(ex.examDate) - new Date()) / 86400000);
           const urgency = daysLeft <= 7 ? ' (🔥)' : daysLeft <= 30 ? ' (⏳)' : '';
           return `
-            <div class="exam-item">
+            <div class="exam-item flex-between">
               <div style="flex:1;">
                 <strong>${escapeHtml(ex.courseName)}</strong>
                 <div class="text-muted">${ex.examDate} · <span class="countdown-days">${daysLeft} days left</span>${urgency}</div>
               </div>
-              <button class="delExam delete-btn" data-id="${ex.id}">🗑️</button>
+              <button class="delete-btn delExam" data-id="${ex.id}">🗑️</button>
             </div>`;
         }).join('');
     document.querySelectorAll('.delExam').forEach(btn => {
@@ -309,143 +316,114 @@ export function renderPlannerPage() {
         if (confirm('Remove this exam?')) {
           exams = exams.filter(e => e.id !== id);
           saveAll();
+          scheduleCloudSync();
           renderExamsList();
-          updateUpcomingSummary();
+          addNotification('Planner', 'Exam removed');
         }
       });
     });
   }
 
-  function updateUpcomingSummary() {
-    const now = new Date();
-    const todayDay = now.toLocaleDateString('en-US', { weekday: 'long' });
-    const upcomingClasses = timetableEvents.filter(ev => ev.day === todayDay).sort((a, b) => a.time.localeCompare(b.time));
-    const upcomingExamsToday = exams.filter(ex => new Date(ex.examDate).toDateString() === now.toDateString());
-    let html = '';
-    if (upcomingClasses.length) {
-      html += `<div>📖 <strong>Classes:</strong> ${upcomingClasses.map(c => `${c.subject} at ${c.time}`).join(', ')}</div>`;
-    }
-    if (upcomingExamsToday.length) {
-      html += `<div>⚠️ <strong>Exams Today:</strong> ${upcomingExamsToday.map(e => e.courseName).join(', ')}</div>`;
-    }
-    if (!html) html = '<div>✨ No events today. Keep up the good work!</div>';
-    const summaryDiv = document.getElementById('upcomingSummary');
-    if (summaryDiv) summaryDiv.innerHTML = html;
-  }
-
   function renderRecentNotifications() {
-    const container = document.getElementById('recentNotifList');
-    if (container) {
-      container.innerHTML = notifications.length === 0
-        ? '<div class="text-muted" style="padding:8px;">No recent alerts</div>'
-        : notifications.slice(0, 6).map(n => `
-          <div class="notif-item">
+    const cont = document.getElementById('recentNotifList');
+    if (!cont) return;
+    cont.innerHTML = notifications.length === 0
+      ? '<div class="text-muted" style="padding:8px;">No recent alerts</div>'
+      : notifications.slice(0, 6).map(n => `
+          <div class="notif-item flex-between" style="padding:4px 0; border-bottom:0.5px solid var(--border-light);">
+            <span>🔔 ${escapeHtml(n.title)}: ${escapeHtml(n.message)}</span>
           </div>
         `).join('');
-    }
   }
 
-  // ─────────────────────────────────────────────────
-  // Event listeners
-  // ─────────────────────────────────────────────────
-  // Quick add task
-  document.getElementById('quickAddTaskBtn')?.addEventListener('click', () => {
-    const input = document.getElementById('quickTaskInput');
-    const title = input.value.trim();
+  // ---- Recurring Task ----
+  document.getElementById('addRecurTaskBtn')?.addEventListener('click', () => {
+    const title = document.getElementById('quickRecurTask').value.trim();
+    const recurType = document.getElementById('recurType').value;
+    if (!title) return;
+    plannerTasks.push({
+      id: Date.now(),
+      title,
+      priority: 'Medium',
+      date: new Date().toISOString().slice(0, 10),
+      completed: false,
+      recurrence: recurType
+    });
+    saveAll();
+    scheduleCloudSync();
+    trackEvent('task_added', { recurrence: recurType });
+    renderTasks();
+    document.getElementById('quickRecurTask').value = '';
+    addNotification('Planner', 'Task added');
+  });
+
+  // ---- Add Task ----
+  document.getElementById('addTaskBtn')?.addEventListener('click', () => {
+    const title = prompt('Task title:');
     if (title) {
       plannerTasks.push({
         id: Date.now(),
         title,
         priority: 'Medium',
         date: new Date().toISOString().slice(0, 10),
-        completed: false
+        completed: false,
+        recurrence: 'none'
       });
       saveAll();
+      scheduleCloudSync();
+      trackEvent('task_added');
       renderTasks();
       addNotification('Planner', 'Task added');
-      input.value = '';
     }
   });
 
-  // Clear completed tasks
-  document.getElementById('clearCompletedBtn')?.addEventListener('click', () => {
-    if (confirm('Remove all completed tasks?')) {
-      plannerTasks = plannerTasks.filter(t => !t.completed);
-      saveAll();
-      renderTasks();
-      addNotification('Planner', 'Completed tasks cleared');
-    }
-  });
-
-  //=========== Add class==========================
+  // ---- Add Class ----
   document.getElementById('addClassBtn')?.addEventListener('click', () => {
-  const day = prompt('Day (e.g., Monday):');
-  if (!day) return;
-  const time = prompt('Time (HH:MM, 24h):');
-  if (!time) return;
-  const subject = prompt('Subject:');
-  if (!subject) return;
-  const location = prompt('Location (optional):');
-  originalAddClass(day, time, subject, location);
+    const day = prompt('Day (e.g., Monday):');
+    if (!day) return;
+    const time = prompt('Time (HH:MM, 24h):');
+    if (!time) return;
+    const subject = prompt('Subject:');
+    if (!subject) return;
+    const location = prompt('Location (optional):');
+    originalAddClass(day, time, subject, location);
+    saveAll();
+    scheduleCloudSync();
+    trackEvent('class_added');
+    renderTimetable();
+    addNotification('Planner', 'Class added');
+  });
 
-  // 🔔 Sync alarm to server (15 minutes before class)
-  const now = new Date();
-  const dayMap = { sunday:0, monday:1, tuesday:2, wednesday:3, thursday:4, friday:5, saturday:6 };
-  const targetDay = dayMap[day.toLowerCase()];
-  if (targetDay !== undefined) {
-    const [hours, minutes] = time.split(':').map(Number);
-    if (!isNaN(hours) && !isNaN(minutes)) {
-      let alarmDate = new Date(now);
-      alarmDate.setDate(alarmDate.getDate() + ((targetDay + 7 - now.getDay()) % 7));
-      alarmDate.setHours(hours, minutes - 15, 0, 0); // 15 minutes before
-      if (alarmDate > now) {
-        syncAlarmToServer(
-          `📖 ${subject} in 15 minutes`,
-          `Your ${subject} class is about to start${location ? ' in ' + location : ''}.`,
-          alarmDate.toISOString()
-        );
-      }
-    }
-  }
-
-  renderTimetable();
-  updateUpcomingSummary();
-  addNotification('Planner', 'Class added');
-});
-
-  //========== Add exam==============================
+  // ---- Add Exam ----
   document.getElementById('addExamBtn2')?.addEventListener('click', () => {
-  const name = prompt('Course name:');
-  if (!name) return;
-  const date = prompt('Exam date (YYYY-MM-DD):');
-  if (!date) return;
-  originalAddExam(name, date);
+    const name = prompt('Course name:');
+    if (!name) return;
+    const date = prompt('Exam date (YYYY-MM-DD):');
+    if (!date) return;
+    originalAddExam(name, date);
+    const examDate = new Date(date);
+    const reminderDate = new Date(examDate.getTime() - 24 * 60 * 60 * 1000);
+    if (reminderDate > new Date() && window.NotifBridge?.syncAlarmToServer) {
+      window.NotifBridge.syncAlarmToServer(
+        `📝 ${name} Exam Tomorrow`,
+        `You have your ${name} exam tomorrow. Time to review!`,
+        reminderDate.toISOString()
+      );
+    }
+    saveAll();
+    scheduleCloudSync();
+    trackEvent('exam_added');
+    renderExamsList();
+    addNotification('Planner', 'Exam added');
+  });
 
-  // 🔔 Sync alarm to server (fire a reminder 1 day before the exam)
-  const examDate = new Date(date);
-  const reminderDate = new Date(examDate.getTime() - 24 * 60 * 60 * 1000); // 1 day before
-  const now = new Date();
-  // Only create the alarm if the reminder is in the future
-  if (reminderDate > now) {
-    syncAlarmToServer(
-      `📝 ${name} Exam Tomorrow`,
-      `You have your ${name} exam tomorrow. Time to review!`,
-      reminderDate.toISOString()
-    );
-  }
-
-  renderExamsList();
-  updateUpcomingSummary();
-  addNotification('Planner', 'Exam added');
-});
-
-  // Test notification
+  // ---- Test Notification ----
   document.getElementById('testNotifBtn')?.addEventListener('click', () => {
     if (window.NotifBridge) window.NotifBridge.testNotification();
     renderRecentNotifications();
   });
 
-  // Notification toggles
+  // ---- Notification Toggles ----
   document.getElementById('classNotifTogglePlan')?.addEventListener('change', (e) => {
     settings.classNotifications = e.target.checked;
     saveAll();
@@ -455,37 +433,30 @@ export function renderPlannerPage() {
     saveAll();
   });
 
-// ✦Ai Generate plain
+  // ---- AI Study Plan ----
+  document.getElementById('generatePlanBtn')?.addEventListener('click', async () => {
+    const userId = currentUser?.id;
+    if (!userId) return alert('Please log in first');
+    const subjects = Object.values(coursesData).flat().map(c => c.code).join(', ');
+    const upcomingExams = exams.map(e => `${e.courseName} on ${e.examDate}`).join(', ');
+    const planDiv = document.getElementById('studyPlanDisplay');
+    planDiv.style.display = 'block';
+    planDiv.textContent = '⏳ Generating your personalised study plan...';
+    try {
+      const resp = await apiPost('/api/study-plan/generate', {
+        userId,
+        subjects,
+        examDates: upcomingExams
+      });
+      planDiv.textContent = resp.plan || 'No plan generated.';
+    } catch (e) {
+      planDiv.textContent = '❌ Failed to generate plan. Please try again.';
+    }
+  });
 
-document.getElementById('generatePlanBtn')?.addEventListener('click', async () => {
-  const userId = currentUser?.id;
-  if (!userId) return alert('Please log in first');
-  const subjects = Object.values(coursesData).flat().map(c => c.code).join(', ');
-  const upcomingExams = exams.map(e => `${e.courseName} on ${e.examDate}`).join(', ');
-  const planDiv = document.getElementById('studyPlanDisplay');
-  planDiv.textContent = '⏳ Generating your personalised study plan...';
-  try {
-    const resp = await apiPost('/api/study-plan/generate', { userId, subjects, examDates: upcomingExams });
-    planDiv.textContent = resp.plan || 'No plan generated.';
-  } catch (e) {
-    planDiv.textContent = '❌ Failed to generate plan. Please try again.';
-  }
-});
-
-
-
-  // Initial render
+  // Initial renders
   renderTasks();
   renderTimetable();
   renderExamsList();
-  updateUpcomingSummary();
   renderRecentNotifications();
-
-  // Auto-refresh upcoming summary every 30s while page is active
-  setInterval(() => {
-    if (document.getElementById('planner-page')?.classList.contains('active-page')) {
-      updateUpcomingSummary();
-      renderRecentNotifications();
-    }
-  }, 30000);
 }

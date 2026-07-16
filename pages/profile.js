@@ -2,71 +2,8 @@ import {
   currentUser, users, coursesData, plannerTasks, flashcards,
   userStats, settings, saveAll, addNotification,
   computeOverallCGPA, applyTheme, applyAccentColor,
-  escapeHtml
+  escapeHtml, achievements, timetableEvents, exams
 } from '../state.js';
-
-
-// -- Email‑Based 2FA --
-const enableBtn = document.getElementById('enableEmail2faBtn');
-const verifyArea = document.getElementById('2faVerificationArea');
-const verifyBtn = document.getElementById('verifyEmail2faBtn');
-const codeInput = document.getElementById('email2faCode');
-const disableBtn = document.getElementById('disableEmail2faBtn');
-const statusDiv = document.getElementById('2faStatus');
-
-// Check current 2FA status on load
-(async function load2FAStatus() {
-  if (!currentUser?.id) return;
-  const resp = await apiGet(`/api/2fa/status/${currentUser.id}`);
-  if (resp.enabled) {
-    enableBtn.style.display = 'none';
-    disableBtn.style.display = 'inline';
-    statusDiv.textContent = 'Enabled ✅';
-  }
-})();
-
-enableBtn?.addEventListener('click', async () => {
-  try {
-    const resp = await apiPost('/api/2fa/email/send', { userId: currentUser.id });
-    if (resp.success) {
-      verifyArea.style.display = 'block';
-      enableBtn.style.display = 'none';
-      alert('Code sent to your email!');
-    } else {
-      alert('Failed to send code. ' + (resp.error || ''));
-    }
-  } catch (err) {
-    alert('Error: ' + err.message);
-  }
-});
-
-verifyBtn?.addEventListener('click', async () => {
-  const code = codeInput.value.trim();
-  if (!code || code.length !== 6) return alert('Please enter the 6‑digit code.');
-  try {
-    const resp = await apiPost('/api/2fa/email/verify', { userId: currentUser.id, code });
-    if (resp.success) {
-      alert('2FA enabled!');
-      statusDiv.textContent = 'Enabled ✅';
-      verifyArea.style.display = 'none';
-      disableBtn.style.display = 'inline';
-    } else {
-      alert('Invalid or expired code. Please request a new one.');
-    }
-  } catch (err) {
-    alert('Error: ' + err.message);
-  }
-});
-
-disableBtn?.addEventListener('click', async () => {
-  if (confirm('Disable 2FA?')) {
-    await apiPost('/api/2fa/email/disable', { userId: currentUser.id });
-    statusDiv.textContent = 'Not enabled';
-    enableBtn.style.display = 'inline';
-    disableBtn.style.display = 'none';
-  }
-});
-
 
 // API helpers – adjust path if needed
 const API_BASE = 'https://studentnija-public-chat.onrender.com';
@@ -92,18 +29,22 @@ export function renderProfilePage() {
     saveAll();
   }
 
+  const cgpa = computeOverallCGPA().toFixed(2);
+  const earned = achievements.filter(a => a.achieved).length;
+  const totalAchievements = achievements.length;
+
   const html = `
     <!-- ====== PROFILE HEADER ====== -->
-    <div class="profile-header glass-card" style="padding:24px; text-align:center; position:relative;">
+    <div class="glass-card" style="padding:24px; text-align:center; position:relative;">
       <div class="avatar-upload" id="avatarUpload">
-        ${currentUser.profilePic ? `<img src="${currentUser.profilePic}">` : `<span>📷</span>`}
+        ${currentUser.profilePic ? `<img src="${currentUser.profilePic}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">` : `<span style="font-size:40px;">📷</span>`}
       </div>
       <input type="file" id="profilePicInput" accept="image/*" style="display:none">
       <h2 style="margin:4px 0 2px;">${escapeHtml(currentUser.fullName)}</h2>
       <p class="text-muted" style="margin:0;">${escapeHtml(currentUser.email)}</p>
       <div style="margin-top:8px; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
         <span class="badge">🎓 ${escapeHtml(currentUser.level || 'Student')}</span>
-        <span class="badge" style="background:var(--accent-green); color:white;">CGPA ${computeOverallCGPA().toFixed(2)}</span>
+        <span class="badge" style="background:var(--accent-green); color:white;">CGPA ${cgpa}</span>
       </div>
       <button id="editProfileToggleBtn" class="btn-outline" style="width:auto; padding:6px 16px; margin-top:12px; font-size:13px; min-height:36px;">
         ✏️ Edit Profile
@@ -130,6 +71,49 @@ export function renderProfilePage() {
       </div>
     </div>
 
+    <!-- ====== CLOUD SYNC STATUS ====== -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span style="font-size:20px;">☁️</span>
+        <h3 style="margin:0; font-size:16px; font-weight:600;">Cloud Backup</h3>
+      </div>
+      <div id="cloudSyncStatus" class="text-muted" style="font-size:13px;">
+        Loading...
+      </div>
+      <button id="manualSyncBtn" class="btn-outline" style="width:100%; margin-top:8px;">🔄 Sync Now</button>
+    </div>
+
+    <!-- ====== ACTIVITY LOG ====== -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+        <span style="font-size:20px;">📜</span>
+        <h3 style="margin:0; font-size:16px; font-weight:600;">Recent Activity</h3>
+      </div>
+      <div id="activityLog" class="text-muted" style="font-size:13px;">
+        Loading...
+      </div>
+    </div>
+
+    <!-- ====== ACHIEVEMENTS ====== -->
+    <div class="glass-card" style="padding:16px; margin-bottom:16px;">
+      <div class="flex-between" style="margin-bottom:8px;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:20px;">🏅</span>
+          <h3 style="margin:0; font-size:16px; font-weight:600;">Achievements</h3>
+        </div>
+        <span class="text-muted" style="font-size:13px;">${earned}/${totalAchievements}</span>
+      </div>
+      <div class="achievement-grid" id="profileAchievements">
+        ${achievements.map(a => `
+          <div class="ach-item" style="text-align:center; opacity:${a.achieved ? 1 : 0.4};">
+            <span class="ach-icon">${a.icon}</span>
+            <span class="ach-status ${a.achieved ? 'unlocked' : 'locked'}">${a.achieved ? '✓' : '🔒'}</span>
+            <div style="font-size:11px; margin-top:4px;">${a.name}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
     <!-- ====== PERSONAL INFORMATION CARD ====== -->
     <div class="glass-card" style="padding:20px; margin-bottom:16px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
@@ -141,53 +125,52 @@ export function renderProfilePage() {
         <div class="profile-grid-item">
           <div class="profile-grid-label">🏫 School</div>
           <div class="profile-grid-value" id="profileSchool">${escapeHtml(currentUser.school || 'Not set')}</div>
-          <button class="edit-field-btn" data-field="school">✏️</button>
+          <button class="edit-field-btn" data-field="school" style="display:none;">✏️</button>
         </div>
         <!-- Department -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">📚 Department</div>
           <div class="profile-grid-value" id="profileDept">${escapeHtml(currentUser.department || 'Not set')}</div>
-          <button class="edit-field-btn" data-field="department">✏️</button>
+          <button class="edit-field-btn" data-field="department" style="display:none;">✏️</button>
         </div>
         <!-- Level -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">📖 Level</div>
           <div class="profile-grid-value" id="profileLevel">${escapeHtml(currentUser.level || 'Not set')}</div>
-          <button class="edit-field-btn" data-field="level">✏️</button>
+          <button class="edit-field-btn" data-field="level" style="display:none;">✏️</button>
         </div>
         <!-- Student ID -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">🆔 Student ID</div>
           <div class="profile-grid-value" id="profileStudentId">${escapeHtml(currentUser.studentId || 'Not set')}</div>
-          <button class="edit-field-btn" data-field="studentId">✏️</button>
+          <button class="edit-field-btn" data-field="studentId" style="display:none;">✏️</button>
         </div>
         <!-- Bio (full width) -->
         <div class="profile-grid-item full-width">
           <div class="profile-grid-label">📝 Bio</div>
           <div class="profile-grid-value" id="profileBio">${escapeHtml(currentUser.bio || 'No bio yet')}</div>
-          <button class="edit-field-btn" data-field="bio">✏️</button>
+          <button class="edit-field-btn" data-field="bio" style="display:none;">✏️</button>
         </div>
       </div>
     </div>
 
-    <!-- ====== NEW CLOUD FEATURES ====== -->
-<!-- Two-Factor Authentication -->
-<div class="glass-card" style="padding:20px; margin-bottom:16px;">
-  <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
-    <span style="font-size:20px;">🔐</span>
-    <h3 style="margin:0; font-size:18px; font-weight:600;">Two‑Factor Authentication</h3>
-  </div>
-  <div id="2faStatus">Not enabled</div>
-  <button id="enableEmail2faBtn" class="btn-outline" style="margin-top:8px;">Enable Email 2FA</button>
-  <div id="2faVerificationArea" style="display:none; margin-top:8px;">
-    <p class="text-muted">A verification code has been sent to your email. Enter it below.</p>
-    <input type="text" id="email2faCode" placeholder="6‑digit code" maxlength="6" style="width:100%; padding:10px; border-radius:12px; border:1px solid var(--border-light); background:var(--bg-primary); color:var(--text-primary);">
-    <button id="verifyEmail2faBtn" class="btn-primary" style="margin-top:6px;">Verify</button>
-  </div>
-  <button id="disableEmail2faBtn" class="btn-outline" style="display:none; margin-top:8px;">Disable 2FA</button>
-</div>
+    <!-- ====== 2‑FACTOR AUTH (EMAIL) ====== -->
+    <div class="glass-card" style="padding:20px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+        <span style="font-size:20px;">🔐</span>
+        <h3 style="margin:0; font-size:18px; font-weight:600;">Two‑Factor Authentication</h3>
+      </div>
+      <div id="2faStatus">Not enabled</div>
+      <button id="enableEmail2faBtn" class="btn-outline" style="margin-top:8px;">Enable Email 2FA</button>
+      <div id="2faVerificationArea" style="display:none; margin-top:8px;">
+        <p class="text-muted">A verification code has been sent to your email. Enter it below.</p>
+        <input type="text" id="email2faCode" placeholder="6‑digit code" maxlength="6" style="width:100%; padding:10px; border-radius:12px; border:1px solid var(--border-light); background:var(--bg-primary); color:var(--text-primary);">
+        <button id="verifyEmail2faBtn" class="btn-primary" style="margin-top:6px;">Verify & Enable</button>
+      </div>
+      <button id="disableEmail2faBtn" class="btn-outline" style="display:none; margin-top:8px;">Disable 2FA</button>
+    </div>
 
-    <!-- Email Reminders -->
+    <!-- ====== EMAIL REMINDERS ====== -->
     <div class="glass-card" style="padding:20px; margin-bottom:16px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
         <span style="font-size:20px;">📧</span>
@@ -198,7 +181,7 @@ export function renderProfilePage() {
       </label>
     </div>
 
-    <!-- Data Export -->
+    <!-- ====== DATA EXPORT ====== -->
     <div class="glass-card" style="padding:20px; margin-bottom:16px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
         <span style="font-size:20px;">📤</span>
@@ -207,7 +190,7 @@ export function renderProfilePage() {
       <button id="exportDataBtn" class="btn-outline">Download Backup</button>
     </div>
 
-    <!-- Feedback -->
+    <!-- ====== FEEDBACK ====== -->
     <div class="glass-card" style="padding:20px; margin-bottom:16px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
         <span style="font-size:20px;">📬</span>
@@ -269,7 +252,7 @@ export function renderProfilePage() {
           Study Smarter · Score Higher
         </div>
         <div style="display:flex; justify-content:center; gap:8px; margin-top:10px; flex-wrap:wrap;">
-          <span style="background:rgba(255,255,255,0.2); padding:2px 12px; border-radius:40px; font-size:11px; color:white;">v1.2.0</span>
+          <span style="background:rgba(255,255,255,0.2); padding:2px 12px; border-radius:40px; font-size:11px; color:white;">v1.4.0</span>
           <span style="background:rgba(255,255,255,0.2); padding:2px 12px; border-radius:40px; font-size:11px; color:white;">⌘ Android</span>
           <span style="background:rgba(255,255,255,0.2); padding:2px 12px; border-radius:40px; font-size:11px; color:white;">✦ AI-Powered</span>
         </div>
@@ -351,6 +334,161 @@ export function renderProfilePage() {
     });
   });
 
+  // ---- CLOUD SYNC STATUS ----
+  async function updateCloudStatus() {
+    const statusDiv = document.getElementById('cloudSyncStatus');
+    if (!statusDiv) return;
+    try {
+      const resp = await apiGet(`/api/sync/load/${currentUser.id}`);
+      const lastSync = resp.data?.backedUpAt ? new Date(resp.data.backedUpAt).toLocaleString() : 'Never';
+      statusDiv.innerHTML = `Last synced: <strong>${lastSync}</strong>`;
+    } catch (e) {
+      statusDiv.textContent = 'Could not fetch sync status';
+    }
+  }
+  updateCloudStatus();
+
+  document.getElementById('manualSyncBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('manualSyncBtn');
+    btn.textContent = '⏳ Syncing...';
+    btn.disabled = true;
+    try {
+      // Trigger the global sync function
+      if (window.scheduleCloudSync) {
+        await window.syncUserDataToCloud?.();
+      }
+      updateCloudStatus();
+      addNotification('Cloud', 'Backup completed');
+    } catch (e) {
+      addNotification('Cloud', 'Sync failed');
+    }
+    btn.textContent = '🔄 Sync Now';
+    btn.disabled = false;
+  });
+
+  // ---- ACTIVITY LOG ----
+  async function loadActivityLog() {
+    const container = document.getElementById('activityLog');
+    if (!container) return;
+    try {
+      const resp = await apiGet(`/api/analytics/${currentUser.id}`);
+      const events = resp.analytics || [];
+      if (events.length === 0) {
+        container.innerHTML = 'No activity yet. Start studying!';
+        return;
+      }
+      const html = events.slice(0, 10).map(e => `
+        <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:0.5px solid var(--border-light);">
+          <span>${escapeHtml(e.event_type.replace(/_/g, ' '))}</span>
+          <span class="text-muted">${e.count} times</span>
+        </div>
+      `).join('');
+      container.innerHTML = html;
+    } catch (e) {
+      container.textContent = 'Could not load activity.';
+    }
+  }
+  loadActivityLog();
+
+  // ---- 2FA (Email) ----
+  const enableBtn = document.getElementById('enableEmail2faBtn');
+  const verifyArea = document.getElementById('2faVerificationArea');
+  const verifyBtn = document.getElementById('verifyEmail2faBtn');
+  const codeInput = document.getElementById('email2faCode');
+  const disableBtn = document.getElementById('disableEmail2faBtn');
+  const status2fa = document.getElementById('2faStatus');
+
+  // Check current 2FA status on load
+  (async function load2FAStatus() {
+    if (!currentUser?.id) return;
+    const resp = await apiGet(`/api/2fa/status/${currentUser.id}`);
+    if (resp.enabled) {
+      enableBtn.style.display = 'none';
+      disableBtn.style.display = 'inline';
+      status2fa.textContent = 'Enabled ✅';
+    }
+  })();
+
+  enableBtn?.addEventListener('click', async () => {
+    try {
+      const resp = await apiPost('/api/2fa/email/send', { userId: currentUser.id });
+      if (resp.success) {
+        verifyArea.style.display = 'block';
+        enableBtn.style.display = 'none';
+        addNotification('2FA', 'Code sent to your email');
+      } else {
+        addNotification('2FA', 'Failed to send code');
+      }
+    } catch (err) {
+      addNotification('2FA', 'Error sending code');
+    }
+  });
+
+  verifyBtn?.addEventListener('click', async () => {
+    const code = codeInput.value.trim();
+    if (!code || code.length !== 6) return alert('Please enter the 6‑digit code.');
+    try {
+      const resp = await apiPost('/api/2fa/email/verify', { userId: currentUser.id, code });
+      if (resp.success) {
+        status2fa.textContent = 'Enabled ✅';
+        verifyArea.style.display = 'none';
+        disableBtn.style.display = 'inline';
+        addNotification('2FA', 'Two‑factor authentication enabled');
+      } else {
+        alert('Invalid or expired code. Please request a new one.');
+      }
+    } catch (err) {
+      alert('Error verifying code.');
+    }
+  });
+
+  disableBtn?.addEventListener('click', async () => {
+    if (confirm('Disable 2FA?')) {
+      await apiPost('/api/2fa/email/disable', { userId: currentUser.id });
+      status2fa.textContent = 'Not enabled';
+      enableBtn.style.display = 'inline';
+      disableBtn.style.display = 'none';
+      addNotification('2FA', 'Two‑factor authentication disabled');
+    }
+  });
+
+  // ---- EMAIL REMINDERS ----
+  const emailToggle = document.getElementById('emailToggle');
+  if (emailToggle) {
+    emailToggle.checked = false; // default, could load from server
+    emailToggle.addEventListener('change', async (e) => {
+      if (e.target.checked) {
+        await apiPost('/api/email/subscribe', { userId: currentUser.id, email: currentUser.email });
+        addNotification('Email', 'Subscribed to reminders');
+      } else {
+        // For now just alert; a full implementation would have an unsubscribe endpoint
+        alert('Email reminders disabled (contact support to fully remove).');
+      }
+    });
+  }
+
+  // ---- DATA EXPORT ----
+  document.getElementById('exportDataBtn')?.addEventListener('click', async () => {
+    const resp = await apiGet(`/api/export/${currentUser.id}`);
+    const blob = new Blob([JSON.stringify(resp.exportedData || {}, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `studentnija-${currentUser.id}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addNotification('Export', 'Backup downloaded');
+  });
+
+  // ---- FEEDBACK ----
+  document.getElementById('sendFeedbackBtn')?.addEventListener('click', async () => {
+    const msg = document.getElementById('feedbackMsg').value.trim();
+    if (!msg) return;
+    await apiPost('/api/feedback', { userId: currentUser.id, message: msg });
+    addNotification('Feedback', 'Thank you for your feedback!');
+    document.getElementById('feedbackMsg').value = '';
+  });
+
   // ---- CHANGE PASSWORD ----
   document.getElementById('changePasswordBtn')?.addEventListener('click', () => {
     const old = prompt('Current password:');
@@ -409,86 +547,6 @@ export function renderProfilePage() {
     if (dot.dataset.color === settings.accentColor) {
       dot.classList.add('active');
     }
-  });
-
-  // ---- NEW CLOUD FEATURES HANDLERS ----
-
-  // -- 2FA --
-  let twoFactorSecret = '';
-  document.getElementById('setup2faBtn')?.addEventListener('click', async () => {
-    const resp = await apiPost('/api/2fa/setup', { userId: currentUser.id });
-    twoFactorSecret = resp.secret;
-    document.getElementById('2faQR').innerHTML = resp.qrCode 
-      ? `<img src="${resp.qrCode}" alt="QR Code" style="max-width:200px;">` 
-      : `<p>${resp.secret}</p>`;
-    document.getElementById('2faToken').style.display = 'block';
-    document.getElementById('verify2faBtn').style.display = 'inline';
-    document.getElementById('setup2faBtn').style.display = 'none';
-  });
-
-  document.getElementById('verify2faBtn')?.addEventListener('click', async () => {
-    const token = document.getElementById('2faToken').value;
-    const resp = await apiPost('/api/2fa/verify', { userId: currentUser.id, token });
-    if (resp.success) {
-      alert('2FA enabled!');
-      document.getElementById('2faStatus').textContent = 'Enabled ✅';
-      document.getElementById('verify2faBtn').style.display = 'none';
-      document.getElementById('disable2faBtn').style.display = 'inline';
-    } else {
-      alert('Invalid code');
-    }
-  });
-
-  document.getElementById('disable2faBtn')?.addEventListener('click', async () => {
-    const token = prompt('Enter your 2FA code to disable:');
-    if (!token) return;
-    const resp = await apiPost('/api/2fa/disable', { userId: currentUser.id, token });
-    if (resp.success) {
-      alert('2FA disabled');
-      document.getElementById('2faStatus').textContent = 'Not set up';
-      document.getElementById('setup2faBtn').style.display = 'inline';
-      document.getElementById('disable2faBtn').style.display = 'none';
-      document.getElementById('2faQR').innerHTML = '';
-    } else {
-      alert('Invalid code');
-    }
-  });
-
-  // -- Email subscription --
-  const emailToggle = document.getElementById('emailToggle');
-  if (emailToggle) {
-    // Optionally load current subscription status from server (not implemented yet, so assume off)
-    emailToggle.checked = false;
-    emailToggle.addEventListener('change', async (e) => {
-      if (e.target.checked) {
-        await apiPost('/api/email/subscribe', { userId: currentUser.id, email: currentUser.email });
-        alert('Subscribed to email reminders!');
-      } else {
-        // Disable – a simple toggle; we might add an unsubscribe endpoint later
-        alert('Email reminders disabled (you will still receive them until you contact support).');
-      }
-    });
-  }
-
-  // -- Data Export --
-  document.getElementById('exportDataBtn')?.addEventListener('click', async () => {
-    const resp = await apiGet(`/api/export/${currentUser.id}`);
-    const blob = new Blob([JSON.stringify(resp.exportedData || {}, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `studentnija-${currentUser.id}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-
-  // -- Feedback --
-  document.getElementById('sendFeedbackBtn')?.addEventListener('click', async () => {
-    const msg = document.getElementById('feedbackMsg').value.trim();
-    if (!msg) return;
-    await apiPost('/api/feedback', { userId: currentUser.id, message: msg });
-    alert('Feedback sent! Thank you.');
-    document.getElementById('feedbackMsg').value = '';
   });
 
   // Expose updateUserProfile globally if not already
