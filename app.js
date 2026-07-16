@@ -37,6 +37,66 @@ import { openToolModal, closeToolModal } from './tools/modal.js';
 window.openToolModal = openToolModal;
 window.closeToolModal = closeToolModal;
 
+// ======================== API HELPER ========================
+import { apiPost, apiGet } from './api.js';
+
+// ======================== CLOUD SYNC ========================
+async function syncUserDataToCloud() {
+  if (!currentUser || !currentUser.id) return;
+  const userId = currentUser.id;
+  const data = {
+    courses: coursesData,
+    tasks: plannerTasks,
+    exams: exams,
+    flashcards: flashcards,
+    notes: savedNotes,
+  };
+  try {
+    await apiPost('/api/sync/save', { userId, data });
+    console.log('✅ Cloud sync saved');
+  } catch (e) {
+    console.error('Sync upload failed', e);
+  }
+}
+
+async function loadCloudData(userId) {
+  try {
+    const resp = await apiGet(`/api/sync/load/${userId}`);
+    if (resp.data && Object.keys(resp.data).length > 0) {
+      // Merge with current state (simple merge – avoids duplicates)
+      if (resp.data.courses) Object.assign(coursesData, resp.data.courses);
+      if (resp.data.tasks) {
+        const existingIds = new Set(plannerTasks.map(t => t.id));
+        resp.data.tasks.forEach(t => { if (!existingIds.has(t.id)) plannerTasks.push(t); });
+      }
+      if (resp.data.exams) {
+        const existingIds = new Set(exams.map(e => e.id));
+        resp.data.exams.forEach(e => { if (!existingIds.has(e.id)) exams.push(e); });
+      }
+      if (resp.data.flashcards) {
+        const existing = new Set(flashcards.map(f => f.question));
+        resp.data.flashcards.forEach(f => { if (!existing.has(f.question)) flashcards.push(f); });
+      }
+      if (resp.data.notes) {
+        const existingTitles = new Set(savedNotes.map(n => n.title));
+        resp.data.notes.forEach(n => { if (!existingTitles.has(n.title)) savedNotes.push(n); });
+      }
+      saveAll(); // persist merged data
+      console.log('✅ Cloud data loaded and merged');
+    }
+  } catch (e) {
+    console.error('Cloud load failed', e);
+  }
+}
+
+// ======================== ANALYTICS ========================
+export async function trackEvent(eventType, payload = {}) {
+  if (!currentUser || !currentUser.id) return;
+  try {
+    await apiPost('/api/analytics/event', { userId: currentUser.id, eventType, payload });
+  } catch (e) { /* ignore */ }
+}
+
 // ==== Error Handler ==============
 window.addEventListener('unhandledrejection', function(event) {
   console.error('Unhandled promise rejection:', event.reason);
@@ -48,11 +108,9 @@ window.addEventListener('unhandledrejection', function(event) {
 
 window.onerror = function(message, source, lineno, colno, error) {
   console.error('Global error:', message, 'at', source, ':', lineno);
-  // Optionally show a user‑friendly toast
   if (window.showToast) {
     showToast('⚠️ Something went wrong. Please reload.');
   }
-  // Return true to prevent the default browser error dialog
   return true;
 };
 
@@ -240,6 +298,14 @@ function processGoogleUser(userData) {
   }
   localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
   addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
+
+  // Cloud sync & push subscription
+  syncUserDataToCloud();
+  loadCloudData(currentUser.id);
+  if (window.NotifBridge && window.NotifBridge.subscribeToPush) {
+    window.NotifBridge.subscribeToPush();
+  }
+  trackEvent('login');
 }
 
 // ======================== RENDER APP ========================
@@ -266,6 +332,7 @@ export function renderApp() {
       try {
         const user = JSON.parse(stored);
         Object.assign(currentUser, user);
+        loadCloudData(currentUser.id); // load cloud data in background
         renderMainApp();
       } catch (_) {
         localStorage.removeItem('studentnija_currentUser');
@@ -352,9 +419,8 @@ export function renderMainApp() {
       studygroups: 'studygroups.html',
       exams: 'exams.html'
     };
-    // Navigate away to the specialised page in the same tab (like the sync page)
     window.location.href = pageMap[currentPage];
-    return; // Stop further rendering because we're leaving this page
+    return;
   }
 
   activePage.style.display = 'block';
@@ -420,7 +486,6 @@ export function attachBottomNav() {
         if (navItems.includes(page)) {
           if (page === currentPage) return;
 
-          // ---------- Changed: same‑tab navigation for specialised pages ----------
           if (page === 'ai') {
             window.location.href = 'ai.html';
             return;
@@ -444,8 +509,6 @@ export function attachBottomNav() {
 }
 
 // ======================== AI BRIDGE (unchanged) ========================
-// ... (keep the same AI bridge code as before)
-
 function getAppState() {
   return {
     user: currentUser,
@@ -663,6 +726,7 @@ window.addEventListener('load', async () => {
       try {
         const user = JSON.parse(stored);
         Object.assign(currentUser, user);
+        loadCloudData(currentUser.id); // load cloud data in background
       } catch (_) {
         localStorage.removeItem('studentnija_currentUser');
       }

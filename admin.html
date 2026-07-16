@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
+  <title>StudentNija · Admin Control Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    :root {
+      --bg-primary: #0A111F;
+      --bg-secondary: #121C28;
+      --bg-card: rgba(255,255,255,0.04);
+      --text-primary: #F0F4FA;
+      --text-muted: #8FA0B5;
+      --accent: #008751;
+      --accent-light: #00A86B;
+      --accent-glow: rgba(0,135,81,0.3);
+      --shadow: 0 8px 40px rgba(0,0,0,0.5);
+      --radius: 24px;
+      --radius-sm: 14px;
+      --transition: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --sidebar-width: 240px;
+    }
+    body.light-theme {
+      --bg-primary: #F5F7FA;
+      --bg-secondary: #FFFFFF;
+      --text-primary: #0A1927;
+      --text-muted: #5B6E8C;
+      --shadow: 0 8px 40px rgba(0,0,0,0.08);
+    }
+    body.compact {
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      transition: background var(--transition), color var(--transition);
+      overflow: hidden;
+    }
+    /* Sidebar */
+    .sidebar {
+      width: var(--sidebar-width);
+      background: var(--bg-secondary);
+      border-right: 1px solid rgba(255,255,255,0.06);
+      display: flex;
+      flex-direction: column;
+      padding: 20px 0;
+      flex-shrink: 0;
+      z-index: 10;
+      transition: transform 0.3s;
+    }
+    .sidebar-logo {
+      padding: 0 20px 20px;
+      font-weight: 800;
+      font-size: 20px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-nav {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 0 12px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      transition: background 0.2s, color 0.2s;
+      border: none;
+      background: none;
+      font-family: inherit;
+      text-align: left;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
+    .nav-item.active { background: var(--accent); color: white; }
+    /* Main */
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 24px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+    .top-bar h2 { font-size: 18px; font-weight: 700; }
+    .top-actions { display: flex; gap: 10px; align-items: center; }
+    .icon-btn {
+      background: none; border: none; color: var(--text-muted); font-size: 18px;
+      cursor: pointer; width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.05); }
+    .content {
+      flex: 1;
+      padding: 24px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    /* Cards */
+    .card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius);
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.06);
+      box-shadow: var(--shadow);
+      transition: background var(--transition), box-shadow var(--transition);
+    }
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
+      gap: 16px;
+    }
+    .stat-box {
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+      padding: 18px 14px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .stat-box .num { font-size: 28px; font-weight: 800; color: var(--accent); }
+    .stat-box .lbl { font-size: 12px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: rgba(255,255,255,0.04);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      margin: 6px 0;
+      font-family: inherit;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    .btn {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      border: none; color: white; padding: 10px 20px;
+      border-radius: 30px; font-weight: 600; cursor: pointer;
+      transition: transform 0.15s; font-size: 14px;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn:disabled { opacity: 0.5; transform: none; }
+    .btn-outline {
+      background: transparent; border: 2px solid var(--accent-light); color: var(--text-primary);
+      box-shadow: none;
+    }
+    .list-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 0; border-bottom: 0.5px solid rgba(255,255,255,0.04);
+    }
+    .list-item:last-child { border-bottom: none; }
+    .badge {
+      background: var(--accent); color: white; padding: 2px 10px;
+      border-radius: 20px; font-size: 12px; font-weight: 600;
+    }
+    .text-muted { color: var(--text-muted); font-size: 13px; }
+    /* Settings overlay */
+    .settings-dropdown {
+      position: absolute; top: 60px; right: 20px;
+      background: var(--bg-secondary); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px; box-shadow: var(--shadow); padding: 12px;
+      width: 260px; z-index: 100;
+      display: none; flex-direction: column; gap: 8px;
+    }
+    .settings-dropdown.show { display: flex; }
+    .setting-row { display: flex; justify-content: space-between; align-items: center; }
+    .toggle-switch {
+      width: 44px; height: 22px; background: var(--text-muted); border-radius: 22px;
+      position: relative; cursor: pointer; transition: background 0.2s;
+    }
+    .toggle-switch.active { background: var(--accent); }
+    .toggle-switch::after {
+      content: ""; position: absolute; width: 18px; height: 18px;
+      background: white; border-radius: 50%; top: 2px; left: 2px;
+      transition: left 0.2s;
+    }
+    .toggle-switch.active::after { left: 24px; }
+    /* Mobile */
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed; top:0; left:0; bottom:0;
+        transform: translateX(-100%);
+        z-index: 20;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .main { width: 100%; }
+      .top-bar { padding: 10px 16px; }
+      .hamburger { display: flex !important; }
+    }
+    .hamburger { display: none; }
+    /* AI Chat */
+    .chat-area {
+      flex: 1;
+      background: rgba(0,0,0,0.15);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      overflow-y: auto;
+      max-height: 400px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .chat-msg {
+      max-width: 85%;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: var(--bg-card);
+      align-self: flex-start;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .chat-msg.user {
+      align-self: flex-end;
+      background: var(--accent);
+      color: white;
+    }
+  </style>
+</head>
+<body class="dark-theme">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">⚡ StudentNija</div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-tab="dashboard">📊 Dashboard</button>
+      <button class="nav-item" data-tab="broadcast">📨 Push Broadcast</button>
+      <button class="nav-item" data-tab="email">📧 Email</button>
+      <button class="nav-item" data-tab="users">👥 Users</button>
+      <button class="nav-item" data-tab="groups">💬 Groups</button>
+      <button class="nav-item" data-tab="alarms">⏰ Alarms</button>
+      <button class="nav-item" data-tab="community">📚 Community Q</button>
+      <button class="nav-item" data-tab="feedback">💬 Feedback</button>
+      <button class="nav-item" data-tab="logs">📜 Logs</button>
+      <button class="nav-item" data-tab="ai">🤖 AI Assistant</button>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <div class="main">
+    <header class="top-bar">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="icon-btn hamburger" id="hamburgerBtn">☰</button>
+        <h2 id="pageTitle">Dashboard</h2>
+      </div>
+      <div class="top-actions">
+        <button class="icon-btn" id="settingsBtn" style="position:relative;">⚙️</button>
+        <div class="settings-dropdown" id="settingsDropdown">
+          <div class="setting-row">
+            <span>Dark mode</span>
+            <div class="toggle-switch active" id="themeToggle"></div>
+          </div>
+          <div class="setting-row">
+            <span>Compact view</span>
+            <div class="toggle-switch" id="compactToggle"></div>
+          </div>
+          <div class="setting-row">
+            <span>Change password</span>
+            <button class="btn btn-outline" id="changePwBtn" style="padding:4px 12px; font-size:12px;">Edit</button>
+          </div>
+          <div class="setting-row">
+            <span>Reset all settings</span>
+            <button class="btn btn-outline" id="resetSettingsBtn" style="padding:4px 12px; font-size:12px; border-color:#ff4444; color:#ff4444;">Reset</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content" id="contentArea">
+      <!-- Dynamically filled -->
+    </div>
+  </div>
+
+  <!-- Password Gate overlay -->
+  <div id="passwordOverlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); backdrop-filter:blur(10px); display:flex; align-items:center; justify-content:center; z-index:99;">
+    <div class="card" style="max-width:340px; width:100%; text-align:center;">
+      <h2 style="margin-bottom:16px;">🔐 Admin Login</h2>
+      <input type="password" id="adminPassword" placeholder="Admin key">
+      <button class="btn" id="loginBtn" style="width:100%; margin-top:12px;">Unlock</button>
+      <p id="loginError" style="color:#ff4444; font-size:13px; margin-top:6px; display:none;">Wrong password</p>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      let adminPassword = localStorage.getItem('admin_password') || 'StudentNija2026';
+      const BACKEND_URL = 'https://studentnija-public-chat.onrender.com';
+      const AI_PROXY_URL = 'https://studentnija-proxy.donchester111.workers.dev/groq';
+      const AI_MODEL = 'llama-3.1-8b-instant';
+
+      let currentTab = 'dashboard';
+      let themeDark = true;
+      let compactMode = false;
+
+      const sidebar = document.getElementById('sidebar');
+      const contentArea = document.getElementById('contentArea');
+      const pageTitle = document.getElementById('pageTitle');
+      const navItems = document.querySelectorAll('.nav-item');
+      const passwordOverlay = document.getElementById('passwordOverlay');
+      const adminPwInput = document.getElementById('adminPassword');
+      const loginBtn = document.getElementById('loginBtn');
+      const loginError = document.getElementById('loginError');
+      const settingsBtn = document.getElementById('settingsBtn');
+      const settingsDropdown = document.getElementById('settingsDropdown');
+      const themeToggle = document.getElementById('themeToggle');
+      const compactToggle = document.getElementById('compactToggle');
+      const changePwBtn = document.getElementById('changePwBtn');
+      const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+      const hamburgerBtn = document.getElementById('hamburgerBtn');
+
+      function applyTheme() {
+        document.body.classList.toggle('light-theme', !themeDark);
+        themeToggle.classList.toggle('active', themeDark);
+      }
+      function applyCompact() {
+        document.body.classList.toggle('compact', compactMode);
+        compactToggle.classList.toggle('active', compactMode);
+      }
+      themeToggle.addEventListener('click', () => { themeDark = !themeDark; applyTheme(); localStorage.setItem('admin_theme', themeDark ? 'dark' : 'light'); });
+      compactToggle.addEventListener('click', () => { compactMode = !compactMode; applyCompact(); localStorage.setItem('admin_compact', compactMode); });
+
+      const savedTheme = localStorage.getItem('admin_theme');
+      if (savedTheme === 'light') themeDark = false;
+      const savedCompact = localStorage.getItem('admin_compact') === 'true';
+      compactMode = savedCompact;
+      applyTheme(); applyCompact();
+
+      loginBtn.addEventListener('click', () => {
+        if (adminPwInput.value === adminPassword) {
+          passwordOverlay.style.display = 'none';
+        } else {
+          loginError.style.display = 'block';
+        }
+      });
+      adminPwInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') loginBtn.click(); });
+
+      settingsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        settingsDropdown.classList.toggle('show');
+      });
+      document.addEventListener('click', (e) => {
+        if (!settingsDropdown.contains(e.target) && e.target !== settingsBtn) {
+          settingsDropdown.classList.remove('show');
+        }
+      });
+
+      changePwBtn.addEventListener('click', () => {
+        const newPw = prompt('Enter new admin password:');
+        if (newPw && newPw.trim()) {
+          adminPassword = newPw.trim();
+          localStorage.setItem('admin_password', adminPassword);
+          alert('Password updated!');
+        }
+      });
+      resetSettingsBtn.addEventListener('click', () => {
+        if (confirm('Reset all admin settings?')) {
+          localStorage.removeItem('admin_password');
+          localStorage.removeItem('admin_theme');
+          localStorage.removeItem('admin_compact');
+          adminPassword = 'StudentNija2026';
+          themeDark = true; compactMode = false;
+          applyTheme(); applyCompact();
+          alert('Settings reset. Password is now default.');
+        }
+      });
+
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          navItems.forEach(n => n.classList.remove('active'));
+          item.classList.add('active');
+          currentTab = item.dataset.tab;
+          pageTitle.textContent = item.textContent.trim();
+          loadTab(currentTab);
+          if (window.innerWidth < 768) sidebar.classList.remove('open');
+        });
+      });
+      hamburgerBtn.addEventListener('click', () => sidebar.classList.toggle('open'));
+
+      async function loadTab(tab) {
+        let html = '';
+        switch (tab) {
+          case 'dashboard': html = await renderDashboard(); break;
+          case 'broadcast': html = renderBroadcastTab(); break;
+          case 'email': html = renderEmailTab(); break;
+          case 'users': html = await renderUsersTab(); break;
+          case 'groups': html = await renderGroupsTab(); break;
+          case 'alarms': html = await renderAlarmsTab(); break;
+          case 'community': html = await renderCommunityTab(); break;
+          case 'feedback': html = await renderFeedbackTab(); break;
+          case 'logs': html = await renderLogsTab(); break;
+          case 'ai': html = renderAITab(); break;
+        }
+        contentArea.innerHTML = html;
+        attachTabEvents(tab);
+      }
+
+      // ---------- Dashboard ----------
+      async function renderDashboard() {
+        let users=0, groups=0, subs=0, alarms=0, community=0, feedback=0;
+        try {
+          const [u,g,h,a,c,f] = await Promise.all([
+            fetch(`${BACKEND_URL}/api/admin/users`).then(r=>r.json()),
+            fetch(`${BACKEND_URL}/api/admin/groups`).then(r=>r.json()),
+            fetch(`${BACKEND_URL}/health`).then(r=>r.json()),
+            fetch(`${BACKEND_URL}/api/admin/alarms`).then(r=>r.json()),
+            fetch(`${BACKEND_URL}/api/community/questions`).then(r=>r.json()),
+            fetch(`${BACKEND_URL}/api/feedback`).then(r=>r.json()),
+          ]);
+          users = u.users?.length || 0;
+          groups = g.groups?.length || 0;
+          subs = h.pushSubscribers || 0;
+          alarms = a.alarms?.length || 0;
+          community = c.questions?.length || 0;
+          feedback = f.feedback?.length || 0;
+        } catch(e) {}
+        return `
+          <div class="stats-row">
+            <div class="stat-box"><div class="num">${users}</div><div class="lbl">Users</div></div>
+            <div class="stat-box"><div class="num">${groups}</div><div class="lbl">Groups</div></div>
+            <div class="stat-box"><div class="num">${subs}</div><div class="lbl">Push Subs</div></div>
+            <div class="stat-box"><div class="num">${alarms}</div><div class="lbl">Alarms</div></div>
+            <div class="stat-box"><div class="num">${community}</div><div class="lbl">Comm Q</div></div>
+            <div class="stat-box"><div class="num">${feedback}</div><div class="lbl">Feedback</div></div>
+          </div>
+          <button class="btn" onclick="location.reload()">🔄 Refresh</button>
+        `;
+      }
+
+      // ---------- Broadcast ----------
+      function renderBroadcastTab() {
+        return `
+          <div class="card">
+            <h3>📨 Send Push Notification</h3>
+            <input id="broadcastTitle" placeholder="Title">
+            <textarea id="broadcastBody" rows="3" placeholder="Message"></textarea>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+              <button class="btn" id="sendNowBtn">Send Now</button>
+              <input type="datetime-local" id="scheduleTime" style="flex:1; min-width:160px;">
+              <button class="btn btn-outline" id="scheduleBtn">Schedule</button>
+            </div>
+            <p id="broadcastStatus" class="text-muted"></p>
+          </div>
+          <div class="card">
+            <h3>📋 History</h3>
+            <div id="broadcastHistory"></div>
+            <button class="btn btn-outline" id="clearHistoryBtn">Clear</button>
+          </div>
+        `;
+      }
+
+      // ---------- Email ----------
+      function renderEmailTab() {
+        return `
+          <div class="card">
+            <h3>📧 Send Email</h3>
+            <p class="text-muted">Send to a specific user or all subscribers.</p>
+            <select id="emailRecipient">
+              <option value="all">All Email Subscribers</option>
+              <option value="specific">Specific User</option>
+            </select>
+            <input id="emailUserId" placeholder="User ID (if specific)" style="display:none;">
+            <input id="emailSubject" placeholder="Subject">
+            <textarea id="emailBody" rows="4" placeholder="Message..."></textarea>
+            <button class="btn" id="emailSendBtn">📧 Send Email</button>
+            <p id="emailStatus" class="text-muted" style="margin-top:8px;"></p>
+          </div>
+        `;
+      }
+
+      // ---------- Users ----------
+      async function renderUsersTab() {
+        let users = [];
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/admin/users`);
+          users = (await res.json()).users || [];
+        } catch (e) {}
+        return `
+          <div class="card">
+            <h3>👥 Users (${users.length})</h3>
+            <input id="userSearch" placeholder="Search...">
+            <div id="userList">
+              ${users.map(u => `
+                <div class="list-item">
+                  <div>
+                    <strong>${escHtml(u.full_name)}</strong>
+                    <div class="text-muted">${escHtml(u.email)} · ${escHtml(u.school||'—')}</div>
+                  </div>
+                  <button class="btn btn-outline notify-user-btn" data-uid="${u.id}" style="padding:6px 12px; font-size:13px;">🔔</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // ---------- Groups ----------
+      async function renderGroupsTab() {
+        let groups = [];
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/admin/groups`);
+          groups = (await res.json()).groups || [];
+        } catch (e) {}
+        return `
+          <div class="card">
+            <h3>💬 Groups (${groups.length})</h3>
+            <div id="groupList">
+              ${groups.map(g => `
+                <div class="list-item">
+                  <div>
+                    <strong>${escHtml(g.name)}</strong>
+                    <span class="text-muted"> · ${g.member_count} members</span>
+                  </div>
+                  <button class="btn-outline delete-group-btn" data-gid="${g.id}" style="padding:4px 12px; font-size:13px;">🗑️</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // ---------- Alarms ----------
+      async function renderAlarmsTab() {
+        let alarms = [];
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/admin/alarms`);
+          alarms = (await res.json()).alarms || [];
+        } catch (e) {}
+        return `
+          <div class="card">
+            <h3>⏰ Alarms (${alarms.length})</h3>
+            <div id="alarmList">
+              ${alarms.map(a => `
+                <div class="list-item">
+                  <div>
+                    <strong>${escHtml(a.title)}</strong>
+                    <div class="text-muted">${escHtml(a.full_name||a.user_id)} · ${new Date(a.scheduled_time).toLocaleString()}</div>
+                  </div>
+                  <button class="btn-outline delete-alarm-btn" data-aid="${a.id}" style="padding:4px 12px; font-size:13px;">✕</button>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // ---------- Community Questions ----------
+      async function renderCommunityTab() {
+        let questions = [];
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/community/questions`);
+          questions = (await res.json()).questions || [];
+        } catch (e) {}
+        return `
+          <div class="card">
+            <h3>📚 Community Questions (${questions.length})</h3>
+            <div id="commList">
+              ${questions.map(q => `
+                <div class="list-item">
+                  <div>
+                    <strong>${escHtml(q.subject)}</strong><br>
+                    <span class="text-muted">${escHtml(q.question.substring(0,60))}...</span>
+                    <div><small>Upvotes: ${q.upvotes} | Reported: ${q.reported?'Yes':'No'}</small></div>
+                  </div>
+                  <div style="display:flex; gap:4px;">
+                    <button class="btn-outline report-comm-btn" data-qid="${q.id}" style="padding:2px 8px; font-size:12px;">🚩</button>
+                    <button class="btn-outline delete-comm-btn" data-qid="${q.id}" style="padding:2px 8px; font-size:12px;">🗑️</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // ---------- Feedback ----------
+      async function renderFeedbackTab() {
+        let feedback = [];
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/feedback`);
+          feedback = (await res.json()).feedback || [];
+        } catch (e) {}
+        return `
+          <div class="card">
+            <h3>💬 User Feedback (${feedback.length})</h3>
+            <div>
+              ${feedback.map(f => `
+                <div class="list-item">
+                  <div>
+                    <strong>${escHtml(f.user_id||'Anonymous')}</strong>
+                    <div class="text-muted">${new Date(f.created_at).toLocaleString()}</div>
+                    <p style="margin-top:4px;">${escHtml(f.message)}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // ---------- Logs ----------
+      async function renderLogsTab() {
+        let logs = [];
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/admin/logs`);
+          logs = (await res.json()).logs || [];
+        } catch (e) {}
+        return `
+          <div class="card">
+            <h3>📜 Recent Logs</h3>
+            <div style="max-height:400px; overflow-y:auto; background:rgba(0,0,0,0.15); border-radius:12px; padding:12px; font-family:monospace; font-size:12px;">
+              ${logs.reverse().map(l => `<div style="color:${l.level==='error'?'#ff4444':'#aaa'}">[${new Date(l.time).toLocaleTimeString()}] ${escHtml(l.message)}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // ---------- AI Assistant ----------
+      function renderAITab() {
+        return `
+          <div class="card" style="display:flex; flex-direction:column; height:calc(100vh - 160px);">
+            <h3>🤖 AI Assistant</h3>
+            <div class="chat-area" id="aiChatArea">
+              <div class="chat-msg">Hello! I'm the StudentNija admin assistant. Ask me anything about the platform.</div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <input type="text" id="aiInput" placeholder="Ask something..." style="flex:1;">
+              <button class="btn" id="aiSendBtn">Send</button>
+            </div>
+          </div>
+        `;
+      }
+
+      // ---------- Attach Events ----------
+      function attachTabEvents(tab) {
+        if (tab === 'broadcast') {
+          document.getElementById('sendNowBtn')?.addEventListener('click', () => sendBroadcast());
+          document.getElementById('scheduleBtn')?.addEventListener('click', () => scheduleBroadcast());
+          document.getElementById('clearHistoryBtn')?.addEventListener('click', () => {
+            localStorage.removeItem('admin_broadcast_history');
+            renderBroadcastHistory();
+          });
+          renderBroadcastHistory();
+        } else if (tab === 'email') {
+          document.getElementById('emailRecipient')?.addEventListener('change', function() {
+            document.getElementById('emailUserId').style.display = this.value === 'specific' ? 'block' : 'none';
+          });
+          document.getElementById('emailSendBtn')?.addEventListener('click', sendEmail);
+        } else if (tab === 'users') {
+          document.getElementById('userSearch')?.addEventListener('input', (e) => {
+            const q = e.target.value.toLowerCase();
+            document.querySelectorAll('#userList .list-item').forEach(el => {
+              el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+          });
+          document.querySelectorAll('.notify-user-btn').forEach(btn => {
+            btn.addEventListener('click', () => notifyUser(btn.dataset.uid));
+          });
+        } else if (tab === 'groups') {
+          document.querySelectorAll('.delete-group-btn').forEach(btn => {
+            btn.addEventListener('click', () => deleteGroup(btn.dataset.gid));
+          });
+        } else if (tab === 'alarms') {
+          document.querySelectorAll('.delete-alarm-btn').forEach(btn => {
+            btn.addEventListener('click', () => deleteAlarm(btn.dataset.aid));
+          });
+        } else if (tab === 'community') {
+          document.querySelectorAll('.delete-comm-btn').forEach(btn => {
+            btn.addEventListener('click', () => deleteCommunityQuestion(btn.dataset.qid));
+          });
+        } else if (tab === 'ai') {
+          const aiInput = document.getElementById('aiInput');
+          const aiSendBtn = document.getElementById('aiSendBtn');
+          aiSendBtn.addEventListener('click', () => sendAIMessage(aiInput.value));
+          aiInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendAIMessage(aiInput.value); });
+        }
+      }
+
+      // ---------- Action functions ----------
+      async function sendBroadcast() {
+        const title = document.getElementById('broadcastTitle').value.trim();
+        const body = document.getElementById('broadcastBody').value.trim();
+        if (!title || !body) return alert('Fill both fields');
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/push/broadcast`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ title, body })
+          });
+          const data = await res.json();
+          document.getElementById('broadcastStatus').textContent = `Sent to ${data.sent}/${data.total}`;
+          saveToHistory(title, body, data.sent);
+          renderBroadcastHistory();
+        } catch (e) { alert('Error'); }
+      }
+
+      async function scheduleBroadcast() {
+        const title = document.getElementById('broadcastTitle').value.trim();
+        const body = document.getElementById('broadcastBody').value.trim();
+        const time = document.getElementById('scheduleTime').value;
+        if (!title || !body || !time) return alert('Fill all fields');
+        try {
+          await fetch(`${BACKEND_URL}/api/admin/schedule-broadcast`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ title, body, scheduledTime: new Date(time).toISOString() })
+          });
+          document.getElementById('broadcastStatus').textContent = 'Scheduled!';
+        } catch (e) { alert('Error'); }
+      }
+
+      async function sendEmail() {
+        const recipient = document.getElementById('emailRecipient').value;
+        const userId = recipient === 'specific' ? document.getElementById('emailUserId').value.trim() : 'all';
+        const subject = document.getElementById('emailSubject').value.trim();
+        const body = document.getElementById('emailBody').value.trim();
+        if (!subject || !body) return alert('Fill subject and body');
+        if (recipient === 'specific' && !userId) return alert('Enter a user ID');
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/admin/send-email`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ userId, subject, body })
+          });
+          const data = await res.json();
+          document.getElementById('emailStatus').textContent = data.success ? `Sent to ${data.sent} users.` : `Error: ${data.error}`;
+        } catch (e) { alert('Error'); }
+      }
+
+      async function notifyUser(userId) {
+        const title = prompt('Notification title:');
+        if (!title) return;
+        const body = prompt('Message:');
+        if (!body) return;
+        try {
+          const res = await fetch(`${BACKEND_URL}/api/admin/notify-user`, {
+            method: 'POST', headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ userId, title, body })
+          });
+          const data = await res.json();
+          alert(`Sent to ${data.sent} devices`);
+        } catch (e) { alert('Error'); }
+      }
+
+      async function deleteGroup(groupId) {
+        if (!confirm('Delete this group?')) return;
+        await fetch(`${BACKEND_URL}/api/admin/groups/${groupId}`, { method: 'DELETE' });
+        loadTab('groups');
+      }
+
+      async function deleteAlarm(alarmId) {
+        await fetch(`${BACKEND_URL}/api/admin/alarms/${alarmId}`, { method: 'DELETE' });
+        loadTab('alarms');
+      }
+
+      async function deleteCommunityQuestion(qid) {
+        if (!confirm('Delete this question?')) return;
+        await fetch(`${BACKEND_URL}/api/community/questions/${qid}`, { method: 'DELETE' });
+        loadTab('community');
+      }
+
+      function saveToHistory(title, body, sent) {
+        let hist = JSON.parse(localStorage.getItem('admin_broadcast_history') || '[]');
+        hist.unshift({ title, body: body.substring(0,80), sent, time: new Date().toLocaleString() });
+        if (hist.length > 20) hist.pop();
+        localStorage.setItem('admin_broadcast_history', JSON.stringify(hist));
+      }
+
+      function renderBroadcastHistory() {
+        const hist = JSON.parse(localStorage.getItem('admin_broadcast_history') || '[]');
+        const el = document.getElementById('broadcastHistory');
+        if (el) el.innerHTML = hist.map(h => `<div class="list-item"><div><strong>${escHtml(h.title)}</strong><br><span class="text-muted">${h.time} · Sent to ${h.sent}</span></div></div>`).join('');
+      }
+
+      async function sendAIMessage(message) {
+        if (!message.trim()) return;
+        const chatArea = document.getElementById('aiChatArea');
+        const input = document.getElementById('aiInput');
+        if (!chatArea || !input) return;
+
+        chatArea.innerHTML += `<div class="chat-msg user">${escHtml(message)}</div>`;
+        chatArea.scrollTop = chatArea.scrollHeight;
+        input.value = '';
+        input.disabled = true;
+        document.getElementById('aiSendBtn').disabled = true;
+
+        try {
+          const response = await fetch(AI_PROXY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              model: AI_MODEL,
+              messages: [
+                { role: "system", content: "You are a helpful admin assistant for the StudentNija platform. Answer concisely." },
+                { role: "user", content: message }
+              ],
+              temperature: 0.7,
+              max_tokens: 300
+            })
+          });
+          const data = await response.json();
+          const reply = data.choices?.[0]?.message?.content || 'Sorry, no response.';
+          chatArea.innerHTML += `<div class="chat-msg">${escHtml(reply)}</div>`;
+        } catch (e) {
+          chatArea.innerHTML += `<div class="chat-msg" style="color:#ff4444;">Error connecting to AI</div>`;
+        }
+        chatArea.scrollTop = chatArea.scrollHeight;
+        input.disabled = false;
+        document.getElementById('aiSendBtn').disabled = false;
+        input.focus();
+      }
+
+      function escHtml(s) { return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+
+      // Initial load
+      loadTab('dashboard');
+    })();
+  </script>
+</body>
+</html>

@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+<meta http-equiv="Pragma" content="no-cache" />
+<meta http-equiv="Expires" content="0" />
   <meta name="theme-color" content="#008751" />
   <link rel="manifest" href="data:application/json,{}" />
   <title>StudentNija · Exam Hub</title>
@@ -27,6 +30,7 @@
       --accent-gold: #F4B400;
       --accent-red: #E74C3C;
       --accent-blue: #3498DB;
+      --border-light: rgba(0,0,0,0.06);
       --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
       --shadow-md: 0 8px 32px rgba(0,0,0,0.10);
       --shadow-lg: 0 16px 48px rgba(0,0,0,0.14);
@@ -47,6 +51,7 @@
       --text-primary: #F0F4FA;
       --text-secondary: #DCE4ED;
       --text-muted: #8FA0B5;
+      --border-light: rgba(255,255,255,0.06);
       --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
       --shadow-md: 0 8px 32px rgba(0,0,0,0.5);
       --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
@@ -114,11 +119,89 @@
     /* ---- CARDS ---- */
     .glass-card {
       background: var(--bg-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-      border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.06);
+      border-radius: var(--radius-md); border: 1px solid var(--border-light);
       box-shadow: var(--shadow-sm); padding: 18px 16px; margin-bottom: 16px;
       transition: var(--transition);
     }
     .glass-card .card-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display:flex; align-items:center; gap: 10px; }
+    /* ---- BUTTONS ---- */
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid var(--border-light);
+      color: var(--text-primary);
+      padding: 10px 16px;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font);
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-outline:hover {
+      border-color: var(--accent);
+      background: rgba(0,135,81,0.04);
+    }
+    .btn-outline:active {
+      transform: scale(0.96);
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--accent-light));
+      border: none;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font);
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px var(--accent-glow);
+    }
+    .btn-primary:active {
+      transform: scale(0.96);
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    /* ---- INPUTS ---- */
+    .quick-input {
+      padding: 10px 16px;
+      border-radius: 40px;
+      border: 1px solid var(--border-light);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      box-sizing: border-box;
+      width: 100%;
+      font-family: var(--font);
+      min-height: 44px;
+    }
+    .quick-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-glow);
+    }
+    .quick-input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.7;
+    }
     /* ---- HERO ---- */
     .hero-section {
       background: linear-gradient(135deg, var(--accent), var(--accent-light));
@@ -158,7 +241,7 @@
     .progress-bar .fill { height:100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); border-radius:10px; transition: width 0.4s ease; }
     .question-block { background: var(--bg-solid); border-radius: var(--radius-sm); padding:16px; margin-bottom:14px; }
     .question-block .qtext { font-weight:600; font-size:17px; margin-bottom:14px; line-height:1.5; }
-    .option-btn { background: var(--bg-card); border:1px solid rgba(0,0,0,0.06); border-radius:30px; padding:12px 16px; width:100%; text-align:left; cursor:pointer; transition:0.15s; font-family: var(--font); font-size:15px; color: var(--text-primary); margin-bottom:8px; backdrop-filter:blur(4px); display:flex; align-items:center; gap:10px; }
+    .option-btn { background: var(--bg-card); border:1px solid var(--border-light); border-radius:30px; padding:12px 16px; width:100%; text-align:left; cursor:pointer; transition:0.15s; font-family: var(--font); font-size:15px; color: var(--text-primary); margin-bottom:8px; backdrop-filter:blur(4px); display:flex; align-items:center; gap:10px; }
     .option-btn:active { transform:scale(0.97); }
     .option-btn .letter { display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,0.06); font-weight:700; font-size:13px; flex-shrink:0; }
     .option-btn.correct { background: var(--accent); color:white; border-color: var(--accent); }
@@ -190,7 +273,7 @@
     .result-actions button { padding:10px 24px; border-radius:40px; border:none; font-weight:600; font-size:14px; cursor:pointer; transition: var(--transition); font-family: var(--font); min-height:44px; }
     .result-actions .primary { background: linear-gradient(135deg, var(--accent), var(--accent-light)); color:white; box-shadow:0 4px 16px var(--accent-glow); }
     .result-actions .primary:active { transform:scale(0.94); }
-    .result-actions .secondary { background: var(--bg-solid); color: var(--text-primary); border:1px solid rgba(0,0,0,0.06); }
+    .result-actions .secondary { background: var(--bg-solid); color: var(--text-primary); border:1px solid var(--border-light); }
     .result-actions .secondary:active { transform:scale(0.94); }
     /* ---- DAILY CHALLENGE ---- */
     .daily-challenge { background: linear-gradient(135deg, var(--accent-gold), #F39C12); border-radius: var(--radius-sm); padding:16px; color:#0A1927; margin-bottom:16px; }
@@ -199,10 +282,11 @@
     .daily-challenge .top .badge { background:rgba(0,0,0,0.12); padding:2px 14px; border-radius:40px; font-size:12px; font-weight:600; }
     .daily-challenge .question { margin:10px 0 6px; font-weight:500; }
     .daily-challenge .reward { font-size:13px; opacity:0.8; display:flex; align-items:center; gap:6px; }
-    .daily-challenge .actions { margin-top:10px; display:flex; gap:8px; }
-    .daily-challenge .actions button { padding:6px 18px; border-radius:40px; border:none; font-weight:600; font-size:13px; cursor:pointer; transition: var(--transition); font-family: var(--font); background:rgba(0,0,0,0.12); color:#0A1927; }
+    .daily-challenge .actions { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
+    .daily-challenge .actions button { padding:8px 20px; border-radius:40px; border:none; font-weight:600; font-size:13px; cursor:pointer; transition: var(--transition); font-family: var(--font); background:rgba(0,0,0,0.12); color:#0A1927; min-height:40px; }
     .daily-challenge .actions button:active { transform:scale(0.94); }
     .daily-challenge .actions button.primary { background:#0A1927; color:white; }
+    .daily-challenge .actions button:disabled { opacity:0.5; cursor:not-allowed; transform:none !important; }
     /* ---- AI TUTOR ---- */
     .ai-tutor-card { background: linear-gradient(135deg, #1A2A3A, #2A3A4A); border-radius: var(--radius-sm); padding:16px; color:white; margin-bottom:16px; }
     .ai-tutor-card .title { font-weight:700; font-size:17px; display:flex; align-items:center; gap:8px; }
@@ -218,7 +302,7 @@
     .typing-dots .dot:nth-child(2) { animation-delay:0.2s; } .typing-dots .dot:nth-child(3) { animation-delay:0.4s; }
     @keyframes typingDot { 0%,80%,100%{transform:scale(0.6);opacity:0.4;} 40%{transform:scale(1);opacity:1;} }
     /* ---- LEADERBOARD ---- */
-    .leaderboard-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:0.5px solid rgba(0,0,0,0.04); }
+    .leaderboard-item { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:0.5px solid var(--border-light); }
     .leaderboard-item:last-child { border-bottom:none; }
     .leaderboard-item .rank { font-weight:700; font-size:16px; color: var(--text-muted); min-width:28px; }
     .leaderboard-item .rank.top1 { color: var(--accent-gold); }
@@ -242,7 +326,7 @@
       transform:translateX(-50%) translateY(16px);
       background: var(--bg-secondary); color: var(--text-primary); padding:12px 24px;
       border-radius:60px; box-shadow: var(--shadow-lg); font-size:14px; font-weight:500;
-      z-index:9999; backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.06);
+      z-index:9999; backdrop-filter:blur(16px); border:1px solid var(--border-light);
       transition:opacity 0.3s, transform 0.3s; opacity:0; pointer-events:none; max-width:90%; text-align:center;
     }
     .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
@@ -256,7 +340,7 @@
       position:fixed; bottom:0; left:0; right:0;
       height:calc(var(--nav-height) + var(--safe-bottom)); padding-bottom: var(--safe-bottom);
       background: var(--bg-card); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
-      border-top:0.5px solid rgba(255,255,255,0.04);
+      border-top:0.5px solid var(--border-light);
       display:flex; justify-content:space-around; align-items:center; z-index:30;
       box-shadow:0 -4px 20px rgba(0,0,0,0.04); transition: background var(--transition);
     }
@@ -271,6 +355,7 @@
     .nav-item.active .icon { transform:scale(1.08); }
     .nav-item .label { font-size:10px; font-weight:500; letter-spacing:0.2px; transition:color 0.2s; }
     .nav-item.active .label { color: var(--accent); font-weight:600; }
+    /* ---- RESPONSIVE ---- */
     @media (max-width:480px) {
       .main-content { padding:12px 12px calc(12px + var(--nav-height) + var(--safe-bottom)); }
       .subject-grid { grid-template-columns: repeat(auto-fill, minmax(110px,1fr)); gap:8px; }
@@ -280,9 +365,68 @@
       .result-screen .score { font-size:36px; }
     }
     @media (min-width:768px) {
-      .app-shell { max-width:480px; margin:0 auto; border-left:1px solid rgba(255,255,255,0.04); border-right:1px solid rgba(255,255,255,0.04); box-shadow: var(--shadow-lg); }
+      .app-shell { max-width:480px; margin:0 auto; border-left:1px solid var(--border-light); border-right:1px solid var(--border-light); box-shadow: var(--shadow-lg); }
       .bottom-nav { max-width:480px; left:50%; transform:translateX(-50%); }
     }
+    /* ---- COMMUNITY QUESTION ITEMS ---- */
+    .community-item {
+      padding: 12px 14px;
+      border-bottom: 0.5px solid var(--border-light);
+      transition: background 0.2s;
+      border-radius: 8px;
+    }
+    .community-item:last-child { border-bottom: none; }
+    .community-item:hover { background: rgba(0,135,81,0.04); }
+    .community-item .q-subject {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--accent);
+      display: inline-block;
+      padding: 1px 12px;
+      border-radius: 20px;
+      background: rgba(0,135,81,0.08);
+      margin-bottom: 4px;
+    }
+    .community-item .q-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-primary);
+      margin: 4px 0 6px;
+    }
+    .community-item .q-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 12px;
+      color: var(--text-muted);
+      flex-wrap: wrap;
+    }
+    .community-item .q-meta .upvote-btn {
+      background: none;
+      border: 1px solid var(--border-light);
+      border-radius: 30px;
+      padding: 2px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: var(--font);
+      color: var(--text-muted);
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .community-item .q-meta .upvote-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(0,135,81,0.06);
+    }
+    .community-empty {
+      text-align: center;
+      padding: 20px 0;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+    .community-empty .icon { font-size: 36px; display: block; margin-bottom: 8px; }
   </style>
 </head>
 <body>
@@ -367,9 +511,7 @@
 
         <div class="glass-card">
           <div class="card-title">🏅 Achievements</div>
-          <div class="achievement-grid" id="achievementGrid">
-            <!-- dynamically updated via JS -->
-          </div>
+          <div class="achievement-grid" id="achievementGrid"></div>
         </div>
       </div>
 
@@ -382,13 +524,13 @@
         <div class="glass-card">
           <div class="card-title">🎯 Exam Settings</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <select id="examTypeSelect" style="flex:1; min-width:100px; background:var(--bg-primary); border:1px solid rgba(0,0,0,0.06); padding:10px 14px; border-radius:var(--radius-sm); color:var(--text-primary); font-size:14px; min-height:44px; font-family:var(--font); outline:none;">
+            <select id="examTypeSelect" style="flex:1; min-width:100px; background:var(--bg-primary); border:1px solid var(--border-light); padding:10px 14px; border-radius:var(--radius-sm); color:var(--text-primary); font-size:14px; min-height:44px; font-family:var(--font); outline:none;">
               <option value="jamb">JAMB</option>
               <option value="waec">WAEC</option>
               <option value="neco">NECO</option>
             </select>
-            <select id="yearSelect" style="flex:1; min-width:80px; background:var(--bg-primary); border:1px solid rgba(0,0,0,0.06); padding:10px 14px; border-radius:var(--radius-sm); color:var(--text-primary); font-size:14px; min-height:44px; font-family:var(--font); outline:none;"></select>
-            <button class="btn-primary" id="startQuizBtn" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; background:linear-gradient(135deg, var(--accent), var(--accent-light)); color:white; border:none; border-radius:40px; padding:10px 24px; font-weight:600; font-size:14px; cursor:pointer; transition:transform 0.15s; box-shadow:0 4px 12px var(--accent-glow); min-height:44px; font-family:var(--font); white-space:nowrap;">🚀 Start Quiz</button>
+            <select id="yearSelect" style="flex:1; min-width:80px; background:var(--bg-primary); border:1px solid var(--border-light); padding:10px 14px; border-radius:var(--radius-sm); color:var(--text-primary); font-size:14px; min-height:44px; font-family:var(--font); outline:none;"></select>
+            <button class="btn-primary" id="startQuizBtn" style="display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 24px; min-height:44px; white-space:nowrap;">🚀 Start Quiz</button>
           </div>
         </div>
         <div id="quizArea">
@@ -468,11 +610,11 @@
         </div>
         <div class="glass-card">
           <div class="card-title">⚙️ Settings</div>
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:0.5px solid rgba(0,0,0,0.04);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:0.5px solid var(--border-light);">
             <span>Dark Mode</span>
             <button id="profileThemeToggle" style="padding:4px 16px; border-radius:40px; border:1px solid var(--accent); background:transparent; color:var(--text-primary); font-weight:600; font-size:12px; cursor:pointer; font-family:var(--font);">Toggle</button>
           </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:0.5px solid rgba(0,0,0,0.04);">
+          <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:0.5px solid var(--border-light);">
             <span>Reset Progress</span>
             <button id="resetProgressBtn" style="padding:4px 16px; border-radius:40px; border:1px solid var(--accent-red); background:transparent; color:var(--accent-red); font-weight:600; font-size:12px; cursor:pointer; font-family:var(--font);">Reset</button>
           </div>
@@ -480,6 +622,25 @@
             <span>Version</span>
             <span style="color:var(--text-muted); font-size:13px;">v3.0.0</span>
           </div>
+        </div>
+      </div>
+
+      <!-- ===== COMMUNITY TAB ===== -->
+      <div class="tab-page" id="tabCommunity">
+        <div class="glass-card">
+          <div class="card-title">👥 Community Questions</div>
+          <div id="communityQuestions" style="max-height:300px; overflow-y:auto; margin-bottom:12px;"></div>
+          <button id="loadCommunityBtn" class="btn-outline" style="width:100%; margin-bottom:16px;">⟳ Load Questions</button>
+          <hr style="border:0.5px solid var(--border-light); margin:16px 0;">
+          <div style="font-weight:600; color:var(--text-primary); margin-bottom:10px;">Submit a question</div>
+          <input id="commSubject" placeholder="Subject" class="quick-input" style="margin-bottom:8px;">
+          <input id="commQuestion" placeholder="Question" class="quick-input" style="margin-bottom:8px;">
+          <input id="commOptA" placeholder="Option A" class="quick-input" style="margin-bottom:8px;">
+          <input id="commOptB" placeholder="Option B" class="quick-input" style="margin-bottom:8px;">
+          <input id="commOptC" placeholder="Option C" class="quick-input" style="margin-bottom:8px;">
+          <input id="commOptD" placeholder="Option D" class="quick-input" style="margin-bottom:8px;">
+          <input id="commCorrect" type="number" placeholder="Correct option (0-3)" class="quick-input" style="margin-bottom:12px;">
+          <button id="submitCommQuestion" class="btn-primary" style="width:100%;">✓ Submit</button>
         </div>
       </div>
     </main>
@@ -490,6 +651,7 @@
       <button class="nav-item" data-tab="aitutor" aria-label="AI Tutor"><span class="icon">🧠</span><span class="label">AI Tutor</span></button>
       <button class="nav-item" data-tab="leaderboard" aria-label="Leaderboard"><span class="icon">🏆</span><span class="label">Leaderboard</span></button>
       <button class="nav-item" data-tab="profile" aria-label="Profile"><span class="icon">👤</span><span class="label">Profile</span></button>
+      <button class="nav-item" data-tab="community" aria-label="Community"><span class="icon">💬</span><span class="label">Community</span></button>
     </nav>
   </div>
 
@@ -511,7 +673,7 @@
       // ============================================================
       // DATA
       // ============================================================
-      const subjectYearsMap = {
+      var subjectYearsMap = {
         'English': [2003,2004,2005,2006,2007,2008,2009,2010],
         'Mathematics': [2006,2007,2008,2009,2013],
         'Commerce': [1900,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2016],
@@ -530,7 +692,7 @@
         'Current Affairs': [2013],
         'History': [2013]
       };
-      const subjectMeta = {
+      var subjectMeta = {
         'English': { icon:'📖', label:'English' },
         'Mathematics': { icon:'📐', label:'Mathematics' },
         'Commerce': { icon:'💼', label:'Commerce' },
@@ -553,14 +715,14 @@
       // ============================================================
       // THEME & USER SYNC
       // ============================================================
-      const APP_KEY = 'studentnija_settings';
-      const CHAT_KEY = 'studentnija_chat_settings_v3';
-      const STORAGE_KEY = 'exam_hub_data_v3';
+      var APP_KEY = 'studentnija_settings';
+      var CHAT_KEY = 'studentnija_chat_settings_v3';
+      var STORAGE_KEY = 'exam_hub_data_v3';
 
       function readTheme() {
-        let theme = null;
-        try { const appRaw = localStorage.getItem(APP_KEY); if (appRaw) theme = JSON.parse(appRaw).theme; } catch(_){}
-        if (!theme) { try { const chatRaw = localStorage.getItem(CHAT_KEY); if (chatRaw) theme = JSON.parse(chatRaw).theme; } catch(_){} }
+        var theme = null;
+        try { var appRaw = localStorage.getItem(APP_KEY); if (appRaw) theme = JSON.parse(appRaw).theme; } catch(_){}
+        if (!theme) { try { var chatRaw = localStorage.getItem(CHAT_KEY); if (chatRaw) theme = JSON.parse(chatRaw).theme; } catch(_){} }
         if (!theme) theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         return theme;
       }
@@ -571,34 +733,34 @@
       }
       function saveTheme(theme) {
         try {
-          let app = {};
-          const raw = localStorage.getItem(APP_KEY);
+          var app = {};
+          var raw = localStorage.getItem(APP_KEY);
           if (raw) try { app = JSON.parse(raw); } catch(_) {}
           app.theme = theme;
           localStorage.setItem(APP_KEY, JSON.stringify(app));
         } catch(_) {}
         try {
-          let chat = {};
-          const raw = localStorage.getItem(CHAT_KEY);
-          if (raw) try { chat = JSON.parse(raw); } catch(_) {}
+          var chat = {};
+          var raw2 = localStorage.getItem(CHAT_KEY);
+          if (raw2) try { chat = JSON.parse(raw2); } catch(_) {}
           chat.theme = theme;
           localStorage.setItem(CHAT_KEY, JSON.stringify(chat));
         } catch(_) {}
       }
 
-      const defaultData = {
+      var defaultData = {
         xp:0, level:1, streak:0, lastDate:null,
         totalQuestions:0, totalQuizzes:0, correctAnswers:0, bestScore:0,
         achievements:[], dailyCompleted:false, dailyDate:null,
         name:'Student', profilePic:'', subjectStats:{}
       };
-      let userData = { ...defaultData };
+      var userData = Object.assign({}, defaultData);
 
       function loadUserFromApp() {
         try {
-          const cu = localStorage.getItem('studentnija_currentUser');
+          var cu = localStorage.getItem('studentnija_currentUser');
           if (cu) {
-            const user = JSON.parse(cu);
+            var user = JSON.parse(cu);
             if (user && user.fullName) userData.name = user.fullName;
             if (user && user.profilePic) userData.profilePic = user.profilePic;
           }
@@ -608,11 +770,11 @@
 
       function loadUserData() {
         try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) userData = { ...defaultData, ...JSON.parse(raw) };
-        } catch(_) { userData = { ...defaultData }; }
+          var raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) userData = Object.assign({}, defaultData, JSON.parse(raw));
+        } catch(_) { userData = Object.assign({}, defaultData); }
         loadUserFromApp();
-        const today = new Date().toDateString();
+        var today = new Date().toDateString();
         if (userData.dailyDate !== today) { userData.dailyCompleted = false; userData.dailyDate = today; saveUserData(); }
         updateStreak();
         saveUserData();
@@ -620,9 +782,9 @@
 
       function saveUserData() { localStorage.setItem(STORAGE_KEY, JSON.stringify(userData)); }
       function updateStreak() {
-        const today = new Date().toDateString();
+        var today = new Date().toDateString();
         if (userData.lastDate !== today) {
-          const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+          var yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
           if (userData.lastDate === yesterday.toDateString()) userData.streak += 1;
           else userData.streak = 1;
           userData.lastDate = today;
@@ -632,10 +794,10 @@
 
       function addXP(amount) {
         userData.xp += amount;
-        const newLevel = Math.floor(userData.xp / 500) + 1;
+        var newLevel = Math.floor(userData.xp / 500) + 1;
         if (newLevel > userData.level) {
           userData.level = newLevel;
-          showToast(`🎉 Level Up! You're now Level ${newLevel}!`);
+          showToast('🎉 Level Up! You\'re now Level ' + newLevel + '!');
           triggerConfetti();
         }
         saveUserData();
@@ -650,44 +812,50 @@
       // ============================================================
       // DOM & NAVIGATION
       // ============================================================
-      const mainContent = document.getElementById('mainContent');
-      const navItems = document.querySelectorAll('.nav-item');
-      const tabPages = {
+      var mainContent = document.getElementById('mainContent');
+      var navItems = document.querySelectorAll('.nav-item');
+      var tabPages = {
         home: document.getElementById('tabHome'),
         practice: document.getElementById('tabPractice'),
         aitutor: document.getElementById('tabAITutor'),
         leaderboard: document.getElementById('tabLeaderboard'),
-        profile: document.getElementById('tabProfile')
+        profile: document.getElementById('tabProfile'),
+        community: document.getElementById('tabCommunity')
       };
-      const toastEl = document.getElementById('toast');
-      const avatarBtn = document.getElementById('avatarBtn');
-      const profilePic = document.getElementById('profilePic');
-      const profileInitial = document.getElementById('profileInitial');
-      const profilePicLarge = document.getElementById('profilePicLarge');
-      const profileInitialLarge = document.getElementById('profileInitialLarge');
+      var toastEl = document.getElementById('toast');
+      var avatarBtn = document.getElementById('avatarBtn');
+      var profilePic = document.getElementById('profilePic');
+      var profileInitial = document.getElementById('profileInitial');
+      var profilePicLarge = document.getElementById('profilePicLarge');
+      var profileInitialLarge = document.getElementById('profileInitialLarge');
 
       function switchTab(tabId) {
-        navItems.forEach(item => item.classList.toggle('active', item.dataset.tab === tabId));
-        Object.keys(tabPages).forEach(key => tabPages[key].classList.toggle('active', key === tabId));
+        navItems.forEach(function(item) { item.classList.toggle('active', item.dataset.tab === tabId); });
+        Object.keys(tabPages).forEach(function(key) { tabPages[key].classList.toggle('active', key === tabId); });
         mainContent.scrollTop = 0;
         localStorage.setItem('exam_hub_last_tab', tabId);
         if (tabId === 'practice') renderPracticeTab();
         if (tabId === 'leaderboard') renderLeaderboard();
+        // Optionally reload community data when switching to that tab
+        if (tabId === 'community') {
+          // If questions are empty or we want fresh data, call loadCommunityQuestions
+          if (communityQuestions.length === 0) loadCommunityQuestions();
+        }
       }
 
-      navItems.forEach(item => {
+      navItems.forEach(function(item) {
         item.addEventListener('click', function() {
           switchTab(this.dataset.tab);
         });
       });
 
-      const lastTab = localStorage.getItem('exam_hub_last_tab') || 'home';
+      var lastTab = localStorage.getItem('exam_hub_last_tab') || 'home';
       switchTab(lastTab);
 
       // Theme
       function toggleTheme() {
-        const isDark = document.documentElement.classList.contains('dark');
-        const newTheme = isDark ? 'light' : 'dark';
+        var isDark = document.documentElement.classList.contains('dark');
+        var newTheme = isDark ? 'light' : 'dark';
         applyTheme(newTheme);
         saveTheme(newTheme);
       }
@@ -696,18 +864,18 @@
       applyTheme(readTheme());
 
       // Toast & confetti
-      let toastTimeout;
+      var toastTimeout;
       function showToast(message) {
         toastEl.textContent = message;
         toastEl.classList.add('show');
         clearTimeout(toastTimeout);
-        toastTimeout = setTimeout(() => toastEl.classList.remove('show'), 3000);
+        toastTimeout = setTimeout(function() { toastEl.classList.remove('show'); }, 3000);
       }
       function triggerConfetti() {
-        const container = document.getElementById('confettiContainer');
-        const colors = ['#008751','#F4B400','#E74C3C','#3498DB','#9B59B6','#00A86B','#FF6B6B','#FFD93D'];
-        for (let i=0; i<60; i++) {
-          const el = document.createElement('div'); el.className = 'confetti';
+        var container = document.getElementById('confettiContainer');
+        var colors = ['#008751','#F4B400','#E74C3C','#3498DB','#9B59B6','#00A86B','#FF6B6B','#FFD93D'];
+        for (var i=0; i<60; i++) {
+          var el = document.createElement('div'); el.className = 'confetti';
           el.style.left = Math.random()*100+'%';
           el.style.background = colors[Math.floor(Math.random()*colors.length)];
           el.style.width = (Math.random()*8+4)+'px';
@@ -716,44 +884,44 @@
           el.style.animationDelay = (Math.random()*0.8)+'s';
           container.appendChild(el);
         }
-        setTimeout(() => container.innerHTML='', 4000);
+        setTimeout(function() { container.innerHTML=''; }, 4000);
       }
 
       // Countdown
-      const examDates = { jamb: new Date('2026-04-20'), waec: new Date('2026-05-10'), neco: new Date('2026-06-20') };
+      var examDates = { jamb: new Date('2026-04-20'), waec: new Date('2026-05-10'), neco: new Date('2026-06-20') };
       function daysUntil(date) { return Math.ceil((date - new Date()) / 86400000); }
       function updateCountdown() {
-        Object.entries(examDates).forEach(([key, date]) => {
-          const el = document.getElementById(key+'Days');
-          if (el) el.textContent = daysUntil(date);
-        });
+        for (var key in examDates) {
+          var el = document.getElementById(key+'Days');
+          if (el) el.textContent = daysUntil(examDates[key]);
+        }
       }
       updateCountdown();
       setInterval(updateCountdown, 60000);
 
       // Achievements definition
-      const achievementDefs = [
-        { id:'first_quiz', icon:'🌟', name:'First Quiz', condition: () => userData.totalQuizzes >= 1 },
-        { id:'streak_5', icon:'🔥', name:'5 Day Streak', condition: () => userData.streak >= 5 },
-        { id:'perfect_score', icon:'💯', name:'Perfect Score', condition: () => userData.bestScore === 100 },
-        { id:'questions_50', icon:'📚', name:'50 Questions', condition: () => userData.totalQuestions >= 50 },
-        { id:'top_10', icon:'👑', name:'Top 10', condition: () => userData.totalQuizzes >= 10 },
-        { id:'questions_100', icon:'📖', name:'100 Questions', condition: () => userData.totalQuestions >= 100 },
-        { id:'streak_30', icon:'🔥', name:'30 Day Streak', condition: () => userData.streak >= 30 },
+      var achievementDefs = [
+        { id:'first_quiz', icon:'🌟', name:'First Quiz', condition: function() { return userData.totalQuizzes >= 1; } },
+        { id:'streak_5', icon:'🔥', name:'5 Day Streak', condition: function() { return userData.streak >= 5; } },
+        { id:'perfect_score', icon:'💯', name:'Perfect Score', condition: function() { return userData.bestScore === 100; } },
+        { id:'questions_50', icon:'📚', name:'50 Questions', condition: function() { return userData.totalQuestions >= 50; } },
+        { id:'top_10', icon:'👑', name:'Top 10', condition: function() { return userData.totalQuizzes >= 10; } },
+        { id:'questions_100', icon:'📖', name:'100 Questions', condition: function() { return userData.totalQuestions >= 100; } },
+        { id:'streak_30', icon:'🔥', name:'30 Day Streak', condition: function() { return userData.streak >= 30; } }
       ];
 
       function renderAchievements(containerId) {
-        const grid = document.getElementById(containerId);
+        var grid = document.getElementById(containerId);
         if (!grid) return;
-        const unlocked = userData.achievements || [];
-        grid.innerHTML = achievementDefs.map(a => {
-          const unlockedClass = unlocked.includes(a.id) ? 'unlocked' : '';
-          return `<div class="achievement-item ${unlockedClass}"><span class="icon">${a.icon}</span><span class="name">${a.name}</span></div>`;
+        var unlocked = userData.achievements || [];
+        grid.innerHTML = achievementDefs.map(function(a) {
+          var unlockedClass = unlocked.indexOf(a.id) !== -1 ? 'unlocked' : '';
+          return '<div class="achievement-item ' + unlockedClass + '"><span class="icon">' + a.icon + '</span><span class="name">' + a.name + '</span></div>';
         }).join('');
       }
 
       function updateAchievements() {
-        const unlocked = achievementDefs.filter(a => a.condition()).map(a => a.id);
+        var unlocked = achievementDefs.filter(function(a) { return a.condition(); }).map(function(a) { return a.id; });
         userData.achievements = unlocked;
         saveUserData();
         renderAchievements('achievementGrid');
@@ -770,22 +938,22 @@
         document.getElementById('quickBest').textContent = userData.bestScore;
         document.getElementById('quickLevel').textContent = userData.level;
         document.getElementById('userName').textContent = userData.name || 'Student';
-        const hour = new Date().getHours();
-        let greeting = 'Ready to learn today?';
+        var hour = new Date().getHours();
+        var greeting = 'Ready to learn today?';
         if (hour < 12) greeting = 'Good morning! ☀️';
         else if (hour < 17) greeting = 'Good afternoon! 🌤️';
         else greeting = 'Good evening! 🌙';
         document.getElementById('greetingSub').textContent = greeting;
 
         document.getElementById('profileName').textContent = userData.name || 'Student';
-        document.getElementById('profileLevel').textContent = `Level ${userData.level} · ${userData.xp} XP`;
+        document.getElementById('profileLevel').textContent = 'Level ' + userData.level + ' · ' + userData.xp + ' XP';
         document.getElementById('profileXp').textContent = userData.xp;
         document.getElementById('profileQuestions').textContent = userData.totalQuestions;
         document.getElementById('profileQuizzes').textContent = userData.totalQuizzes;
         document.getElementById('profileAccuracy').textContent = getAccuracy() + '%';
         document.getElementById('profileStreak').textContent = userData.streak;
 
-        const pic = userData.profilePic || '';
+        var pic = userData.profilePic || '';
         if (pic) {
           profilePic.src = pic; profilePic.style.display = 'block'; profileInitial.style.display = 'none';
           profilePicLarge.src = pic; profilePicLarge.style.display = 'block'; profileInitialLarge.style.display = 'none';
@@ -794,7 +962,7 @@
           profilePicLarge.style.display = 'none'; profileInitialLarge.style.display = 'flex';
         }
 
-        const dailyStatus = document.getElementById('dailyStatus');
+        var dailyStatus = document.getElementById('dailyStatus');
         if (userData.dailyCompleted) {
           dailyStatus.textContent = '✅ Done';
           dailyStatus.style.color = '#00a86b';
@@ -810,83 +978,210 @@
       }
 
       // ============================================================
+      // COMMUNITY QUESTIONS
+      // ============================================================
+      var communityQuestions = [];
+      var BASE_URL = window.location.origin;
+      if (BASE_URL.indexOf('pages.dev') !== -1 || BASE_URL.indexOf('localhost') !== -1 || BASE_URL.indexOf('127.0.0.1') !== -1) {
+        BASE_URL = 'https://studentnija-public-chat.onrender.com';
+      }
+
+      function escapeHtml(s) {
+        if (!s) return '';
+        return s.replace(/[&<>]/g, function(m) {
+          var map = { '&':'&amp;', '<':'&lt;', '>':'&gt;' };
+          return map[m] || m;
+        });
+      }
+
+      function renderCommunityQuestions() {
+        var container = document.getElementById('communityQuestions');
+        if (!container) return;
+        if (!communityQuestions || communityQuestions.length === 0) {
+          container.innerHTML = '<div class="community-empty"><span class="icon">💬</span>No questions yet. Be the first to ask!</div>';
+          return;
+        }
+        container.innerHTML = communityQuestions.map(function(q) {
+          return '<div class="community-item">' +
+            '<div class="q-subject">' + escapeHtml(q.subject || 'General') + '</div>' +
+            '<div class="q-text">' + escapeHtml(q.question) + '</div>' +
+            '<div class="q-meta">' +
+              '<span>👍 ' + (q.upvotes || 0) + ' upvotes</span>' +
+              '<button class="upvote-btn" data-id="' + q.id + '">👍 Upvote</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+
+        container.querySelectorAll('.upvote-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            var id = parseInt(this.getAttribute('data-id'));
+            upvoteCommunityQuestion(id);
+          });
+        });
+      }
+
+      function loadCommunityQuestions() {
+        var container = document.getElementById('communityQuestions');
+        if (container) container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-muted);">⏳ Loading...</div>';
+        fetch(BASE_URL + '/api/community/questions')
+          .then(function(res) { return res.json(); })
+          .then(function(data) {
+            communityQuestions = data.questions || [];
+            renderCommunityQuestions();
+          })
+          .catch(function() {
+            // Sample fallback
+            communityQuestions = [
+              { id: 1, subject: 'Mathematics', question: 'What is the derivative of x²?', upvotes: 5 },
+              { id: 2, subject: 'English', question: 'What is a metaphor?', upvotes: 3 },
+              { id: 3, subject: 'Physics', question: 'What is Newton\'s first law?', upvotes: 7 }
+            ];
+            renderCommunityQuestions();
+          });
+      }
+
+      function upvoteCommunityQuestion(id) {
+        fetch(BASE_URL + '/api/community/questions/' + id + '/upvote', { method: 'POST' })
+          .then(function() { return loadCommunityQuestions(); })
+          .catch(function() {
+            var q = communityQuestions.find(function(item) { return item.id === id; });
+            if (q) { q.upvotes = (q.upvotes || 0) + 1; renderCommunityQuestions(); }
+          });
+      }
+
+      document.getElementById('loadCommunityBtn').addEventListener('click', loadCommunityQuestions);
+
+      document.getElementById('submitCommQuestion').addEventListener('click', function() {
+        var subject = document.getElementById('commSubject').value.trim();
+        var question = document.getElementById('commQuestion').value.trim();
+        var optA = document.getElementById('commOptA').value.trim();
+        var optB = document.getElementById('commOptB').value.trim();
+        var optC = document.getElementById('commOptC').value.trim();
+        var optD = document.getElementById('commOptD').value.trim();
+        var correct = parseInt(document.getElementById('commCorrect').value);
+
+        if (!subject || !question || !optA || !optB || !optC || !optD) {
+          showToast('⚠️ Please fill in all fields.');
+          return;
+        }
+        if (isNaN(correct) || correct < 0 || correct > 3) {
+          showToast('⚠️ Correct option must be 0, 1, 2, or 3.');
+          return;
+        }
+
+        var payload = {
+          subject: subject,
+          question: question,
+          options: [optA, optB, optC, optD],
+          correctOption: correct
+        };
+
+        fetch(BASE_URL + '/api/community/questions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        })
+        .then(function(res) { return res.json(); })
+        .then(function() {
+          showToast('✅ Question submitted!');
+          document.getElementById('commSubject').value = '';
+          document.getElementById('commQuestion').value = '';
+          document.getElementById('commOptA').value = '';
+          document.getElementById('commOptB').value = '';
+          document.getElementById('commOptC').value = '';
+          document.getElementById('commOptD').value = '';
+          document.getElementById('commCorrect').value = '';
+          loadCommunityQuestions();
+        })
+        .catch(function() {
+          var newQ = {
+            id: Date.now(),
+            subject: subject,
+            question: question,
+            upvotes: 0
+          };
+          communityQuestions.unshift(newQ);
+          renderCommunityQuestions();
+          showToast('✅ Question submitted (offline)');
+        });
+      });
+
+      // ============================================================
       // PRACTICE TAB
       // ============================================================
-      let selectedSubject = 'English';
-      let currentQuestions = [];
-      let quizState = null;
-      let quizTimer = null;
-      let timeLeft = 15;
+      var selectedSubject = 'English';
+      var currentQuestions = [];
+      var quizState = null;
+      var quizTimer = null;
+      var timeLeft = 15;
 
       function renderPracticeTab() {
-        const grid = document.getElementById('subjectGrid');
-        grid.innerHTML = Object.keys(subjectMeta).map(subj => {
-          const meta = subjectMeta[subj];
-          const years = subjectYearsMap[subj] || [];
-          const isSelected = subj === selectedSubject ? 'selected' : '';
-          return `<div class="subject-card ${isSelected}" data-subject="${subj}">
-            <span class="icon">${meta.icon}</span><span class="name">${meta.label}</span><span class="count">${years.length} years</span>
-            <span class="check">✓</span></div>`;
+        var grid = document.getElementById('subjectGrid');
+        grid.innerHTML = Object.keys(subjectMeta).map(function(subj) {
+          var meta = subjectMeta[subj];
+          var years = subjectYearsMap[subj] || [];
+          var isSelected = subj === selectedSubject ? 'selected' : '';
+          return '<div class="subject-card ' + isSelected + '" data-subject="' + subj + '">' +
+            '<span class="icon">' + meta.icon + '</span><span class="name">' + meta.label + '</span><span class="count">' + years.length + ' years</span>' +
+            '<span class="check">✓</span></div>';
         }).join('');
-        document.querySelectorAll('.subject-card').forEach(card => {
+        document.querySelectorAll('.subject-card').forEach(function(card) {
           card.addEventListener('click', function() {
-            document.querySelectorAll('.subject-card').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.subject-card').forEach(function(c) { c.classList.remove('selected'); });
             this.classList.add('selected');
-            selectedSubject = this.dataset.subject;
+            selectedSubject = this.getAttribute('data-subject');
             updateYearDropdown(selectedSubject);
-            document.getElementById('quizArea').innerHTML = `<div class="glass-card" style="min-height:200px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--text-muted);"><span style="font-size:48px;">📝</span><p style="font-size:14px;">Selected: <strong>${subjectMeta[selectedSubject]?.label || selectedSubject}</strong>. Click "Start Quiz"</p></div>`;
+            document.getElementById('quizArea').innerHTML = '<div class="glass-card" style="min-height:200px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--text-muted);"><span style="font-size:48px;">📝</span><p style="font-size:14px;">Selected: <strong>' + (subjectMeta[selectedSubject] ? subjectMeta[selectedSubject].label : selectedSubject) + '</strong>. Click "Start Quiz"</p></div>';
           });
         });
         updateYearDropdown(selectedSubject);
       }
 
       function updateYearDropdown(subject) {
-        const yearSelect = document.getElementById('yearSelect');
-        const years = subjectYearsMap[subject] || [];
+        var yearSelect = document.getElementById('yearSelect');
+        var years = subjectYearsMap[subject] || [];
         if (years.length === 0) {
-          yearSelect.innerHTML = `<option value="">No years available</option>`;
+          yearSelect.innerHTML = '<option value="">No years available</option>';
           return;
         }
-        const sorted = years.slice().sort((a,b) => a-b);
-        const idx1900 = sorted.indexOf(1900);
+        var sorted = years.slice().sort(function(a,b) { return a-b; });
+        var idx1900 = sorted.indexOf(1900);
         if (idx1900 !== -1) { sorted.splice(idx1900, 1); sorted.push(1900); }
-        yearSelect.innerHTML = sorted.map(y => `<option value="${y}">${y}</option>`).join('');
-        const recent = sorted.filter(y => y !== 1900).pop();
+        yearSelect.innerHTML = sorted.map(function(y) { return '<option value="' + y + '">' + y + '</option>'; }).join('');
+        var recent = sorted.filter(function(y) { return y !== 1900; }).pop();
         if (recent) yearSelect.value = recent;
       }
 
       // ============================================================
       // FETCH QUESTIONS
       // ============================================================
-      let BASE_URL = window.location.origin;
-      if (BASE_URL.includes('pages.dev') || BASE_URL.includes('localhost') || BASE_URL.includes('127.0.0.1')) {
-        BASE_URL = 'https://studentnija-public-chat.onrender.com';
-      }
-      async function fetchQuestions(exam, subject, year) {
-        const cacheKey = `${exam}_${subject}_${year}`;
-        const cached = localStorage.getItem('aloc_' + cacheKey);
-        const expiry = localStorage.getItem('aloc_' + cacheKey + '_expiry');
+      function fetchQuestions(exam, subject, year) {
+        var cacheKey = exam + '_' + subject + '_' + year;
+        var cached = localStorage.getItem('aloc_' + cacheKey);
+        var expiry = localStorage.getItem('aloc_' + cacheKey + '_expiry');
         if (cached && expiry && Date.now() < parseInt(expiry)) {
-          try { const parsed = JSON.parse(cached); if (parsed && parsed.length) return parsed; } catch(_) {}
+          try { var parsed = JSON.parse(cached); if (parsed && parsed.length) return Promise.resolve(parsed); } catch(_) {}
         }
-        try {
-          const url = `${BASE_URL}/api/past-questions?exam=${encodeURIComponent(exam)}&subject=${encodeURIComponent(subject)}&year=${encodeURIComponent(year)}`;
-          const response = await fetch(url);
-          if (!response.ok) throw new Error('Server error');
-          const data = await response.json();
-          const questions = data.questions || [];
-          if (questions.length) {
-            localStorage.setItem('aloc_' + cacheKey, JSON.stringify(questions));
-            localStorage.setItem('aloc_' + cacheKey + '_expiry', Date.now() + 86400000);
-          }
-          return questions;
-        } catch (e) {
-          return getSampleQuestions(subject);
-        }
+        return fetch(BASE_URL + '/api/past-questions?exam=' + encodeURIComponent(exam) + '&subject=' + encodeURIComponent(subject) + '&year=' + encodeURIComponent(year))
+          .then(function(response) {
+            if (!response.ok) throw new Error('Server error');
+            return response.json();
+          })
+          .then(function(data) {
+            var questions = data.questions || [];
+            if (questions.length) {
+              localStorage.setItem('aloc_' + cacheKey, JSON.stringify(questions));
+              localStorage.setItem('aloc_' + cacheKey + '_expiry', String(Date.now() + 86400000));
+            }
+            return questions;
+          })
+          .catch(function() {
+            return getSampleQuestions(subject);
+          });
       }
 
       function getSampleQuestions(subject) {
-        const samples = {
+        var samples = {
           'Mathematics': [
             { question:'What is 2+2?', options:['A) 3','B) 4','C) 5','D) 6'], correctOption:1 },
             { question:'Square root of 81?', options:['A) 7','B) 8','C) 9','D) 10'], correctOption:2 },
@@ -914,37 +1209,37 @@
           return;
         }
         currentQuestions = questions;
-        quizState = { questions, index:0, score:0, userAnswers:[], answered:false, startTime:Date.now() };
+        quizState = { questions: questions, index: 0, score: 0, userAnswers: [], answered: false, startTime: Date.now() };
         timeLeft = 15;
         renderQuestion();
       }
 
       function renderQuestion() {
-        const state = quizState;
-        const area = document.getElementById('quizArea');
+        var state = quizState;
+        var area = document.getElementById('quizArea');
         if (state.index >= state.questions.length) { showResults(); return; }
-        const q = state.questions[state.index];
-        const options = q.options || [];
-        const letters = ['A','B','C','D'];
-        const total = state.questions.length;
-        const progress = (state.index / total) * 100;
+        var q = state.questions[state.index];
+        var options = q.options || [];
+        var letters = ['A','B','C','D'];
+        var total = state.questions.length;
+        var progress = (state.index / total) * 100;
         timeLeft = 15;
         if (quizTimer) clearInterval(quizTimer);
 
-        area.innerHTML = `
-          <div class="glass-card">
-            <div class="quiz-progress"><span class="qnum">Question ${state.index+1} of ${total}</span><div class="quiz-timer">⏱️ <span class="time" id="timerDisplay">${timeLeft}s</span></div></div>
-            <div class="progress-bar"><div class="fill" style="width:${progress}%"></div></div>
-            <div class="question-block">
-              <div class="qtext">${escapeHtml(q.question)}</div>
-              <div style="display:flex; flex-direction:column; gap:6px;">
-                ${options.map((opt, idx) => `<button class="option-btn" data-idx="${idx}"><span class="letter">${letters[idx]}</span> ${escapeHtml(opt)}</button>`).join('')}
-              </div>
-            </div>
-          </div>`;
+        area.innerHTML =
+          '<div class="glass-card">' +
+            '<div class="quiz-progress"><span class="qnum">Question ' + (state.index+1) + ' of ' + total + '</span><div class="quiz-timer">⏱️ <span class="time" id="timerDisplay">' + timeLeft + 's</span></div></div>' +
+            '<div class="progress-bar"><div class="fill" style="width:' + progress + '%"></div></div>' +
+            '<div class="question-block">' +
+              '<div class="qtext">' + escapeHtml(q.question) + '</div>' +
+              '<div style="display:flex; flex-direction:column; gap:6px;">' +
+                options.map(function(opt, idx) { return '<button class="option-btn" data-idx="' + idx + '"><span class="letter">' + letters[idx] + '</span> ' + escapeHtml(opt) + '</button>'; }).join('') +
+              '</div>' +
+            '</div>' +
+          '</div>';
 
-        const timerDisplay = document.getElementById('timerDisplay');
-        quizTimer = setInterval(() => {
+        var timerDisplay = document.getElementById('timerDisplay');
+        quizTimer = setInterval(function() {
           timeLeft--;
           if (timerDisplay) {
             timerDisplay.textContent = timeLeft + 's';
@@ -954,51 +1249,51 @@
             clearInterval(quizTimer);
             state.answered = true;
             state.userAnswers[state.index] = -1;
-            const allBtns = area.querySelectorAll('.option-btn');
-            allBtns.forEach((b,i) => { b.classList.add('disabled'); if (i === q.correctOption) b.classList.add('correct'); });
-            const feedback = document.createElement('div'); feedback.className='feedback-msg'; feedback.style.marginTop='8px'; feedback.style.fontWeight='600'; feedback.style.color='var(--accent-red)';
-            feedback.textContent = `⏰ Time's up! Answer: ${options[q.correctOption]}`;
+            var allBtns = area.querySelectorAll('.option-btn');
+            allBtns.forEach(function(b, i) { b.classList.add('disabled'); if (i === q.correctOption) b.classList.add('correct'); });
+            var feedback = document.createElement('div'); feedback.className = 'feedback-msg'; feedback.style.marginTop = '8px'; feedback.style.fontWeight = '600'; feedback.style.color = 'var(--accent-red)';
+            feedback.textContent = '⏰ Time\'s up! Answer: ' + options[q.correctOption];
             area.querySelector('.question-block').appendChild(feedback);
-            setTimeout(() => { state.index++; state.answered=false; renderQuestion(); }, 1400);
+            setTimeout(function() { state.index++; state.answered = false; renderQuestion(); }, 1400);
           }
         }, 1000);
 
-        area.querySelectorAll('.option-btn').forEach(btn => {
+        area.querySelectorAll('.option-btn').forEach(function(btn) {
           btn.addEventListener('click', function() {
             if (state.answered) return;
             clearInterval(quizTimer);
-            const selected = parseInt(this.dataset.idx);
+            var selected = parseInt(this.getAttribute('data-idx'));
             state.userAnswers[state.index] = selected;
-            const isCorrect = selected === q.correctOption;
+            var isCorrect = selected === q.correctOption;
             if (isCorrect) state.score++;
             state.answered = true;
-            const allBtns = area.querySelectorAll('.option-btn');
-            allBtns.forEach((b,i) => {
+            var allBtns = area.querySelectorAll('.option-btn');
+            allBtns.forEach(function(b, i) {
               b.classList.add('disabled');
               if (i === q.correctOption) b.classList.add('correct');
               if (i === selected && !isCorrect) b.classList.add('wrong');
             });
-            const feedback = document.createElement('div'); feedback.className='feedback-msg'; feedback.style.marginTop='8px'; feedback.style.fontWeight='600';
-            feedback.textContent = isCorrect ? '✅ Correct!' : `❌ Incorrect. Answer: ${options[q.correctOption]}`;
+            var feedback = document.createElement('div'); feedback.className = 'feedback-msg'; feedback.style.marginTop = '8px'; feedback.style.fontWeight = '600';
+            feedback.textContent = isCorrect ? '✅ Correct!' : '❌ Incorrect. Answer: ' + options[q.correctOption];
             area.querySelector('.question-block').appendChild(feedback);
-            setTimeout(() => { state.index++; state.answered=false; renderQuestion(); }, 1200);
+            setTimeout(function() { state.index++; state.answered = false; renderQuestion(); }, 1200);
           });
         });
       }
 
       function showResults() {
-        const state = quizState;
-        const total = state.questions.length;
-        let correct = 0;
-        state.questions.forEach((q,i) => { if (state.userAnswers[i] === q.correctOption) correct++; });
-        const percentage = Math.round((correct/total)*100);
-        const area = document.getElementById('quizArea');
+        var state = quizState;
+        var total = state.questions.length;
+        var correct = 0;
+        state.questions.forEach(function(q, i) { if (state.userAnswers[i] === q.correctOption) correct++; });
+        var percentage = Math.round((correct/total)*100);
+        var area = document.getElementById('quizArea');
 
         userData.totalQuestions += total;
         userData.correctAnswers += correct;
         userData.totalQuizzes++;
         if (percentage > userData.bestScore) userData.bestScore = percentage;
-        let xpEarned = total * 10 + (percentage === 100 ? 50 : 0);
+        var xpEarned = total * 10 + (percentage === 100 ? 50 : 0);
         if (percentage >= 80) xpEarned += 20;
         addXP(xpEarned);
 
@@ -1006,79 +1301,80 @@
         saveUserData();
         updateUI();
 
-        let emoji = '🎉', grade='A', gradeClass='A';
-        if (percentage < 40) { emoji='😅'; grade='F'; gradeClass='F'; }
-        else if (percentage < 60) { emoji='💪'; grade='D'; gradeClass='D'; }
-        else if (percentage < 75) { emoji='📚'; grade='C'; gradeClass='C'; }
-        else if (percentage < 90) { emoji='🌟'; grade='B'; gradeClass='B'; }
-        else { emoji='🏆'; grade='A'; gradeClass='A'; }
+        var emoji = '🎉', grade = 'A', gradeClass = 'A';
+        if (percentage < 40) { emoji = '😅'; grade = 'F'; gradeClass = 'F'; }
+        else if (percentage < 60) { emoji = '💪'; grade = 'D'; gradeClass = 'D'; }
+        else if (percentage < 75) { emoji = '📚'; grade = 'C'; gradeClass = 'C'; }
+        else if (percentage < 90) { emoji = '🌟'; grade = 'B'; gradeClass = 'B'; }
+        else { emoji = '🏆'; grade = 'A'; gradeClass = 'A'; }
 
         if (percentage === 100) { triggerConfetti(); showToast('🎉 Perfect Score! Amazing!'); }
         else if (percentage >= 80) triggerConfetti();
 
-        const answersHtml = state.questions.map((q,i) => {
-          const userAns = state.userAnswers[i];
-          const options = q.options || [];
-          const isCorrect = userAns === q.correctOption;
-          return `<div style="padding:6px 0; border-bottom:0.5px solid rgba(0,0,0,0.04); display:flex; gap:8px; align-items:flex-start;">
-            <span style="color:${isCorrect ? 'var(--accent)' : 'var(--accent-red)'};">${isCorrect?'✅':'❌'}</span>
-            <div><strong>Q${i+1}:</strong> ${escapeHtml(q.question)}<br><span style="font-size:13px; color:var(--text-muted);">Your answer: ${userAns >=0 ? escapeHtml(options[userAns]) : 'None'} | Correct: ${escapeHtml(options[q.correctOption])}</span></div>
-          </div>`;
+        var answersHtml = state.questions.map(function(q, i) {
+          var userAns = state.userAnswers[i];
+          var options = q.options || [];
+          var isCorrect = userAns === q.correctOption;
+          return '<div style="padding:6px 0; border-bottom:0.5px solid var(--border-light); display:flex; gap:8px; align-items:flex-start;">' +
+            '<span style="color:' + (isCorrect ? 'var(--accent)' : 'var(--accent-red)') + ';">' + (isCorrect ? '✅' : '❌') + '</span>' +
+            '<div><strong>Q' + (i+1) + ':</strong> ' + escapeHtml(q.question) + '<br><span style="font-size:13px; color:var(--text-muted);">Your answer: ' + (userAns >= 0 ? escapeHtml(options[userAns]) : 'None') + ' | Correct: ' + escapeHtml(options[q.correctOption]) + '</span></div>' +
+          '</div>';
         }).join('');
 
-        area.innerHTML = `
-          <div class="glass-card result-screen">
-            <span class="emoji-big">${emoji}</span>
-            <div class="score">${correct}/${total}</div>
-            <div class="sub">${percentage}% correct</div>
-            <div class="grade-badge ${gradeClass}">${grade} - ${percentage>=70?'Pass':'Needs Practice'}</div>
-            <div class="result-stats">
-              <div class="stat"><div class="num">+${xpEarned}</div><div class="lbl">XP</div></div>
-              <div class="stat"><div class="num">${percentage}%</div><div class="lbl">Accuracy</div></div>
-              <div class="stat"><div class="num">${userData.xp}</div><div class="lbl">Total XP</div></div>
-            </div>
-            <div class="result-actions">
-              <button class="primary" onclick="window.restartQuiz()">🔄 Retry</button>
-              <button class="secondary" onclick="window.toggleAnswers()">📖 Show Answers</button>
-              <button class="secondary" onclick="window.shareQuiz()">📤 Share</button>
-            </div>
-            <div id="resultAnswers" style="margin-top:14px; display:none; text-align:left; max-height:300px; overflow-y:auto;">${answersHtml}</div>
-          </div>`;
+        area.innerHTML =
+          '<div class="glass-card result-screen">' +
+            '<span class="emoji-big">' + emoji + '</span>' +
+            '<div class="score">' + correct + '/' + total + '</div>' +
+            '<div class="sub">' + percentage + '% correct</div>' +
+            '<div class="grade-badge ' + gradeClass + '">' + grade + ' - ' + (percentage >= 70 ? 'Pass' : 'Needs Practice') + '</div>' +
+            '<div class="result-stats">' +
+              '<div class="stat"><div class="num">+' + xpEarned + '</div><div class="lbl">XP</div></div>' +
+              '<div class="stat"><div class="num">' + percentage + '%</div><div class="lbl">Accuracy</div></div>' +
+              '<div class="stat"><div class="num">' + userData.xp + '</div><div class="lbl">Total XP</div></div>' +
+            '</div>' +
+            '<div class="result-actions">' +
+              '<button class="primary" onclick="window.restartQuiz()">🔄 Retry</button>' +
+              '<button class="secondary" onclick="window.toggleAnswers()">📖 Show Answers</button>' +
+              '<button class="secondary" onclick="window.shareQuiz()">📤 Share</button>' +
+            '</div>' +
+            '<div id="resultAnswers" style="margin-top:14px; display:none; text-align:left; max-height:300px; overflow-y:auto;">' + answersHtml + '</div>' +
+          '</div>';
       }
 
-      window.restartQuiz = () => { if (currentQuestions.length) startQuiz(currentQuestions); };
-      window.toggleAnswers = () => { const el = document.getElementById('resultAnswers'); if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block'; };
-      window.shareQuiz = () => {
+      window.restartQuiz = function() { if (currentQuestions.length) startQuiz(currentQuestions); };
+      window.toggleAnswers = function() { var el = document.getElementById('resultAnswers'); if (el) el.style.display = el.style.display === 'block' ? 'none' : 'block'; };
+      window.shareQuiz = function() {
         if (!quizState) return;
-        let correct = 0; quizState.questions.forEach((q,i) => { if (quizState.userAnswers[i] === q.correctOption) correct++; });
-        const percentage = Math.round((correct / quizState.questions.length)*100);
-        const text = `📊 I scored ${correct}/${quizState.questions.length} (${percentage}%) on my ${selectedSubject} quiz! #StudentNija`;
-        if (navigator.share) navigator.share({ title:'My Quiz Score', text });
-        else { navigator.clipboard.writeText(text).then(() => showToast('📋 Copied!')); }
+        var correct = 0; quizState.questions.forEach(function(q, i) { if (quizState.userAnswers[i] === q.correctOption) correct++; });
+        var percentage = Math.round((correct / quizState.questions.length) * 100);
+        var text = '📊 I scored ' + correct + '/' + quizState.questions.length + ' (' + percentage + '%) on my ' + selectedSubject + ' quiz! #StudentNija';
+        if (navigator.share) navigator.share({ title: 'My Quiz Score', text: text });
+        else { navigator.clipboard.writeText(text).then(function() { showToast('📋 Copied!'); }); }
       };
 
-      document.getElementById('startQuizBtn').addEventListener('click', async () => {
-        const exam = document.getElementById('examTypeSelect').value;
-        const year = document.getElementById('yearSelect').value;
+      document.getElementById('startQuizBtn').addEventListener('click', function() {
+        var exam = document.getElementById('examTypeSelect').value;
+        var year = document.getElementById('yearSelect').value;
         if (!selectedSubject || !year) { showToast('Please select a subject and year.'); return; }
-        const area = document.getElementById('quizArea');
-        area.innerHTML = `<div class="glass-card" style="min-height:200px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:var(--text-muted);"><div class="skeleton" style="width:40px; height:40px; border-radius:50%;"></div><div class="skeleton" style="width:200px; height:16px; border-radius:10px;"></div><div class="skeleton" style="width:150px; height:12px; border-radius:10px;"></div></div>`;
-        try {
-          const questions = await fetchQuestions(exam, selectedSubject, year);
-          if (!questions.length) {
-            area.innerHTML = `<div class="glass-card" style="min-height:200px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--text-muted);"><span style="font-size:48px;">😅</span><p style="font-size:14px;">No questions for ${subjectMeta[selectedSubject].label} (${exam.toUpperCase()} ${year}).</p></div>`;
-            return;
-          }
-          startQuiz(questions);
-        } catch (e) {
-          area.innerHTML = `<div class="glass-card" style="min-height:200px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--text-muted);"><span style="font-size:48px;">⚠️</span><p style="font-size:14px;">Failed to load questions.</p></div>`;
-        }
+        var area = document.getElementById('quizArea');
+        area.innerHTML = '<div class="glass-card" style="min-height:200px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px; color:var(--text-muted);"><div class="skeleton" style="width:40px; height:40px; border-radius:50%;"></div><div class="skeleton" style="width:200px; height:16px; border-radius:10px;"></div><div class="skeleton" style="width:150px; height:12px; border-radius:10px;"></div></div>';
+        fetchQuestions(exam, selectedSubject, year)
+          .then(function(questions) {
+            if (!questions || !questions.length) {
+              area.innerHTML = '<div class="glass-card" style="min-height:200px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--text-muted);"><span style="font-size:48px;">😅</span><p style="font-size:14px;">No questions for ' + (subjectMeta[selectedSubject] ? subjectMeta[selectedSubject].label : selectedSubject) + ' (' + exam.toUpperCase() + ' ' + year + ').</p></div>';
+              return;
+            }
+            startQuiz(questions);
+          })
+          .catch(function() {
+            area.innerHTML = '<div class="glass-card" style="min-height:200px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:8px; color:var(--text-muted);"><span style="font-size:48px;">⚠️</span><p style="font-size:14px;">Failed to load questions.</p></div>';
+          });
       });
 
       // ============================================================
       // DAILY CHALLENGE
       // ============================================================
-      const dailyQuestions = [
+      var dailyQuestions = [
         { question:'What is the square root of 144?', options:['A) 10','B) 11','C) 12','D) 13'], correctOption:2 },
         { question:'What is 15% of 200?', options:['A) 20','B) 25','C) 30','D) 35'], correctOption:2 },
         { question:'Which is the largest planet?', options:['A) Earth','B) Jupiter','C) Saturn','D) Mars'], correctOption:1 },
@@ -1086,24 +1382,24 @@
         { question:'What is the capital of Nigeria?', options:['A) Lagos','B) Abuja','C) Kano','D) Ibadan'], correctOption:1 }
       ];
       function getDailyQuestion() {
-        const seed = new Date().toDateString().split('').reduce((a,c) => a + c.charCodeAt(0), 0);
+        var seed = new Date().toDateString().split('').reduce(function(a, c) { return a + c.charCodeAt(0); }, 0);
         return dailyQuestions[seed % dailyQuestions.length];
       }
 
       document.getElementById('dailyStartBtn').addEventListener('click', function() {
         if (userData.dailyCompleted) { showToast('✅ Already completed!'); return; }
-        const q = getDailyQuestion();
-        const options = q.options || [];
-        const letters = ['A','B','C','D'];
-        const html = `<div class="question-block" style="background:rgba(255,255,255,0.06);"><div class="qtext">${escapeHtml(q.question)}</div><div style="display:flex; flex-direction:column; gap:6px;">${options.map((opt,idx)=>`<button class="option-btn" data-idx="${idx}" style="background:rgba(255,255,255,0.08);"><span class="letter">${letters[idx]}</span> ${escapeHtml(opt)}</button>`).join('')}</div></div>`;
+        var q = getDailyQuestion();
+        var options = q.options || [];
+        var letters = ['A','B','C','D'];
+        var html = '<div class="question-block" style="background:rgba(255,255,255,0.06);"><div class="qtext">' + escapeHtml(q.question) + '</div><div style="display:flex; flex-direction:column; gap:6px;">' + options.map(function(opt, idx) { return '<button class="option-btn" data-idx="' + idx + '" style="background:rgba(255,255,255,0.08);"><span class="letter">' + letters[idx] + '</span> ' + escapeHtml(opt) + '</button>'; }).join('') + '</div></div>';
         document.getElementById('dailyQuestion').innerHTML = html;
         document.getElementById('dailyStatus').textContent = '⏳ Answering...';
         document.getElementById('dailyStartBtn').disabled = true;
 
-        document.querySelectorAll('#dailyQuestion .option-btn').forEach(btn => {
+        document.querySelectorAll('#dailyQuestion .option-btn').forEach(function(btn) {
           btn.addEventListener('click', function() {
-            const selected = parseInt(this.dataset.idx);
-            const correct = selected === q.correctOption;
+            var selected = parseInt(this.getAttribute('data-idx'));
+            var correct = selected === q.correctOption;
             if (correct) {
               addXP(50);
               userData.dailyCompleted = true; userData.dailyDate = new Date().toDateString();
@@ -1114,91 +1410,103 @@
               showToast('❌ Incorrect. Try again tomorrow!');
               document.getElementById('dailyStatus').textContent = '❌ Failed'; document.getElementById('dailyStatus').style.color = 'var(--accent-red)';
             }
-            document.querySelectorAll('#dailyQuestion .option-btn').forEach(b => b.classList.add('disabled'));
+            document.querySelectorAll('#dailyQuestion .option-btn').forEach(function(b) { b.classList.add('disabled'); });
             updateUI();
-            setTimeout(() => { document.getElementById('dailyQuestion').textContent = correct ? '🎉 Challenge complete!' : '💪 Try again tomorrow!'; }, 1500);
+            setTimeout(function() { document.getElementById('dailyQuestion').textContent = correct ? '🎉 Challenge complete!' : '💪 Try again tomorrow!'; }, 1500);
           });
         });
       });
-      document.getElementById('dailySkipBtn').addEventListener('click', () => showToast('⏭️ Skipped. Come back tomorrow!'));
+      document.getElementById('dailySkipBtn').addEventListener('click', function() { showToast('⏭️ Skipped. Come back tomorrow!'); });
 
       // ============================================================
       // AI TUTOR
       // ============================================================
-      const AI_PROXY = 'https://studentnija-proxy.donchester111.workers.dev';
-      const AI_MODEL = 'llama-3.1-8b-instant';
-      document.getElementById('aiSendBtn').addEventListener('click', async function() {
-        const input = document.getElementById('aiInput');
-        const response = document.getElementById('aiResponse');
-        const query = input.value.trim();
+      var AI_PROXY = 'https://studentnija-proxy.donchester111.workers.dev';
+      var AI_MODEL = 'llama-3.1-8b-instant';
+      document.getElementById('aiSendBtn').addEventListener('click', function() {
+        var input = document.getElementById('aiInput');
+        var response = document.getElementById('aiResponse');
+        var query = input.value.trim();
         if (!query) { showToast('Please ask a question.'); return; }
         response.innerHTML = '<div class="typing-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>';
         input.disabled = true; this.disabled = true;
-        try {
-          const res = await fetch(`${AI_PROXY}/groq`, {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ model: AI_MODEL, messages:[{ role:'system', content:'You are StudentNija, an AI study assistant for Nigerian students.' },{ role:'user', content: query }], temperature:0.7, max_tokens:500 })
-          });
-          const data = await res.json();
-          response.textContent = data.choices?.[0]?.message?.content || '✦ I couldn\'t process that.';
-        } catch(e) { response.textContent = '✦ Connection error. Please try again.'; }
+        fetch(AI_PROXY + '/groq', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: AI_MODEL, messages: [{ role: 'system', content: 'You are StudentNija, an AI study assistant for Nigerian students.' }, { role: 'user', content: query }], temperature: 0.7, max_tokens: 500 })
+        })
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+          response.textContent = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : '✦ I couldn\'t process that.';
+        })
+        .catch(function() { response.textContent = '✦ Connection error. Please try again.'; });
         input.disabled = false; this.disabled = false; input.value = '';
       });
 
-      const topics = ['Algebra','Calculus','Grammar','Organic Chem','Mechanics'];
-      document.getElementById('topicChips').innerHTML = topics.map(t => `<button class="topic-chip" style="padding:6px 16px; border-radius:40px; border:1px solid rgba(0,0,0,0.06); background:var(--bg-card); cursor:pointer; font-family:var(--font); font-size:13px; color:var(--text-primary);">${t}</button>`).join('');
-      document.querySelectorAll('.topic-chip').forEach(chip => chip.addEventListener('click', function() {
-        document.getElementById('aiInput').value = `Explain ${this.textContent} to me in simple terms.`;
-        document.getElementById('aiSendBtn').click();
-      }));
+      var topics = ['Algebra','Calculus','Grammar','Organic Chem','Mechanics'];
+      document.getElementById('topicChips').innerHTML = topics.map(function(t) {
+        return '<button class="topic-chip" style="padding:6px 16px; border-radius:40px; border:1px solid var(--border-light); background:var(--bg-card); cursor:pointer; font-family:var(--font); font-size:13px; color:var(--text-primary);">' + t + '</button>';
+      }).join('');
+      document.querySelectorAll('.topic-chip').forEach(function(chip) {
+        chip.addEventListener('click', function() {
+          document.getElementById('aiInput').value = 'Explain ' + this.textContent + ' to me in simple terms.';
+          document.getElementById('aiSendBtn').click();
+        });
+      });
 
       // ============================================================
       // LEADERBOARD
       // ============================================================
       function renderLeaderboard() {
-        const list = document.getElementById('leaderboardList');
-        const names = ['John Doe','Jane Ade','Mike Bello','Sarah Okafor','Chidi Eze','Amina Yusuf','Emeka Nwosu','Folake Adeyemi','Tunde Balogun','Zainab Ibrahim'];
-        const lb = names.map((name,i)=>({ name, xp:Math.floor(Math.random()*2000)+500, accuracy:Math.floor(Math.random()*40)+55, rank:i+1, initial:name.split(' ').map(n=>n[0]).join('') }));
-        lb.push({ name:userData.name||'Student', xp:userData.xp, accuracy:getAccuracy(), rank:0, initial:(userData.name||'S').charAt(0) });
-        lb.sort((a,b)=> b.xp - a.xp);
-        const topThree = ['🥇','🥈','🥉'];
-        list.innerHTML = lb.slice(0,10).map((item,idx)=>{
-          const rank = idx+1, rankClass = rank===1?'top1':rank===2?'top2':rank===3?'top3':'';
-          const isUser = item.name === (userData.name||'Student');
-          return `<div class="leaderboard-item" style="${isUser ? 'background:rgba(0,135,81,0.08); border-radius:8px; padding:8px 12px;' : ''}">
-            <div class="rank ${rankClass}">${rank<=3?topThree[rank-1]:rank}</div>
-            <div class="avatar">${item.initial}</div>
-            <div class="info"><div class="name">${isUser?'👤 ':''}${item.name}</div><div class="xp">${item.xp} XP · ${item.accuracy}%</div></div>
-            <div class="score">${item.accuracy}%</div>
-          </div>`;
+        var list = document.getElementById('leaderboardList');
+        var names = ['John Doe','Jane Ade','Mike Bello','Sarah Okafor','Chidi Eze','Amina Yusuf','Emeka Nwosu','Folake Adeyemi','Tunde Balogun','Zainab Ibrahim'];
+        var lb = names.map(function(name, i) {
+          return { name: name, xp: Math.floor(Math.random() * 2000) + 500, accuracy: Math.floor(Math.random() * 40) + 55, rank: i+1, initial: name.split(' ').map(function(n) { return n[0]; }).join('') };
+        });
+        lb.push({ name: userData.name || 'Student', xp: userData.xp, accuracy: getAccuracy(), rank: 0, initial: (userData.name || 'S').charAt(0) });
+        lb.sort(function(a, b) { return b.xp - a.xp; });
+        var topThree = ['🥇','🥈','🥉'];
+        list.innerHTML = lb.slice(0,10).map(function(item, idx) {
+          var rank = idx+1;
+          var rankClass = rank === 1 ? 'top1' : rank === 2 ? 'top2' : rank === 3 ? 'top3' : '';
+          var isUser = item.name === (userData.name || 'Student');
+          return '<div class="leaderboard-item" style="' + (isUser ? 'background:rgba(0,135,81,0.08); border-radius:8px; padding:8px 12px;' : '') + '">' +
+            '<div class="rank ' + rankClass + '">' + (rank <= 3 ? topThree[rank-1] : rank) + '</div>' +
+            '<div class="avatar">' + item.initial + '</div>' +
+            '<div class="info"><div class="name">' + (isUser ? '👤 ' : '') + item.name + '</div><div class="xp">' + item.xp + ' XP · ' + item.accuracy + '%</div></div>' +
+            '<div class="score">' + item.accuracy + '%</div>' +
+          '</div>';
         }).join('');
       }
 
-      document.getElementById('resetProgressBtn').addEventListener('click', () => {
+      document.getElementById('resetProgressBtn').addEventListener('click', function() {
         if (confirm('Reset all progress?')) {
-          userData = { ...defaultData, name: userData.name, profilePic: userData.profilePic };
+          userData = { 'xp':0, 'level':1, 'streak':0, 'lastDate':null, 'totalQuestions':0, 'totalQuizzes':0, 'correctAnswers':0, 'bestScore':0, 'achievements':[], 'dailyCompleted':false, 'dailyDate':null, 'name': userData.name, 'profilePic': userData.profilePic, 'subjectStats':{} };
           localStorage.setItem(STORAGE_KEY, JSON.stringify(userData));
           updateUI(); showToast('🔄 Progress reset.');
         }
       });
 
-      // Init
-      function escapeHtml(s) { return s ? s.replace(/[&<>]/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]) : ''; }
+      // ============================================================
+      // INIT
+      // ============================================================
       loadUserData();
       updateUI();
       renderPracticeTab();
       renderLeaderboard();
-      const dq = getDailyQuestion();
+      var dq = getDailyQuestion();
       document.getElementById('dailyQuestion').textContent = dq.question;
-      if (userData.dailyCompleted) { document.getElementById('dailyStatus').textContent='✅ Done'; document.getElementById('dailyStatus').style.color='#00a86b'; }
+      if (userData.dailyCompleted) { document.getElementById('dailyStatus').textContent = '✅ Done'; document.getElementById('dailyStatus').style.color = '#00a86b'; }
+
+      // Load community questions on first visit (if community tab is active, but we load anyway)
+      loadCommunityQuestions();
 
       // Pull to refresh
-      let startY = 0;
-      mainContent.addEventListener('touchstart', e => { if (mainContent.scrollTop===0) startY = e.touches[0].clientY; }, {passive:true});
-      mainContent.addEventListener('touchmove', e => { if (e.touches[0].clientY - startY > 80 && mainContent.scrollTop===0) location.reload(); }, {passive:true});
+      var startY = 0;
+      mainContent.addEventListener('touchstart', function(e) { if (mainContent.scrollTop === 0) startY = e.touches[0].clientY; }, { passive: true });
+      mainContent.addEventListener('touchmove', function(e) { if (e.touches[0].clientY - startY > 80 && mainContent.scrollTop === 0) location.reload(); }, { passive: true });
 
-      console.log('🚀 Exam Hub v3.0 – Premium UX loaded');
+      console.log('🚀 Exam Hub v3.0 – Community tab added');
     })();
   </script>
 </body>
