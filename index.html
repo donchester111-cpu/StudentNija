@@ -15,6 +15,18 @@
 <script async custom-element="amp-auto-ads"
         src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
 </script>
+  
+  <script>
+  // Auto‑hide mobile browser address bar
+  (function() {
+    var scrollTo = function() { window.scrollTo(0, 1); };
+    window.addEventListener('load', scrollTo);
+    window.addEventListener('orientationchange', scrollTo);
+    // iOS Safari sometimes needs a tiny delay
+    setTimeout(scrollTo, 100);
+  })();
+  </script>
+  
   <style>
     /* ============================================================
        PREMIUM MINIMAL LOADING SCREEN – Sleek & Elegant
