@@ -452,20 +452,31 @@ export function renderProfilePage() {
     }
   });
 
+
   // ---- EMAIL REMINDERS ----
-  const emailToggle = document.getElementById('emailToggle');
-  if (emailToggle) {
-    emailToggle.checked = false; // default, could load from server
-    emailToggle.addEventListener('change', async (e) => {
-      if (e.target.checked) {
+const emailToggle = document.getElementById('emailToggle');
+if (emailToggle) {
+  // Load current subscription status – check localStorage or default to false
+  emailToggle.checked = localStorage.getItem('email_reminders_enabled') !== 'false';
+
+  emailToggle.addEventListener('change', async (e) => {
+    const enabled = e.target.checked;
+    try {
+      if (enabled) {
         await apiPost('/api/email/subscribe', { userId: currentUser.id, email: currentUser.email });
         addNotification('Email', 'Subscribed to reminders');
       } else {
-        // For now just alert; a full implementation would have an unsubscribe endpoint
-        alert('Email reminders disabled (contact support to fully remove).');
+        await apiPost('/api/email/unsubscribe', { userId: currentUser.id });
+        addNotification('Email', 'Unsubscribed from reminders');
       }
-    });
-  }
+      localStorage.setItem('email_reminders_enabled', enabled);
+    } catch (err) {
+      // Revert the toggle if it fails
+      emailToggle.checked = !enabled;
+      addNotification('Email', 'Failed to update. Please try again.');
+    }
+  });
+}
 
   // ---- DATA EXPORT ----
   document.getElementById('exportDataBtn')?.addEventListener('click', async () => {
