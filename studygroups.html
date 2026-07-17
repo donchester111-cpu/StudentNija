@@ -1,526 +1,298 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-  <title>StudentNija · Group Chat</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>StudentNija · Study Groups</title>
   <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
   <style>
-    /* ============================================================
-       RESET & BASE
-       ============================================================ */
-    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
     :root {
-      --bg-primary: #0A111F;
-      --bg-secondary: #121C28;
-      --bg-card: rgba(255,255,255,0.03);
-      --bg-solid: #1A2A3A;
-      --text-primary: #F0F4FA;
-      --text-muted: #8FA0B5;
-      --accent: #008751;
-      --accent-light: #00A86B;
-      --accent-gold: #F4B400;
-      --accent-glow: rgba(0,135,81,0.3);
-      --shadow-sm: 0 2px 12px rgba(0,0,0,0.3);
-      --shadow-md: 0 8px 32px rgba(0,0,0,0.5);
-      --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
-      --radius-sm: 12px;
-      --radius-md: 20px;
-      --radius-lg: 28px;
-      --radius-xl: 40px;
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --bg-primary: #0A111F; --bg-secondary: #121C28; --bg-card: rgba(255,255,255,0.04);
+      --bg-solid: #1A2A3A; --text-primary: #F0F4FA; --text-muted: #8FA0B5;
+      --accent: #008751; --accent-light: #00A86B; --accent-gold: #F4B400;
+      --accent-glow: rgba(0,135,81,0.3); --shadow: 0 8px 40px rgba(0,0,0,0.5);
+      --shadow-sm: 0 2px 12px rgba(0,0,0,0.3); --radius: 24px; --radius-sm: 14px;
+      --font-size: 15px; --safe-bottom: env(safe-area-inset-bottom, 0px);
       --transition: 0.25s cubic-bezier(0.2, 0.9, 0.4, 1);
-      --font-size: 15px;
     }
     body.light-theme {
-      --bg-primary: #F5F7FA;
-      --bg-secondary: #FFFFFF;
-      --bg-solid: #E8ECF2;
-      --text-primary: #0A1927;
-      --text-muted: #5B6E8C;
+      --bg-primary: #F5F7FA; --bg-secondary: #FFFFFF; --bg-solid: #E8ECF2;
+      --text-primary: #0A1927; --text-muted: #5B6E8C;
       --shadow-sm: 0 2px 12px rgba(0,0,0,0.06);
-      --shadow-md: 0 8px 32px rgba(0,0,0,0.08);
-      --shadow-lg: 0 16px 48px rgba(0,0,0,0.12);
     }
-    body.blue-theme { --accent: #1E88E5; --accent-light: #42A5F5; --accent-glow: rgba(30,136,229,0.3); }
-    body.purple-theme { --accent: #7B1FA2; --accent-light: #9C27B0; --accent-glow: rgba(123,31,162,0.3); }
-    body.gold-theme { --accent: #F57C00; --accent-light: #FFA726; --accent-glow: rgba(245,124,0,0.3); }
-    body.red-theme { --accent: #D32F2F; --accent-light: #EF5350; --accent-glow: rgba(211,47,47,0.3); }
-
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: var(--bg-primary);
-      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg-primary); color: var(--text-primary);
       height: 100vh; width: 100vw; overflow: hidden; position: fixed;
       display: flex; flex-direction: column;
       transition: background var(--transition), color var(--transition);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
     .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; overflow: hidden; }
 
-    /* ============================================================
-       HEADER (glass)
-       ============================================================ */
+    /* HEADER */
     .chat-header {
-      background: rgba(18,28,40,0.75);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      padding: 10px 14px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-shrink: 0; min-height: 60px;
-      border-bottom: 1px solid rgba(255,255,255,0.06);
+      background: var(--bg-secondary); backdrop-filter: blur(20px);
+      padding: 10px 14px; display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0; min-height: 60px; border-bottom: 1px solid rgba(255,255,255,0.06);
       z-index: 10; box-shadow: 0 2px 16px rgba(0,0,0,0.2);
-      transition: background var(--transition);
-      gap: 8px;
     }
-    body.light-theme .chat-header { background: rgba(255,255,255,0.75); border-bottom-color: rgba(0,0,0,0.06); }
     .chat-header .left { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
-    .chat-header .back-btn {
-      background: none; border: none; color: var(--text-primary); font-size: 22px;
-      cursor: pointer; padding: 6px 10px; min-width: 40px; min-height: 40px;
-      border-radius: 50%; transition: background 0.2s, transform 0.1s;
+    .home-btn {
+      background: none; border: none; font-size: 22px; cursor: pointer;
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; transition: background 0.2s;
+      color: var(--text-primary);
     }
-    .chat-header .back-btn:active { background: rgba(255,255,255,0.08); transform: scale(0.92); }
+    .home-btn:active { background: rgba(255,255,255,0.08); }
     .chat-header .group-info { display: flex; flex-direction: column; line-height: 1.2; overflow: hidden; }
     .chat-header .group-info .name {
-      font-weight: 800; font-size: 17px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      background: linear-gradient(135deg, var(--text-primary), var(--accent-light));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      font-weight: 800; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
       cursor: pointer;
     }
-    .chat-header .group-info .status {
-      font-size: 12px; color: var(--text-muted);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .online-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: #00C853; animation: pulseDot 2s infinite;
-    }
+    .chat-header .group-info .status { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+    .online-dot { width: 8px; height: 8px; border-radius: 50%; background: #00C853; animation: pulseDot 2s infinite; }
     @keyframes pulseDot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.8); } }
     .chat-header .right { display: flex; gap: 4px; align-items: center; flex-shrink: 0; }
     .chat-header .right button {
       background: none; border: none; color: var(--text-muted); font-size: 20px;
-      cursor: pointer; padding: 6px 8px; border-radius: 50%; min-width: 40px; min-height: 40px;
-      transition: background 0.2s, color 0.2s, transform 0.1s;
+      cursor: pointer; width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; transition: background 0.2s;
     }
-    .chat-header .right button:active { background: rgba(255,255,255,0.06); transform: scale(0.88); }
-    .avatar-btn {
-      width: 36px; height: 36px; border-radius: 50%;
+    .avatar-btn { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 2px solid transparent; padding:0; display: flex; align-items: center; justify-content: center; }
+    .avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* BUTTONS */
+    .btn {
       background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      color: white; font-size: 14px; font-weight: 600;
-      border: 2px solid transparent; padding: 0;
-      display: flex; align-items: center; justify-content: center;
+      border: none; color: white; padding: 8px 18px; border-radius: 30px;
+      font-weight: 600; cursor: pointer; transition: transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 12px var(--accent-glow); font-size: 14px;
+      display: inline-flex; align-items: center; gap: 6px;
     }
-    .avatar-btn:active { transform: scale(0.88); }
+    .btn:active { transform: scale(0.96); }
+    .btn-outline {
+      background: transparent; border: 2px solid var(--accent-light);
+      color: var(--text-primary); box-shadow: none;
+    }
+    .btn:disabled, .btn-outline:disabled { opacity: 0.5; transform: none; cursor: not-allowed; }
 
-    /* ============================================================
-       CHAT AREA (scrollable)
-       ============================================================ */
+    /* CHAT AREA */
     .chat-area {
-      flex: 1 1 0%; min-height: 0;
-      overflow-y: auto; padding: 16px 14px 8px;
-      display: flex; flex-direction: column; gap: 8px;
-      background: var(--bg-primary);
-      transition: background var(--transition);
-      scroll-behavior: smooth;
+      flex: 1 1 0%; min-height: 0; overflow-y: auto; padding: 16px 14px 8px;
+      display: flex; flex-direction: column; gap: 8px; background: var(--bg-primary);
+      scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
     }
-    .chat-area::-webkit-scrollbar { width: 4px; }
-    .chat-area::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 20px; }
-
     .date-divider {
-      text-align: center; font-size: 11px; color: var(--text-muted);
-      margin: 12px 0 8px; opacity: 0.5; letter-spacing: 0.3px; font-weight: 500;
-      text-transform: uppercase; background: var(--bg-secondary); padding: 4px 12px;
+      text-align: center; font-size: 11px; color: var(--text-muted); margin: 12px 0 8px;
+      opacity: 0.5; text-transform: uppercase; background: var(--bg-solid); padding: 4px 12px;
       border-radius: 30px; align-self: center;
     }
-
     .message-card {
-      max-width: 82%; padding: 12px 16px;
-      border-radius: 20px;
-      background: var(--bg-solid);
-      box-shadow: var(--shadow-sm);
-      transition: transform 0.15s, box-shadow 0.2s;
-      animation: fadeInMsg 0.3s ease;
-      display: flex; flex-direction: column; gap: 4px;
-      position: relative;
-      border: 1px solid rgba(255,255,255,0.03);
-      cursor: default;
+      max-width: 82%; padding: 10px 14px; border-radius: 18px; background: var(--bg-solid);
+      box-shadow: var(--shadow-sm); animation: fadeInMsg 0.3s ease; display: flex; flex-direction: column;
+      gap: 4px; position: relative; border: 1px solid rgba(255,255,255,0.03);
+      cursor: pointer; align-self: flex-start; user-select: text;
     }
-    .message-card:active { transform: scale(0.98); }
-    .message-card .reply-preview {
-      background: rgba(255,255,255,0.06);
-      border-left: 3px solid var(--accent);
-      padding: 4px 10px; border-radius: 8px;
-      font-size: 12px; color: var(--text-muted);
-      margin-bottom: 4px; display: flex; align-items: center; gap: 6px;
-    }
-    .message-card .reply-preview .reply-sender { font-weight: 600; color: var(--accent); }
-    .message-card.self {
-      align-self: flex-end;
-      background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      color: white; border: none; border-bottom-right-radius: 4px;
-    }
-    .message-card.other {
-      align-self: flex-start;
-      background: var(--bg-solid);
-      border-bottom-left-radius: 4px;
-    }
-    body.light-theme .message-card.other { background: #FFFFFF; border: 1px solid rgba(0,0,0,0.04); }
-    .message-card .sender {
-      font-size: 11px; font-weight: 700;
-      color: var(--accent); margin-bottom: 2px; letter-spacing: 0.2px;
-    }
-    .message-card.self .sender { color: rgba(255,255,255,0.8); }
-    .message-card .sender.ai { color: var(--accent-gold); }
+    .message-card.self { align-self: flex-end; background: linear-gradient(135deg, var(--accent), var(--accent-light)); color: white; }
+    .message-card .sender-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .message-card .sender-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+    .message-card .sender-name { font-weight: 700; font-size: 12px; }
     .message-card .text { font-size: var(--font-size); line-height: 1.5; word-wrap: break-word; }
-    .message-card .footer {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-top: 6px; font-size: 10px; opacity: 0.6; gap: 8px;
-    }
-    .message-card .footer .reactions { display: flex; gap: 4px; flex-wrap: wrap; }
+    .message-card .audio-msg { margin-top: 4px; }
+    .message-card .audio-msg audio { width: 100%; max-width: 220px; }
+    .message-card .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 10px; opacity: 0.6; }
+    .message-card .footer .sent-check { color: var(--accent); margin-left: 4px; }
+    .message-card .reactions { display: flex; gap: 4px; flex-wrap: wrap; }
     .reaction-btn {
-      background: rgba(255,255,255,0.08); padding: 2px 8px; border-radius: 30px;
-      font-size: 13px; cursor: pointer; transition: background 0.2s, transform 0.1s;
-      border: none; color: inherit; font-family: inherit;
-      display: flex; align-items: center; gap: 2px;
+      background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 12px; font-size: 14px;
+      display: flex; align-items: center; gap: 2px; cursor: pointer; border: none; color: inherit; font-family: inherit;
     }
-    .reaction-btn:active { transform: scale(0.85); background: rgba(255,255,255,0.15); }
-    .reaction-btn .count { font-size: 10px; opacity: 0.7; }
-    .message-card .footer .timestamp { font-size: 10px; opacity: 0.7; }
-    .message-card .deleted { opacity: 0.5; font-style: italic; }
-    .message-card .pinned-badge { position: absolute; top: 4px; right: 8px; font-size: 14px; opacity: 0.5; }
-    .message-card .edited-badge { font-size: 9px; opacity: 0.5; margin-left: 6px; }
+    .reaction-btn .count { font-size: 10px; opacity: 0.8; }
+    @keyframes fadeInMsg { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
 
-    @keyframes fadeInMsg {
-      from { opacity: 0; transform: translateY(12px) scale(0.96); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
+    /* CONTEXT MENU */
+    .context-menu {
+      position: fixed; z-index: 200; background: var(--bg-secondary); border-radius: 16px;
+      padding: 8px; box-shadow: var(--shadow); display: none; flex-direction: column; gap: 4px;
+      border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px);
+      min-width: 160px; max-width: calc(100vw - 32px);
     }
+    .context-menu button {
+      background: none; border: none; color: var(--text-primary); font-size: 14px;
+      padding: 10px 16px; border-radius: 12px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px;
+    }
+    .context-menu button:active { background: rgba(255,255,255,0.05); }
 
-    .empty-state {
-      flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-      color: var(--text-muted); padding: 40px; text-align: center;
-      animation: float 3s ease-in-out infinite;
+    /* REACTION PICKER */
+    .reaction-picker {
+      position: fixed; z-index: 100; background: var(--bg-secondary); border-radius: 30px;
+      padding: 8px 12px; box-shadow: var(--shadow); display: none; gap: 8px;
+      flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.08);
+      backdrop-filter: blur(10px); max-width: calc(100vw - 40px);
     }
-    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    .empty-state .icon { font-size: 72px; margin-bottom: 16px; filter: drop-shadow(0 8px 24px var(--accent-glow)); }
-    .empty-state h2 { font-size: 22px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
-    .empty-state p { font-size: 14px; max-width: 300px; opacity: 0.7; }
+    .reaction-picker button {
+      background: none; border: none; font-size: 24px; cursor: pointer; transition: transform 0.1s;
+      padding: 4px; border-radius: 50%;
+    }
+    .reaction-picker button:active { transform: scale(1.2); }
 
-    .typing-bubble, .ai-typing-bubble {
-      align-self: flex-start;
-      background: var(--bg-solid); border: 1px solid rgba(255,255,255,0.04);
-      padding: 12px 20px; border-radius: 20px; border-bottom-left-radius: 4px;
-      display: flex; gap: 6px; align-items: center;
-      animation: fadeInMsg 0.2s ease;
-    }
-    .typing-bubble .dot, .ai-typing-bubble .dot {
-      width: 8px; height: 8px; border-radius: 50%; background: var(--text-muted);
-      animation: typingDot 1.4s infinite both;
-    }
-    .typing-bubble .dot:nth-child(1) { animation-delay: 0s; }
-    .typing-bubble .dot:nth-child(2) { animation-delay: 0.2s; }
-    .typing-bubble .dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes typingDot { 0%,80%,100% { transform: scale(0.6); opacity:0.4; } 40% { transform: scale(1); opacity:1; } }
-    .ai-typing-bubble .spinner {
-      width: 14px; height: 14px; border: 2px solid var(--text-muted); border-top-color: var(--accent);
-      border-radius: 50%; animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ============================================================
-       REPLY BAR
-       ============================================================ */
-    .reply-bar {
-      display: none; align-items: center; gap: 10px;
-      background: var(--bg-secondary); padding: 6px 16px;
-      border-top: 1px solid rgba(255,255,255,0.04);
-      font-size: 13px; color: var(--text-muted); flex-shrink: 0;
-    }
-    .reply-bar.show { display: flex; }
-    .reply-bar .reply-content { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-    .reply-bar .reply-sender { font-weight: 600; color: var(--accent); }
-    .reply-bar .reply-close { background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer; padding: 4px; }
-
-    /* ============================================================
-       INPUT BAR (always visible)
-       ============================================================ */
+    /* INPUT BAR */
     .input-wrapper {
-      flex-shrink: 0;
-      background: rgba(18,28,40,0.7);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 8px 12px calc(8px + var(--safe-bottom));
-      transition: background var(--transition);
-      position: relative;
-      z-index: 10;
+      flex-shrink: 0; background: var(--bg-secondary); backdrop-filter: blur(16px);
+      border-top: 1px solid rgba(255,255,255,0.06); padding: 8px 12px calc(8px + var(--safe-bottom));
+      z-index: 10; position: relative;
     }
-    body.light-theme .input-wrapper { background: rgba(255,255,255,0.7); border-top-color: rgba(0,0,0,0.06); }
     .input-bar {
-      display: flex; gap: 8px; align-items: center;
-      background: var(--bg-primary);
-      border-radius: 40px; padding: 4px 4px 4px 18px;
-      border: 1px solid rgba(255,255,255,0.06);
-      transition: border 0.25s, box-shadow 0.25s;
+      display: flex; gap: 8px; align-items: center; background: var(--bg-primary);
+      border-radius: 40px; padding: 4px 4px 4px 18px; border: 1px solid rgba(255,255,255,0.06);
       box-shadow: 0 2px 12px rgba(0,0,0,0.1);
     }
-    .input-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-glow); }
     .input-bar input {
-      flex: 1; background: none; border: none;
-      color: var(--text-primary); font-size: var(--font-size);
-      outline: none; padding: 10px 0; min-height: 40px;
-      font-family: inherit;
+      flex: 1; background: none; border: none; color: var(--text-primary); font-size: var(--font-size);
+      outline: none; padding: 10px 0; min-height: 40px; font-family: inherit;
     }
-    .input-bar input:disabled { opacity: 0.5; }
-    .input-bar input::placeholder { color: var(--text-muted); }
-    .input-bar .btn-icon {
-      background: none; border: none; color: var(--text-muted);
-      font-size: 20px; cursor: pointer; padding: 6px 8px;
-      border-radius: 50%; min-width: 40px; min-height: 40px;
-      transition: background 0.2s, transform 0.1s;
-    }
-    .input-bar .btn-icon:active { background: rgba(255,255,255,0.06); transform: scale(0.88); }
+    .input-bar .btn-icon { background: none; border: none; color: var(--text-muted); font-size: 20px; cursor: pointer; width: 40px; height: 40px; border-radius: 50%; }
     .send-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      border: none; border-radius: 40px; padding: 0 20px;
-      color: white; font-weight: 700; cursor: pointer;
-      height: 40px; font-size: 14px;
-      transition: transform 0.15s, box-shadow 0.2s;
-      box-shadow: 0 4px 12px var(--accent-glow);
+      background: linear-gradient(135deg, var(--accent), var(--accent-light)); border: none;
+      border-radius: 40px; padding: 0 20px; color: white; font-weight: 700; cursor: pointer;
+      height: 40px; font-size: 14px; box-shadow: 0 4px 12px var(--accent-glow);
     }
-    .send-btn:active { transform: scale(0.92); }
-    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
-    .ai-toggle {
-      display: flex; align-items: center; gap: 4px;
-      font-size: 12px; color: var(--text-muted); padding: 0 4px; white-space: nowrap;
-    }
-    .ai-toggle input { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
+    .ai-toggle { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--text-muted); }
+    .ai-toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
 
-    /* ============================================================
-       DRAWER (Groups)
-       ============================================================ */
-    .drawer-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px); z-index: 50; display: none;
-      animation: fadeIn 0.3s ease;
+    /* Recording indicator */
+    .recording-indicator {
+      position: absolute; top: -30px; left: 50%; transform: translateX(-50%);
+      background: #ff4444; color: white; padding: 4px 16px; border-radius: 20px;
+      font-size: 12px; font-weight: 600; display: none; align-items: center; gap: 6px;
     }
-    .drawer-overlay.open { display: block; }
-    @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-    .drawer {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      background: var(--bg-secondary);
-      border-radius: 32px 32px 0 0;
-      padding: 16px 16px calc(16px + var(--safe-bottom));
-      max-height: 75vh;
-      z-index: 51;
-      transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.2,0.9,0.4,1);
-      box-shadow: 0 -8px 40px rgba(0,0,0,0.4);
-      display: flex; flex-direction: column; overflow: hidden;
-    }
-    .drawer.open { transform: translateY(0); }
-    .drawer .handle {
-      width: 40px; height: 5px; border-radius: 10px;
-      background: var(--text-muted); opacity: 0.3; margin: 0 auto 16px; flex-shrink: 0;
-    }
-    .drawer .drawer-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 14px; flex-shrink: 0;
-    }
-    .drawer .drawer-header h3 { font-size: 20px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
-    .drawer .drawer-header .actions { display: flex; gap: 8px; }
-    .drawer .drawer-header .actions button {
-      background: var(--accent); border: none; color: white;
-      padding: 6px 16px; border-radius: 40px; font-size: 13px; font-weight: 600;
-      cursor: pointer; min-height: 36px;
-      transition: transform 0.1s, box-shadow 0.2s;
-      box-shadow: 0 2px 8px var(--accent-glow);
-    }
-    .drawer .drawer-header .actions button:active { transform: scale(0.92); }
-    .group-list { flex: 1; overflow-y: auto; padding: 4px 0; display: flex; flex-direction: column; gap: 4px; }
+    .recording-indicator .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: white; animation: pulseRed 1s infinite; }
+    @keyframes pulseRed { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* HOME PAGE */
+    .home-page { flex: 1; overflow-y: auto; padding: 16px; }
+    .home-header { margin-bottom: 20px; }
+    .home-header h2 { margin-bottom: 12px; }
+    .home-header input { width: 100%; padding: 12px 16px; border-radius: 30px; border: 1px solid var(--border-light); background: var(--bg-card); color: var(--text-primary); font-size: 14px; }
+    .private-chats-section { margin-top: 20px; }
+    .private-chat-form { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .private-chat-form input { flex: 1; min-width: 120px; padding: 10px 14px; border-radius: 30px; border: 1px solid var(--border-light); background: var(--bg-card); color: var(--text-primary); font-size: 14px; }
+
+    /* GROUP LIST */
+    .group-list { display: flex; flex-direction: column; gap: 4px; }
     .group-item {
-      display: flex; align-items: center; gap: 14px;
-      padding: 12px 16px; border-radius: var(--radius-sm);
-      cursor: pointer; transition: background 0.2s, transform 0.1s, border-color 0.2s;
-      border: 1.5px solid transparent; background: var(--bg-card);
+      display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: var(--radius-sm);
+      cursor: pointer; transition: background 0.2s; border: 1.5px solid transparent; background: var(--bg-card);
+      position: relative;
     }
-    .group-item:active { transform: scale(0.98); background: rgba(255,255,255,0.04); }
     .group-item.active { background: rgba(0,135,81,0.08); border-color: var(--accent); }
-    .group-item .avatar {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 18px; color: white; flex-shrink: 0;
-      box-shadow: 0 2px 8px var(--accent-glow);
-    }
+    .group-item .avatar { width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--accent); }
+    .group-item .avatar img { width: 100%; height: 100%; object-fit: cover; }
     .group-item .info { flex: 1; min-width: 0; }
     .group-item .info .name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .group-item .info .preview { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .group-item .meta { text-align: right; flex-shrink: 0; }
-    .group-item .meta .time { font-size: 10px; color: var(--text-muted); }
-    .group-item .meta .unread {
-      background: var(--accent); color: white; font-size: 10px; font-weight: 700;
-      padding: 2px 8px; border-radius: 30px; margin-top: 4px; display: inline-block; min-width: 18px; text-align: center;
+    .unread-badge {
+      background: #ff4444; color: white; font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 30px; min-width: 18px; text-align: center;
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
     }
 
-    /* ============================================================
-       SETTINGS PANEL
-       ============================================================ */
-    .settings-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px); z-index: 100; display: none;
-      animation: fadeIn 0.3s ease;
+    /* DRAWER */
+    .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 50; display: none; }
+    .drawer-overlay.open { display: block; }
+    .drawer {
+      position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary);
+      border-radius: 32px 32px 0 0; padding: 16px 16px calc(16px + var(--safe-bottom));
+      max-height: 75vh; z-index: 51; transform: translateY(100%);
+      transition: transform 0.4s cubic-bezier(0.2,0.9,0.4,1);
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.4); display: flex; flex-direction: column; overflow: hidden;
     }
+    .drawer.open { transform: translateY(0); }
+    .drawer .handle { width: 40px; height: 5px; border-radius: 10px; background: var(--text-muted); opacity: 0.3; margin: 0 auto 16px; }
+    .drawer .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+    .drawer .drawer-header h3 { font-size: 20px; font-weight: 700; }
+
+    /* GROUP INFO PANEL */
+    .group-info-panel {
+      position: fixed; top: 0; right: -100%; width: 100%; max-width: 380px; height: 100%;
+      background: var(--bg-secondary); z-index: 150; transition: right 0.3s ease;
+      box-shadow: var(--shadow); border-left: 1px solid rgba(255,255,255,0.06);
+      display: flex; flex-direction: column; overflow-y: auto;
+    }
+    .group-info-panel.open { right: 0; }
+    .group-info-panel .close-panel-btn {
+      align-self: flex-end; background: none; border: none; color: var(--text-muted);
+      font-size: 24px; padding: 12px 16px; cursor: pointer;
+    }
+    .group-info-panel .panel-content { padding: 0 20px 20px; }
+    .group-info-panel .group-logo {
+      width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 12px; overflow: hidden;
+      background: var(--accent); display: flex; align-items: center; justify-content: center;
+      font-size: 36px; color: white; position: relative;
+    }
+    .group-info-panel .group-logo img { width: 100%; height: 100%; object-fit: cover; }
+    .group-info-panel .group-logo .change-logo-btn {
+      position: absolute; bottom: 0; right: 0; background: var(--accent); border: none;
+      color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; cursor: pointer; font-size: 14px;
+    }
+    .group-info-panel h2 { text-align: center; margin-bottom: 4px; }
+    .group-info-panel .desc { text-align: center; color: var(--text-muted); margin-bottom: 16px; }
+    .member-list { display: flex; flex-direction: column; gap: 4px; }
+    .member-item {
+      display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid rgba(255,255,255,0.04);
+    }
+    .member-item .member-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; }
+    .member-item .member-name { flex: 1; font-weight: 500; }
+    .admin-badge { background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; margin-left: 6px; }
+    .action-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+    /* MODALS */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+      z-index: 160; display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--bg-secondary); border-radius: 24px; padding: 24px; max-width: 360px; width: 90%;
+      box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 16px;
+    }
+    .modal-box h3 { font-size: 20px; font-weight: 700; text-align: center; }
+    .modal-box input, .modal-box textarea { width: 100%; padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); background: var(--bg-primary); color: var(--text-primary); }
+    .modal-box .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+    /* SETTINGS PANEL */
+    .settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 100; display: none; }
     .settings-overlay.show { display: block; }
     .settings-panel {
-      position: fixed; top: 0; right: -420px; width: min(400px, 92%);
-      height: 100%; background: var(--bg-secondary);
-      border-left: 1px solid rgba(255,255,255,0.04);
-      padding: 28px 24px; overflow-y: auto;
-      transition: right 0.35s cubic-bezier(0.2,0.9,0.4,1);
-      z-index: 101; box-shadow: var(--shadow-lg);
-      display: flex; flex-direction: column;
+      position: fixed; top: 0; right: -420px; width: min(400px, 92%); height: 100%;
+      background: var(--bg-secondary); border-left: 1px solid rgba(255,255,255,0.04);
+      padding: 28px 24px; overflow-y: auto; transition: right 0.35s cubic-bezier(0.2,0.9,0.4,1);
+      z-index: 101; box-shadow: var(--shadow);
     }
     .settings-panel.open { right: 0; }
-    .settings-panel .close-btn { text-align: right; font-size: 26px; cursor: pointer; color: var(--text-muted); padding: 4px 8px; margin-bottom: 8px; align-self: flex-end; }
-    .settings-panel h3 {
-      font-size: 22px; font-weight: 700; margin-bottom: 20px;
-      background: linear-gradient(135deg, var(--text-primary), var(--accent-light));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .settings-card {
-      background: var(--bg-card); backdrop-filter: blur(10px);
-      border-radius: var(--radius-md); padding: 16px; margin-bottom: 20px;
-      border: 1px solid rgba(255,255,255,0.04); box-shadow: var(--shadow-sm);
-    }
-    .settings-card h4 {
-      font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px;
-      color: var(--accent); font-weight: 700; margin-bottom: 12px;
-    }
-    .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; gap: 10px; }
-    .setting-row .label { font-weight: 500; font-size: 14px; }
-    .switch {
-      width: 44px; height: 22px; background: var(--text-muted);
-      border-radius: 22px; position: relative; cursor: pointer;
-      flex-shrink: 0; transition: background 0.2s;
-    }
+    .settings-panel .close-btn { text-align: right; font-size: 26px; cursor: pointer; color: var(--text-muted); padding: 4px 8px; }
+    .settings-panel h3 { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+    .settings-card { background: var(--bg-card); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.04); }
+    .settings-card h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--accent); margin-bottom: 12px; }
+    .setting-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .switch { width: 44px; height: 22px; background: var(--text-muted); border-radius: 22px; position: relative; cursor: pointer; }
     .switch.active { background: var(--accent); }
-    .switch::after {
-      content: ''; position: absolute; width: 18px; height: 18px;
-      background: white; border-radius: 50%; top: 2px; left: 2px;
-      transition: left 0.2s, transform 0.1s;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-    }
+    .switch::after { content: ""; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: left 0.2s; }
     .switch.active::after { left: 24px; }
-    select, input[type="range"], input[type="text"], textarea {
-      width: 100%; padding: 10px 14px; border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: var(--bg-primary); color: var(--text-primary);
-      font-size: 14px; min-height: 40px; outline: none;
-      font-family: inherit;
-    }
-    select:focus, input:focus, textarea:focus { border-color: var(--accent); }
-    .color-options { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
-    .color-dot {
-      width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
-      border: 2px solid transparent; transition: border 0.2s, transform 0.2s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .color-dot.active { border-color: white; transform: scale(1.15); }
-    .btn-outline {
-      width: 100%; padding: 12px; border-radius: var(--radius-xl);
-      border: 1.5px solid var(--accent); background: transparent;
-      color: var(--text-primary); font-weight: 600; cursor: pointer;
-      transition: var(--transition); margin-top: 8px; font-size: 14px;
-      touch-action: manipulation;
-    }
-    .btn-outline:active { background: rgba(0,135,81,0.08); transform: scale(0.97); }
-    .btn-danger { border-color: #ff4444; color: #ff4444; }
+    select, input[type="range"] { width: 100%; padding: 10px 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.06); background: var(--bg-primary); color: var(--text-primary); font-size: 14px; }
 
-    /* ============================================================
-       EMOJI PICKER
-       ============================================================ */
-    .emoji-picker {
-      display: none;
-      position: absolute; bottom: 70px; left: 16px;
-      background: var(--bg-secondary);
-      border-radius: var(--radius-sm);
-      padding: 12px; box-shadow: var(--shadow-md);
-      z-index: 20; max-height: 200px; overflow-y: auto;
-      grid-template-columns: repeat(6, 1fr); gap: 6px;
-      border: 1px solid rgba(255,255,255,0.04);
-      animation: slideUp 0.2s ease;
-    }
+    /* Emoji picker (text input) */
+    .emoji-picker { display: none; position: absolute; bottom: 70px; left: 16px; background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 12px; box-shadow: var(--shadow); z-index: 20; grid-template-columns: repeat(7, 1fr); gap: 6px; }
     .emoji-picker.open { display: grid; }
-    .emoji-picker button {
-      background: none; border: none; font-size: 24px; cursor: pointer;
-      padding: 4px; border-radius: 8px; transition: background 0.15s, transform 0.1s;
-    }
-    .emoji-picker button:active { background: rgba(255,255,255,0.06); transform: scale(0.85); }
+    .emoji-picker button { background: none; border: none; font-size: 24px; cursor: pointer; }
+    .emoji-picker button:active { transform: scale(1.2); }
 
-    /* ============================================================
-       GROUP INFO PANEL
-       ============================================================ */
-    .group-info-panel {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: var(--bg-secondary);
-      z-index: 60;
-      transform: translateY(100%);
-      transition: transform 0.35s cubic-bezier(0.2,0.9,0.4,1);
-      display: flex; flex-direction: column;
-      padding: 20px; overflow-y: auto;
-    }
-    .group-info-panel.open { transform: translateY(0); }
-    .group-info-panel .close-info { align-self: flex-end; font-size: 24px; cursor: pointer; color: var(--text-muted); padding: 8px; }
-    .info-avatar { font-size: 64px; text-align: center; margin: 16px 0; }
-    .info-name { font-size: 24px; font-weight: 700; text-align: center; }
-    .info-desc { text-align: center; color: var(--text-muted); margin: 8px 0 20px; }
-    .info-member-list { margin-top: 16px; }
-    .info-member-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
-    }
-    .crown { color: var(--accent-gold); margin-left: 4px; }
-    .admin-toggle {
-      margin-left: auto; background: none; border: 1px solid var(--accent);
-      color: var(--accent); border-radius: 20px; padding: 2px 12px;
-      font-size: 11px; cursor: pointer;
-    }
-    .admin-toggle:active { transform: scale(0.95); }
-
-    /* ============================================================
-       MODAL (Create/Join Group) – MISSING CSS ADDED HERE
-       ============================================================ */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(8px); z-index: 200; display: none;
-      align-items: center; justify-content: center;
-      animation: fadeIn 0.3s ease;
-    }
-    .modal-overlay.show { display: flex; }
-
-    @keyframes slideUp { from { transform: translateY(30px); opacity:0; } to { transform: translateY(0); opacity:1; } }
-
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
     @media (max-width: 480px) {
-      .message-card { max-width: 92%; padding: 10px 14px; }
-      .chat-header .group-info .name { font-size: 15px; }
+      .message-card { max-width: 92%; }
       .input-bar { padding: 2px 2px 2px 14px; }
-      .input-bar input { font-size: 14px; min-height: 36px; padding: 6px 0; }
-      .send-btn { padding: 0 16px; font-size: 13px; height: 36px; }
-      .btn-icon { font-size: 18px; min-width: 36px; min-height: 36px; }
-      .settings-panel { width: 92%; padding: 16px; }
-      .drawer { padding: 12px 12px calc(12px + var(--safe-bottom)); }
-      .empty-state .icon { font-size: 56px; }
-      .emoji-picker { left: 8px; right: 8px; width: auto; grid-template-columns: repeat(7, 1fr); }
-    }
-    @supports (padding: max(0px)) {
-      .input-wrapper { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
-      .drawer { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+      .group-info-panel { max-width: 100%; }
     }
   </style>
 </head>
@@ -529,1019 +301,807 @@
     <!-- HEADER -->
     <header class="chat-header">
       <div class="left">
-        <button class="back-btn" id="backBtn" aria-label="Back">←</button>
-        <div class="group-info">
-          <div class="name" id="groupTitle">StudentNija</div>
-          <div class="status">
-            <span class="online-dot"></span>
-            <span id="memberStatus">0 members</span>
-          </div>
+        <button class="home-btn" id="homeBtn" aria-label="Back / Home">←</button>
+        <div class="group-info" id="groupInfoHeader">
+          <div class="name" id="groupTitle">StudentNija Hub</div>
+          <div class="status" id="headerStatus" style="display:none;"><span class="online-dot"></span> <span id="memberStatus">0 members</span></div>
         </div>
       </div>
       <div class="right">
         <button id="drawerToggle" title="Groups">💬</button>
         <button id="settingsBtn" title="Settings">⚙️</button>
-        <button class="avatar-btn" id="avatarBtn">👤</button>
+        <button class="avatar-btn" id="avatarBtn">
+          <img id="userAvatarImg" src="" alt="" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2236%22 height=%2236%22%3E%3Ccircle cx=%2218%22 cy=%2218%22 r=%2218%22 fill=%22%23008751%22/%3E%3Ctext x=%2218%22 y=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2214%22%3E👤%3C/text%3E%3C/svg%3E'">
+        </button>
       </div>
     </header>
 
-    <!-- CHAT AREA -->
-    <div class="chat-area" id="chatArea">
-      <div class="empty-state" id="emptyState">
-        <div class="icon">💬</div>
-        <h2>Welcome to Study Chat</h2>
-        <p>Join a group to start studying with friends.</p>
+    <!-- HOME PAGE -->
+    <div class="home-page" id="homePage">
+      <div class="home-header">
+        <h2>🔍 Discover Groups</h2>
+        <input type="text" id="groupSearch" placeholder="Search groups by name...">
+      </div>
+      <div class="group-list" id="publicGroupList"></div>
+      <div class="private-chats-section">
+        <h3 style="margin-bottom:10px;">💬 Private Chats</h3>
+        <div class="private-chat-form">
+          <input type="text" id="pcUserName" placeholder="User name">
+          <input type="text" id="pcUserId" placeholder="User ID">
+          <button id="startPrivateChatBtn" class="btn" style="flex:0 0 auto;">Start Chat</button>
+        </div>
+        <div id="privateChatList"></div>
       </div>
     </div>
+
+    <!-- CHAT AREA (hidden initially) -->
+    <div class="chat-area" id="chatArea" style="display:none;"></div>
 
     <!-- REPLY BAR -->
-    <div class="reply-bar" id="replyBar">
+    <div class="reply-bar" id="replyBar" style="display:none; align-items:center; gap:10px; padding:6px 16px; background:var(--bg-secondary); border-top:1px solid rgba(255,255,255,0.04);">
       <span class="reply-content">Replying to <span class="reply-sender">User</span>: <span class="reply-text">Message</span></span>
-      <button class="reply-close" id="replyClose" aria-label="Cancel reply">✕</button>
+      <button class="reply-close" id="replyClose" style="background:none;border:none;color:var(--text-muted);font-size:18px;">✕</button>
     </div>
 
-    <!-- INPUT AREA -->
-    <div class="input-wrapper">
+    <!-- INPUT AREA (hidden initially) -->
+    <div class="input-wrapper" id="inputWrapper" style="display:none;">
+      <div class="recording-indicator" id="recIndicator"><span class="rec-dot"></span> Recording...</div>
       <div class="input-bar">
-        <input type="text" id="messageInput" placeholder="Type a message..." disabled />
-        <button class="btn-icon" id="emojiBtn" aria-label="Emoji">😊</button>
-        <label class="ai-toggle">
-          <input type="checkbox" id="aiToggle" /> <span>AI</span>
-        </label>
-        <button class="send-btn" id="sendBtn" disabled>Send</button>
+        <input type="text" id="messageInput" placeholder="Type a message..." />
+        <button class="btn-icon" id="micBtn">🎤</button>
+        <button class="btn-icon" id="emojiBtn">😊</button>
+        <label class="ai-toggle"><input type="checkbox" id="aiToggle"> <span>AI</span></label>
+        <button class="send-btn" id="sendBtn">Send</button>
       </div>
-      <div class="emoji-picker" id="emojiPicker"></div>
+      <div class="emoji-picker" id="textEmojiPicker"></div>
     </div>
-  </div>
 
-  <!-- ========== DRAWER (Groups) ========== -->
-  <div class="drawer-overlay" id="drawerOverlay"></div>
-  <div class="drawer" id="drawer">
-    <div class="handle"></div>
-    <div class="drawer-header">
-      <h3>💬 Groups</h3>
-      <div class="actions">
-        <button id="newGroupDrawerBtn">+ New</button>
-        <button id="joinGroupDrawerBtn">🔗 Join</button>
+    <!-- REACTION PICKER (floating) -->
+    <div class="reaction-picker" id="reactionPicker">
+      <button data-emoji="👍">👍</button><button data-emoji="😂">😂</button><button data-emoji="❤️">❤️</button>
+      <button data-emoji="🙏">🙏</button><button data-emoji="😊">😊</button><button data-emoji="🥱">🥱</button>
+      <button data-emoji="😠">😠</button><button data-emoji="😳">😳</button><button data-emoji="🫩">🫩</button>
+      <button data-emoji="😎">😎</button><button data-emoji="😇">😇</button><button data-emoji="🔥">🔥</button>
+    </div>
+
+    <!-- CONTEXT MENU (long-press actions) -->
+    <div class="context-menu" id="contextMenu">
+      <button id="ctxCopy">📋 Copy</button>
+      <button id="ctxReply">↩ Reply</button>
+      <button id="ctxDelete">🗑️ Delete for me</button>
+      <button id="ctxDeleteAll" style="display:none;">🗑️ Delete for everyone</button>
+      <button id="ctxPin">📌 Pin</button>
+      <button id="ctxStar">⭐ Star</button>
+      <button id="ctxReport">🚩 Report</button>
+      <button id="ctxCancel">❌ Cancel</button>
+    </div>
+
+    <!-- GROUP INFO PANEL -->
+    <div class="group-info-panel" id="groupInfoPanel">
+      <button class="close-panel-btn" id="closeGroupInfoBtn">✕</button>
+      <div class="panel-content">
+        <div class="group-logo" id="groupLogoDisplay">
+          <span id="groupLogoEmoji">📚</span>
+          <img id="groupLogoImg" src="" style="display:none;" alt="Group Logo">
+          <button class="change-logo-btn" id="changeGroupLogoBtn" title="Change logo">🖼️</button>
+        </div>
+        <h2 id="groupInfoName">Group Name</h2>
+        <p class="desc" id="groupInfoDesc">Description</p>
+        <div id="adminActions" style="display:none;">
+          <div class="action-row">
+            <button id="renameGroupBtn" class="btn-outline" style="flex:1;">✏️ Rename</button>
+            <button id="editDescBtn" class="btn-outline" style="flex:1;">📝 Edit Desc</button>
+          </div>
+          <div class="action-row" style="margin-top:8px;">
+            <button id="deleteGroupBtn" class="btn-outline" style="flex:1; border-color:#ff4444; color:#ff4444;">🗑️ Delete Group</button>
+          </div>
+          <div class="action-row" style="margin-top:8px;">
+            <button id="reportGroupBtn" class="btn-outline" style="flex:1; border-color:var(--accent-gold); color:var(--accent-gold);">🚩 Report Group</button>
+          </div>
+        </div>
+        <div class="member-list" id="memberList"></div>
       </div>
     </div>
-    <div class="group-list" id="groupList"></div>
-  </div>
 
-  <!-- ========== SETTINGS PANEL ========== -->
-  <div class="settings-overlay" id="settingsOverlay"></div>
-  <div class="settings-panel" id="settingsPanel">
-    <div class="close-btn" id="settingsClose">✕</div>
-    <h3>⚙️ Settings</h3>
-
-    <div class="settings-card">
-      <h4>🎨 Appearance</h4>
-      <div class="setting-row">
-        <span class="label">Theme</span>
-        <select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option></select>
-      </div>
-      <div class="setting-row">
-        <span class="label">Accent</span>
-        <div class="color-options" id="colorOptions">
-          <div class="color-dot active" style="background:#008751" data-color="green"></div>
-          <div class="color-dot" style="background:#1E88E5" data-color="blue"></div>
-          <div class="color-dot" style="background:#7B1FA2" data-color="purple"></div>
-          <div class="color-dot" style="background:#F57C00" data-color="gold"></div>
-          <div class="color-dot" style="background:#D32F2F" data-color="red"></div>
+    <!-- MODAL: Report Message -->
+    <div class="modal-overlay" id="reportMsgModal">
+      <div class="modal-box">
+        <h3>🚩 Report Message</h3>
+        <textarea id="reportMsgReason" rows="3" placeholder="Why are you reporting this message?"></textarea>
+        <div class="modal-actions">
+          <button class="btn-outline" id="cancelReportMsgBtn">Cancel</button>
+          <button class="btn" id="confirmReportMsgBtn">Submit</button>
         </div>
       </div>
-      <div class="setting-row">
-        <span class="label">Font Size</span>
-        <input type="range" id="fontSizeSlider" min="13" max="18" value="15" step="1" />
-      </div>
-      <div class="setting-row">
-        <span class="label">Show timestamps</span>
-        <div class="switch active" id="showTimestampsSwitch"></div>
+    </div>
+
+    <!-- MODAL: Report Group -->
+    <div class="modal-overlay" id="reportGroupModal">
+      <div class="modal-box">
+        <h3>🚩 Report Group</h3>
+        <textarea id="reportGroupReason" rows="3" placeholder="Why are you reporting this group?"></textarea>
+        <div class="modal-actions">
+          <button class="btn-outline" id="cancelReportGroupBtn">Cancel</button>
+          <button class="btn" id="confirmReportGroupBtn">Submit</button>
+        </div>
       </div>
     </div>
 
-    <div class="settings-card">
-      <h4>🤖 AI</h4>
-      <div class="setting-row">
-        <span class="label">AI auto‑respond</span>
-        <div class="switch active" id="aiAutoSwitch"></div>
+    <!-- DRAWER -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <div class="drawer" id="drawer">
+      <div class="handle"></div>
+      <div class="drawer-header">
+        <h3>💬 Groups</h3>
+        <div class="actions">
+          <button id="newGroupDrawerBtn" class="btn">+ New</button>
+          <button id="joinGroupDrawerBtn" class="btn">🔗 Join</button>
+        </div>
       </div>
-      <div class="setting-row">
-        <span class="label">AI Personality</span>
-        <select id="aiPersonalitySelect"><option value="Friendly Tutor">Friendly Tutor</option><option value="Creative">Creative</option><option value="Professor">Professor</option><option value="Gamer">Gamer</option></select>
+      <div class="group-list" id="groupList"></div>
+    </div>
+
+    <!-- MODAL: Create Group -->
+    <div class="modal-overlay" id="createGroupModal">
+      <div class="modal-box">
+        <h3>✨ Create Group</h3>
+        <input type="text" id="newGroupName" placeholder="Group name">
+        <textarea id="newGroupDesc" rows="2" placeholder="Description (optional)"></textarea>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <span>Logo:</span>
+          <input type="file" id="newGroupLogoFile" accept="image/*" style="display:none;">
+          <button id="pickLogoBtn" class="btn-outline" style="flex:1;">Choose Image</button>
+          <span id="logoPreview" style="font-size:24px;">📚</span>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-outline" id="cancelCreateGroupBtn">Cancel</button>
+          <button class="btn" id="confirmCreateGroupBtn">Create</button>
+        </div>
       </div>
     </div>
 
-    <div class="settings-card">
-      <h4>🔔 Notifications</h4>
-      <div class="setting-row">
-        <span class="label">Sound</span>
-        <div class="switch active" id="soundSwitch"></div>
+    <!-- MODAL: Join Group -->
+    <div class="modal-overlay" id="joinGroupModal">
+      <div class="modal-box">
+        <h3>🔗 Join Group</h3>
+        <input type="text" id="joinGroupName" placeholder="Group name">
+        <div class="modal-actions">
+          <button class="btn-outline" id="cancelJoinGroupBtn">Cancel</button>
+          <button class="btn" id="confirmJoinGroupBtn">Join</button>
+        </div>
       </div>
     </div>
 
-    <div class="settings-card">
-      <h4>👤 Profile</h4>
-      <div class="setting-row">
-        <span class="label">Display name</span>
-        <input type="text" id="displayNameInput" placeholder="Your name" style="flex:1; min-width:120px;" />
+    <!-- MODAL: Simple Input (for rename/description) -->
+    <div class="modal-overlay" id="simpleInputModal">
+      <div class="modal-box">
+        <h3 id="simpleInputTitle">Enter Value</h3>
+        <input type="text" id="simpleInputField" placeholder="">
+        <div class="modal-actions">
+          <button class="btn-outline" id="cancelSimpleInputBtn">Cancel</button>
+          <button class="btn" id="confirmSimpleInputBtn">OK</button>
+        </div>
       </div>
     </div>
 
-    <div class="settings-card">
-      <h4>⚡ Advanced</h4>
-      <button class="btn-outline" id="clearHistoryBtn">🗑️ Clear history</button>
-      <button class="btn-outline btn-danger" id="resetSettingsBtn" style="margin-top:6px;">↺ Reset settings</button>
+    <!-- MODAL: Confirmation (for dangerous actions) -->
+    <div class="modal-overlay" id="confirmModal">
+      <div class="modal-box">
+        <h3 id="confirmTitle">Confirm</h3>
+        <p id="confirmMessage">Are you sure?</p>
+        <div class="modal-actions">
+          <button class="btn-outline" id="cancelConfirmBtn">Cancel</button>
+          <button class="btn" id="okConfirmBtn">Yes</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="settings-overlay" id="settingsOverlay"></div>
+    <div class="settings-panel" id="settingsPanel">
+      <div class="close-btn" id="settingsClose">✕</div>
+      <h3>⚙️ Settings</h3>
+      <div class="settings-card">
+        <h4>👤 Profile</h4>
+        <div class="setting-row">
+          <span>Display Name</span>
+          <input type="text" id="displayNameInput" style="width:150px;">
+        </div>
+        <div class="setting-row">
+          <span>Your ID</span>
+          <div style="display:flex; align-items:center; gap:4px;">
+            <span id="settingsUserId" style="font-size:13px; color:var(--text-muted);">...</span>
+            <button id="copyUserIdBtn" class="btn-outline" style="padding:2px 8px; font-size:12px;">Copy</button>
+          </div>
+        </div>
+        <div class="setting-row">
+          <span>Avatar</span>
+          <button class="btn-outline" id="changeAvatarBtn" style="padding:4px 12px;">Upload</button>
+          <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+        </div>
+      </div>
+      <div class="settings-card">
+        <h4>🔔 Notifications</h4>
+        <div class="setting-row">
+          <span>Sound</span>
+          <div class="switch active" id="soundSwitch"></div>
+        </div>
+        <div class="setting-row">
+          <span>Sound Effect</span>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <select id="soundSelect" style="flex:1;">
+              <option value="crystal">Crystal</option>
+              <option value="success">Success</option>
+              <option value="softbell">Soft Bell</option>
+              <option value="bubble" selected>Bubble</option>
+              <option value="digitalpop">Digital Pop</option>
+              <option value="elegant">Elegant</option>
+              <option value="message">Message</option>
+              <option value="sparkle">Sparkle</option>
+              <option value="magic">Magic</option>
+              <option value="premium">Premium</option>
+            </select>
+            <button id="testSoundBtn" class="btn-outline" style="padding:4px 12px; font-size:13px;">▶️ Test</button>
+          </div>
+        </div>
+      </div>
+      <div class="settings-card">
+        <h4>🎨 Appearance</h4>
+        <div class="setting-row">
+          <span>Theme</span>
+          <select id="themeSelect"><option value="dark">Dark</option><option value="light">Light</option></select>
+        </div>
+        <div class="setting-row">
+          <span>Font Size</span>
+          <input type="range" id="fontSizeSlider" min="13" max="18" value="15">
+        </div>
+      </div>
+      <div class="settings-card">
+        <h4>⚡ Advanced</h4>
+        <button class="btn-outline" id="clearHistoryBtn">🗑️ Clear Chat History</button>
+        <button class="btn-outline" id="resetSettingsBtn" style="margin-top:8px; border-color:#ff4444; color:#ff4444;">↺ Reset Settings</button>
+        <button class="btn-outline" id="logoutBtn" style="margin-top:8px;">🚪 Logout</button>
+      </div>
     </div>
   </div>
-
-  <!-- ========== MODAL (Create/Join Group) ========== -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal-box" style="background:var(--bg-secondary); border-radius:var(--radius-lg); padding:32px 28px; max-width:400px; width:92%; box-shadow:var(--shadow-lg); animation:slideUp 0.3s ease;">
-      <h2 id="modalTitle" style="font-size:22px; font-weight:700; margin-bottom:16px; background:linear-gradient(135deg, var(--text-primary), var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">Create Group</h2>
-      <input type="text" id="modalInput" placeholder="Group name..." style="width:100%; padding:14px 18px; border-radius:var(--radius-sm); border:1px solid rgba(255,255,255,0.06); background:var(--bg-primary); color:var(--text-primary); margin-bottom:16px; font-size:15px; outline:none;" />
-      <div class="btn-row" style="display:flex; gap:12px; justify-content:flex-end;">
-        <button class="cancel" id="modalCancel" style="background:rgba(255,255,255,0.06); border:none; color:var(--text-muted); padding:10px 28px; border-radius:40px; font-weight:600;">Cancel</button>
-        <button class="confirm" id="modalConfirm" style="background:linear-gradient(135deg, var(--accent), var(--accent-light)); border:none; color:white; padding:10px 28px; border-radius:40px; font-weight:600; box-shadow:0 4px 12px var(--accent-glow);">Confirm</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ========== GROUP INFO PANEL ========== -->
-  <div class="group-info-panel" id="groupInfoPanel">
-    <div class="close-info" id="closeInfo">✕</div>
-    <div class="info-avatar" id="infoAvatar">📚</div>
-    <div class="info-name" id="infoName">Group Name</div>
-    <div class="info-desc" id="infoDesc">Group description</div>
-    <div style="text-align:center; margin:8px 0;">
-      <button id="editGroupMetaBtn" class="btn-outline" style="background:var(--accent); color:white; border:none; padding:6px 18px; border-radius:40px; font-weight:600;">✏️ Edit</button>
-    </div>
-    <div class="info-member-list" id="infoMemberList"></div>
-  </div>
-
-  <input type="file" id="fileInput" accept="image/*,text/plain" style="display:none" />
 
   <script>
-    // ============================================================
-    // CONFIG
-    // ============================================================
-    const SERVER_URL = "https://studentnija-public-chat.onrender.com";
-    let USER_NAME = localStorage.getItem('studentnija_chat_user_name') || 'Student';
-    let USER_ID = localStorage.getItem('studentnija_chat_user_id') || ('user_' + Date.now());
-    localStorage.setItem('studentnija_chat_user_name', USER_NAME);
-    localStorage.setItem('studentnija_chat_user_id', USER_ID);
+    (function() {
+      const currentUserObj = JSON.parse(localStorage.getItem('studentnija_currentUser') || '{}');
+      const USER_NAME = localStorage.getItem('studentnija_chat_user_name') || currentUserObj.fullName || 'Student';
+      const USER_ID = localStorage.getItem('studentnija_chat_user_id') || currentUserObj.id || ('user_' + Date.now());
+      const USER_AVATAR = currentUserObj.profilePicture || '';
+      localStorage.setItem('studentnija_chat_user_name', USER_NAME);
+      localStorage.setItem('studentnija_chat_user_id', USER_ID);
+      if (USER_AVATAR) localStorage.setItem('studentnija_chat_user_avatar', USER_AVATAR);
 
-    // Unified back function
-    function goBack() {
-      if (socket) {
-        if (currentGroup) socket.emit('leaveGroup');
-        socket.disconnect();
+      // HTML5 Sounds
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      function tone(freq, start, duration, type = "sine", volume = 0.3) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, start);
+        gain.gain.setValueAtTime(0, start);
+        gain.gain.linearRampToValueAtTime(volume, start + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(start);
+        osc.stop(start + duration);
       }
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        if (typeof app !== 'undefined' && app.Close) app.Close();
-        else window.close();
+      function now() { return audioCtx.currentTime; }
+
+      const soundGenerators = {
+        crystal: () => { let t = now(); tone(880, t, 0.12); tone(1175, t+0.12, 0.18); tone(1568, t+0.26, 0.28); },
+        success: () => { let t = now(); tone(523, t, 0.12, "triangle"); tone(659, t+0.10, 0.12, "triangle"); tone(784, t+0.22, 0.28, "triangle"); },
+        softbell: () => { let t = now(); tone(700, t, 0.5, "sine", 0.25); tone(1400, t, 0.5, "sine", 0.08); },
+        bubble: () => { let t = now(); tone(350, t, 0.08); tone(500, t+0.05, 0.08); tone(700, t+0.10, 0.18); },
+        digitalpop: () => { let t = now(); tone(900, t, 0.05, "square"); tone(1200, t+0.04, 0.05, "square"); tone(1600, t+0.08, 0.12, "square"); },
+        elegant: () => { let t = now(); tone(440, t, 0.25, "triangle"); tone(660, t+0.18, 0.25, "triangle"); tone(990, t+0.35, 0.35, "triangle"); },
+        message: () => { let t = now(); tone(800, t, 0.08); tone(600, t+0.10, 0.18); },
+        sparkle: () => { let t = now(); tone(1200, t, 0.06); tone(1500, t+0.05, 0.06); tone(1800, t+0.10, 0.08); tone(2200, t+0.15, 0.15); },
+        magic: () => { let t = now(); tone(500, t, 0.10); tone(800, t+0.10, 0.10); tone(1100, t+0.20, 0.10); tone(1500, t+0.30, 0.25); },
+        premium: () => { let t = now(); tone(660, t, 0.10, "triangle"); tone(880, t+0.10, 0.10, "triangle"); tone(1320, t+0.20, 0.15, "triangle"); tone(1760, t+0.34, 0.35, "triangle"); }
+      };
+
+      let currentSound = localStorage.getItem('studentnija_chat_sound') || 'bubble';
+      let soundEnabled = JSON.parse(localStorage.getItem('studentnija_chat_sound_enabled') ?? 'true');
+      const notifAudio = new Audio(); // dummy, actual sound uses Web Audio
+      function playSound() {
+        if (!soundEnabled) return;
+        if (soundGenerators[currentSound]) soundGenerators[currentSound]();
       }
-    }
+      function testSound() { playSound(); }
 
-    document.getElementById('backBtn').addEventListener('click', goBack);
+      // DOM refs
+      const chatArea = document.getElementById('chatArea');
+      const homePage = document.getElementById('homePage');
+      const inputWrapper = document.getElementById('inputWrapper');
+      const messageInput = document.getElementById('messageInput');
+      const sendBtn = document.getElementById('sendBtn');
+      const micBtn = document.getElementById('micBtn');
+      const recIndicator = document.getElementById('recIndicator');
+      const homeBtn = document.getElementById('homeBtn');
+      const groupTitle = document.getElementById('groupTitle');
+      const headerStatus = document.getElementById('headerStatus');
+      const memberStatus = document.getElementById('memberStatus');
+      const drawerOverlay = document.getElementById('drawerOverlay');
+      const drawer = document.getElementById('drawer');
+      const groupListEl = document.getElementById('groupList');
+      const reactionPicker = document.getElementById('reactionPicker');
+      const contextMenu = document.getElementById('contextMenu');
+      const replyBar = document.getElementById('replyBar');
+      const replyClose = document.getElementById('replyClose');
+      const aiToggle = document.getElementById('aiToggle');
+      const createGroupModal = document.getElementById('createGroupModal');
+      const joinGroupModal = document.getElementById('joinGroupModal');
+      const groupInfoPanel = document.getElementById('groupInfoPanel');
+      const reportMsgModal = document.getElementById('reportMsgModal');
+      const reportGroupModal = document.getElementById('reportGroupModal');
+      const simpleInputModal = document.getElementById('simpleInputModal');
+      const simpleInputTitle = document.getElementById('simpleInputTitle');
+      const simpleInputField = document.getElementById('simpleInputField');
+      const confirmSimpleInputBtn = document.getElementById('confirmSimpleInputBtn');
+      const cancelSimpleInputBtn = document.getElementById('cancelSimpleInputBtn');
+      const confirmModal = document.getElementById('confirmModal');
+      const confirmTitle = document.getElementById('confirmTitle');
+      const confirmMessage = document.getElementById('confirmMessage');
+      const okConfirmBtn = document.getElementById('okConfirmBtn');
+      const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
 
-    // ============================================================
-    // STATE
-    // ============================================================
-    let socket = null;
-    let currentGroup = null;
-    let groups = [];
-    let messages = [];
-    let members = [];
-    let createdBy = null;
-    let admins = [];
-    let groupMeta = { name: '', description: '', avatar: '📚' };
-    let pinnedMessageId = null;
-    let replyTo = null;
-    let settings = {
-      theme: 'dark', accent: 'green', fontSize: 15,
-      showTimestamps: true, aiAuto: true, aiPersonality: 'Friendly Tutor', sound: true
-    };
+      const SERVER_URL = "https://studentnija-public-chat.onrender.com";
+      const socket = io(SERVER_URL, { transports: ['websocket','polling'], reconnection: true });
+      let currentGroup = null;
+      let groups = JSON.parse(localStorage.getItem('studentnija_groups') || '[]');
+      let messages = [];
+      let members = [];
+      let createdBy = null;
+      let admins = [];
+      let pinnedMessageId = null;
+      let replyTo = null;
+      let unreadCounts = JSON.parse(localStorage.getItem('studentnija_unread') || '{}');
+      let privateUnread = JSON.parse(localStorage.getItem('studentnija_private_unread') || '{}');
+      let groupMeta = {};
 
-    // DOM refs
-    const chatArea = document.getElementById('chatArea');
-    const messageInput = document.getElementById('messageInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const groupTitle = document.getElementById('groupTitle');
-    const memberStatus = document.getElementById('memberStatus');
-    const drawerOverlay = document.getElementById('drawerOverlay');
-    const drawer = document.getElementById('drawer');
-    const groupList = document.getElementById('groupList');
-    const drawerToggle = document.getElementById('drawerToggle');
-    const backBtn = document.getElementById('backBtn');
-    const settingsBtn = document.getElementById('settingsBtn');
-    const settingsOverlay = document.getElementById('settingsOverlay');
-    const settingsPanel = document.getElementById('settingsPanel');
-    const settingsClose = document.getElementById('settingsClose');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalInput = document.getElementById('modalInput');
-    const modalConfirm = document.getElementById('modalConfirm');
-    const modalCancel = document.getElementById('modalCancel');
-    const newGroupDrawerBtn = document.getElementById('newGroupDrawerBtn');
-    const joinGroupDrawerBtn = document.getElementById('joinGroupDrawerBtn');
-    const aiToggle = document.getElementById('aiToggle');
-    const emojiBtn = document.getElementById('emojiBtn');
-    const emojiPicker = document.getElementById('emojiPicker');
-    const avatarBtn = document.getElementById('avatarBtn');
-    const replyBar = document.getElementById('replyBar');
-    const replyClose = document.getElementById('replyClose');
-    const groupInfoPanel = document.getElementById('groupInfoPanel');
-    const closeInfo = document.getElementById('closeInfo');
-    const infoAvatar = document.getElementById('infoAvatar');
-    const infoName = document.getElementById('infoName');
-    const infoDesc = document.getElementById('infoDesc');
-    const infoMemberList = document.getElementById('infoMemberList');
-    const editGroupMetaBtn = document.getElementById('editGroupMetaBtn');
+      function saveUnread() { localStorage.setItem('studentnija_unread', JSON.stringify(unreadCounts)); }
+      function savePrivateUnread() { localStorage.setItem('studentnija_private_unread', JSON.stringify(privateUnread)); }
 
-    // ============================================================
-    // THEME SYNC (reads main app & chat, writes to both)
-    // ============================================================
-    const APP_STORAGE_KEY = 'studentnija_settings';
-    const CHAT_STORAGE_KEY = 'studentnija_chat_settings_v3';
+      let mediaRecorder = null, audioChunks = [], isRecording = false;
 
-    function readThemeFromStorage() {
-      let theme = null, accent = null;
-      try {
-        const appRaw = localStorage.getItem(APP_STORAGE_KEY);
-        if (appRaw) {
-          const appSettings = JSON.parse(appRaw);
-          if (appSettings.theme) theme = appSettings.theme;
-          if (appSettings.accentColor) accent = appSettings.accentColor;
-        }
-      } catch (_) {}
-      if (!theme) {
-        try {
-          const chatRaw = localStorage.getItem(CHAT_STORAGE_KEY);
-          if (chatRaw) {
-            const chatSettings = JSON.parse(chatRaw);
-            if (chatSettings.theme) theme = chatSettings.theme;
-            if (chatSettings.accent) accent = chatSettings.accent;
-          }
-        } catch (_) {}
+      // Settings state
+      let settings = {
+        theme: localStorage.getItem('studentnija_chat_theme') || 'dark',
+        fontSize: parseInt(localStorage.getItem('studentnija_chat_fontsize') || '15'),
+        sound: soundEnabled,
+        soundEffect: currentSound,
+        displayName: USER_NAME
+      };
+
+      function applySettings() {
+        document.body.classList.toggle('light-theme', settings.theme === 'light');
+        document.documentElement.style.setProperty('--font-size', settings.fontSize + 'px');
+        document.getElementById('displayNameInput').value = settings.displayName;
+        document.getElementById('themeSelect').value = settings.theme;
+        document.getElementById('fontSizeSlider').value = settings.fontSize;
+        document.getElementById('soundSwitch').classList.toggle('active', settings.sound);
+        document.getElementById('soundSelect').value = settings.soundEffect;
+        const avatarImg = document.getElementById('userAvatarImg');
+        const savedAvatar = localStorage.getItem('studentnija_chat_user_avatar');
+        if (savedAvatar && savedAvatar !== 'undefined') avatarImg.src = savedAvatar;
+        else avatarImg.src = 'data:image/svg+xml,...';
+        document.getElementById('settingsUserId').textContent = USER_ID;
       }
-      if (!theme) theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      if (!accent) accent = 'green';
-      return { theme, accent };
-    }
-
-    function saveThemeToAll(theme, accent) {
-      try {
-        let appSettings = {};
-        const raw = localStorage.getItem(APP_STORAGE_KEY);
-        if (raw) try { appSettings = JSON.parse(raw); } catch(_) {}
-        appSettings.theme = theme;
-        appSettings.accentColor = accent;
-        localStorage.setItem(APP_STORAGE_KEY, JSON.stringify(appSettings));
-      } catch(_) {}
-      try {
-        let chatSettings = {};
-        const raw = localStorage.getItem(CHAT_STORAGE_KEY);
-        if (raw) try { chatSettings = JSON.parse(raw); } catch(_) {}
-        chatSettings.theme = theme;
-        chatSettings.accent = accent;
-        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chatSettings));
-      } catch(_) {}
-    }
-
-    function loadSettings() {
-      const { theme, accent } = readThemeFromStorage();
-      settings.theme = theme;
-      settings.accent = accent;
       applySettings();
-    }
-    function saveSettings() { saveThemeToAll(settings.theme, settings.accent); }
 
-    function applySettings() {
-      document.body.classList.toggle('light-theme', settings.theme === 'light');
-      document.body.classList.remove('blue-theme','purple-theme','gold-theme','red-theme');
-      document.body.classList.add(settings.accent + '-theme');
-      document.documentElement.style.setProperty('--font-size', settings.fontSize + 'px');
+      // Settings event listeners
+      document.getElementById('themeSelect').addEventListener('change', e => { settings.theme = e.target.value; localStorage.setItem('studentnija_chat_theme', settings.theme); applySettings(); });
+      document.getElementById('fontSizeSlider').addEventListener('input', e => { settings.fontSize = e.target.value; localStorage.setItem('studentnija_chat_fontsize', settings.fontSize); applySettings(); });
+      document.getElementById('soundSwitch').addEventListener('click', () => { soundEnabled = !soundEnabled; localStorage.setItem('studentnija_chat_sound_enabled', soundEnabled); settings.sound = soundEnabled; applySettings(); });
+      document.getElementById('soundSelect').addEventListener('change', e => { currentSound = e.target.value; localStorage.setItem('studentnija_chat_sound', currentSound); settings.soundEffect = currentSound; applySettings(); });
+      document.getElementById('testSoundBtn').addEventListener('click', () => testSound());
+      document.getElementById('displayNameInput').addEventListener('change', e => { const name = e.target.value.trim(); if (name) { settings.displayName = name; localStorage.setItem('studentnija_chat_user_name', name); USER_NAME = name; applySettings(); } });
+      document.getElementById('changeAvatarBtn').addEventListener('click', () => document.getElementById('avatarFileInput').click());
+      document.getElementById('avatarFileInput').addEventListener('change', e => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = ev => { localStorage.setItem('studentnija_chat_user_avatar', ev.target.result); applySettings(); }; reader.readAsDataURL(file); } });
+      document.getElementById('clearHistoryBtn').addEventListener('click', () => showConfirm('Clear chat history?', () => { messages = []; renderMessages(); }));
+      document.getElementById('resetSettingsBtn').addEventListener('click', () => showConfirm('Reset all settings to default?', () => { ['studentnija_chat_theme','studentnija_chat_fontsize','studentnija_chat_sound','studentnija_chat_sound_enabled','studentnija_chat_user_name','studentnija_chat_user_avatar'].forEach(k => localStorage.removeItem(k)); location.reload(); }));
+      document.getElementById('logoutBtn').addEventListener('click', () => showConfirm('Logout from chat?', () => { localStorage.removeItem('studentnija_currentUser'); window.location.href = 'index.html'; }));
+      document.getElementById('copyUserIdBtn').addEventListener('click', () => { navigator.clipboard.writeText(USER_ID); });
 
-      document.getElementById('themeSelect').value = settings.theme;
-      document.getElementById('fontSizeSlider').value = settings.fontSize;
-      document.getElementById('showTimestampsSwitch').classList.toggle('active', settings.showTimestamps);
-      document.getElementById('aiAutoSwitch').classList.toggle('active', settings.aiAuto);
-      document.getElementById('soundSwitch').classList.toggle('active', settings.sound);
-      document.getElementById('aiPersonalitySelect').value = settings.aiPersonality;
-      document.getElementById('displayNameInput').value = USER_NAME;
-      document.querySelectorAll('.color-dot').forEach(el => el.classList.toggle('active', el.dataset.color === settings.accent));
-    }
-
-    // ============================================================
-    // EMOJI PICKER
-    // ============================================================
-    const EMOJIS = ['😊','😂','❤️','👍','🎉','🔥','📚','💪','🤓','✨','🥳','🤔','😭','🤗','💯','🙌','👏','🕊️','🌱','⭐'];
-    function buildEmojiPicker() {
-      emojiPicker.innerHTML = EMOJIS.map(e => `<button data-emoji="${e}">${e}</button>`).join('');
-      emojiPicker.querySelectorAll('button').forEach(btn => {
-        btn.addEventListener('click', () => {
-          messageInput.value += btn.dataset.emoji;
-          messageInput.focus();
-          emojiPicker.classList.remove('open');
-        });
-      });
-    }
-    emojiBtn.addEventListener('click', (e) => { e.stopPropagation(); emojiPicker.classList.toggle('open'); });
-    document.addEventListener('click', (e) => {
-      if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) emojiPicker.classList.remove('open');
-    });
-    buildEmojiPicker();
-
-    // ============================================================
-    // SETTINGS INIT
-    // ============================================================
-    function initSettings() {
-      document.getElementById('themeSelect').addEventListener('change', function() {
-        settings.theme = this.value;
-        saveSettings();
-        applySettings();
-      });
-      document.getElementById('colorOptions').addEventListener('click', function(e) {
-        const dot = e.target.closest('.color-dot');
-        if (!dot) return;
-        settings.accent = dot.dataset.color;
-        saveSettings();
-        applySettings();
-      });
-      document.getElementById('fontSizeSlider').addEventListener('input', function() {
-        settings.fontSize = parseInt(this.value);
-        saveSettings();
-        applySettings();
-      });
-      document.getElementById('showTimestampsSwitch').addEventListener('click', function() {
-        settings.showTimestamps = !settings.showTimestamps;
-        this.classList.toggle('active', settings.showTimestamps);
-        saveSettings();
-        renderMessages();
-      });
-      document.getElementById('aiAutoSwitch').addEventListener('click', function() {
-        settings.aiAuto = !settings.aiAuto;
-        this.classList.toggle('active', settings.aiAuto);
-        saveSettings();
-      });
-      document.getElementById('soundSwitch').addEventListener('click', function() {
-        settings.sound = !settings.sound;
-        this.classList.toggle('active', settings.sound);
-        saveSettings();
-      });
-      document.getElementById('aiPersonalitySelect').addEventListener('change', function() {
-        settings.aiPersonality = this.value;
-        saveSettings();
-      });
-      document.getElementById('displayNameInput').addEventListener('change', function() {
-        const name = this.value.trim();
-        if (name) {
-          USER_NAME = name;
-          localStorage.setItem('studentnija_chat_user_name', USER_NAME);
-        }
-      });
-      document.getElementById('clearHistoryBtn').addEventListener('click', () => {
-        if (confirm('Clear all messages?')) { messages = []; renderMessages(); }
-      });
-      document.getElementById('resetSettingsBtn').addEventListener('click', () => {
-        if (confirm('Reset all settings?')) {
-          settings = { theme:'dark', accent:'green', fontSize:15, showTimestamps:true, aiAuto:true, aiPersonality:'Friendly Tutor', sound:true };
-          saveSettings();
-          applySettings();
-        }
-      });
-      document.getElementById('settingsBtn').addEventListener('click', () => {
-        settingsOverlay.classList.add('show');
-        settingsPanel.classList.add('open');
-      });
-      document.getElementById('settingsClose').addEventListener('click', () => {
-        settingsOverlay.classList.remove('show');
-        settingsPanel.classList.remove('open');
-      });
-      document.getElementById('settingsOverlay').addEventListener('click', () => {
-        settingsOverlay.classList.remove('show');
-        settingsPanel.classList.remove('open');
-      });
-    }
-
-    // ============================================================
-    // SOCKET
-    // ============================================================
-    function connectSocket() {
-      socket = io(SERVER_URL, { transports: ['websocket','polling'], reconnection: true, reconnectionAttempts: 10, reconnectionDelay: 1000, withCredentials: true });
-      socket.on('connect', () => {
-        console.log('✅ Connected');
-        if (currentGroup) socket.emit('joinGroup', { groupId: currentGroup, userName: USER_NAME, userId: USER_ID });
-      });
-      socket.on('connect_error', (err) => console.error('❌ Connection error:', err));
-      socket.on('disconnect', () => console.log('❌ Disconnected'));
-
-      // Group State
-      socket.on('groupState', (data) => {
-        members = data.members || [];
-        messages = data.messages || [];
-        createdBy = data.createdBy || null;
-        admins = data.admins || [];
-        groupMeta.name = data.name || currentGroup;
-        groupMeta.description = data.description || '';
-        groupMeta.avatar = data.avatar || '📚';
-        pinnedMessageId = data.pinned || null;
-        renderMessages();
-        updateMemberStatus();
-        updateHeaderInfo();
-      });
-      socket.on('groupNotFound', (data) => {
-        const groupName = data.groupId;
-        groups = groups.filter(g => g !== groupName);
-        localStorage.setItem('studentnija_groups', JSON.stringify(groups));
-        renderGroups();
-        if (currentGroup === groupName) { currentGroup = null; groupTitle.textContent = 'StudentNija'; messages = []; members = []; renderMessages(); updateMemberStatus(); socket.emit('leaveGroup'); }
-      });
-      socket.on('groupMetaUpdated', (data) => {
-        groupMeta.description = data.description || '';
-        groupMeta.avatar = data.avatar || '📚';
-        updateHeaderInfo();
-      });
-      socket.on('groupRenamed', (data) => {
-        const idx = groups.indexOf(data.groupId);
-        if (idx !== -1) { groups[idx] = data.newName; localStorage.setItem('studentnija_groups', JSON.stringify(groups)); renderGroups(); if (currentGroup === data.groupId) { currentGroup = data.newName; groupTitle.textContent = data.newName; } }
-      });
-      socket.on('groupDeleted', (data) => {
-        groups = groups.filter(g => g !== data.groupId);
-        localStorage.setItem('studentnija_groups', JSON.stringify(groups));
-        if (currentGroup === data.groupId) { currentGroup = null; groupTitle.textContent = 'StudentNija'; messages = []; members = []; renderMessages(); updateMemberStatus(); }
-        renderGroups();
-      });
-      socket.on('membersUpdate', (updated) => {
-        members = updated;
-        updateMemberStatus();
-        updateGroupInfoPanel();
-      });
-      socket.on('memberAdded', (data) => {
-        members.push({ id: data.userId, name: data.name });
-        updateMemberStatus();
-        updateGroupInfoPanel();
-      });
-      socket.on('memberRemoved', (data) => {
-        if (data.userId === USER_ID) {
-          alert('You have been removed from the group by the admin.');
-          if (currentGroup) { currentGroup = null; groupTitle.textContent = 'StudentNija'; messages = []; members = []; renderMessages(); updateMemberStatus(); socket.emit('leaveGroup'); renderGroups(); }
-        } else {
-          members = members.filter(m => m.id !== data.userId);
-          updateMemberStatus();
-          updateGroupInfoPanel();
-        }
-      });
-      socket.on('adminUpdated', (data) => {
-        if (data.isAdmin) { if (!admins.includes(data.targetUserId)) admins.push(data.targetUserId); }
-        else { admins = admins.filter(id => id !== data.targetUserId); }
-        updateGroupInfoPanel();
-      });
-
-      // Messages
-      socket.on('newMessage', (msg) => {
-        messages.push(msg);
-        renderMessages();
-        if (settings.sound) playSound();
-      });
-      socket.on('messageEdited', (data) => {
-        const msg = messages.find(m => m.id === data.messageId);
-        if (msg) { msg.text = data.newText; msg.edited = true; msg.editedAt = data.editedAt; renderMessages(); }
-      });
-      socket.on('messageDeleted', (data) => {
-        const msg = messages.find(m => m.id === data.messageId);
-        if (msg) { msg.deleted = true; msg.text = 'This message was deleted.'; renderMessages(); }
-      });
-      socket.on('messageDeletedForSelf', (data) => {
-        if (data.userId === USER_ID) {
-          const msg = messages.find(m => m.id === data.messageId);
-          if (msg) { msg.deletedFor = msg.deletedFor || []; if (!msg.deletedFor.includes(USER_ID)) msg.deletedFor.push(USER_ID); renderMessages(); }
-        }
-      });
-      socket.on('messagePinned', (data) => {
-        pinnedMessageId = data.messageId;
-        renderMessages();
-      });
-      socket.on('messageUnpinned', (data) => {
-        pinnedMessageId = null;
-        renderMessages();
-      });
-      socket.on('reactionUpdate', (data) => {
-        const msg = messages.find(m => m.id === data.messageId);
-        if (msg) { msg.reactions = data.reactions; renderMessages(); }
-      });
-      socket.on('aiTyping', (data) => {
-        if (data.typing) showAITyping(); else hideAITyping();
-      });
-
-      // Errors
-      socket.on('error', (data) => { alert('Error: ' + data.message); });
-    }
-
-    function playSound() {
-      try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain); gain.connect(ctx.destination);
-        osc.frequency.value = 800; gain.gain.value = 0.08;
-        osc.start(); osc.stop(ctx.currentTime + 0.08);
-      } catch(e) {}
-    }
-
-    // ============================================================
-    // RENDER MESSAGES
-    // ============================================================
-    function renderMessages() {
-      if (!currentGroup) {
-        chatArea.innerHTML = `<div class="empty-state"><div class="icon">💬</div><h2>Welcome to Study Chat</h2><p>Join a group to start studying with friends.</p></div>`;
-        messageInput.disabled = true; sendBtn.disabled = true; messageInput.placeholder = 'Join a group first...';
-        return;
+      // Generic confirm modal
+      let confirmCallback = null;
+      function showConfirm(message, callback) {
+        confirmMessage.textContent = message;
+        confirmCallback = callback;
+        confirmModal.classList.add('open');
       }
-      messageInput.disabled = false; sendBtn.disabled = false; messageInput.placeholder = 'Type a message...';
-      if (!messages.length) {
-        chatArea.innerHTML = `<div class="empty-state" style="padding:30px;"><div style="font-size:40px;">👋</div><p style="font-size:14px; color:var(--text-muted);">No messages yet. Say hello!</p></div>`;
-        return;
+      okConfirmBtn.addEventListener('click', () => { confirmModal.classList.remove('open'); if (confirmCallback) confirmCallback(); });
+      cancelConfirmBtn.addEventListener('click', () => confirmModal.classList.remove('open'));
+
+      // Header management
+      function setHeaderForHome() {
+        homeBtn.innerHTML = '←';
+        homeBtn.onclick = () => { if (window.history.length > 1) window.history.back(); else window.location.href = 'index.html'; };
+        groupTitle.textContent = 'StudentNija Hub';
+        headerStatus.style.display = 'none';
       }
-      let html = '';
-      let lastDate = '';
-      messages.forEach(m => {
-        if (m.deletedFor && m.deletedFor.includes(USER_ID)) return;
-        const msgDate = m.timestamp ? new Date(m.timestamp).toDateString() : '';
-        if (msgDate && msgDate !== lastDate) { html += `<div class="date-divider">${new Date(m.timestamp).toLocaleDateString('en-US', { weekday:'long', month:'short', day:'numeric' })}</div>`; lastDate = msgDate; }
-        const isSelf = m.senderId === USER_ID;
-        const isAI = m.senderId === 'ai_bot';
-        const senderClass = isAI ? 'ai' : '';
-        const timestamp = settings.showTimestamps && m.timestamp ? new Date(m.timestamp).toLocaleTimeString() : '';
-        const isPinned = (pinnedMessageId === m.id);
-        const isDeleted = m.deleted;
-        const text = isDeleted ? 'This message was deleted.' : m.text;
-        const replyHtml = m.replyTo ? `<div class="reply-preview"><span class="reply-sender">${escapeHtml(m.replyTo.senderName)}</span> ${escapeHtml(m.replyTo.text)}</div>` : '';
-        const reactionHtml = Object.entries(m.reactions || {}).map(([emoji, users]) =>
-          `<button class="reaction-btn" data-msgid="${m.id}" data-emoji="${emoji}">${emoji} <span class="count">${users.length}</span></button>`
-        ).join('');
-
-        html += `
-          <div class="message-card ${isSelf ? 'self' : 'other'}" data-id="${m.id}" data-sender="${m.senderId}">
-            ${isPinned ? '<div class="pinned-badge">📌</div>' : ''}
-            <div class="sender ${senderClass}">${escapeHtml(m.senderName)}${m.edited ? ' <span class="edited-badge">(edited)</span>' : ''}</div>
-            ${replyHtml}
-            <div class="text${isDeleted ? ' deleted' : ''}">${escapeHtml(text)}</div>
-            <div class="footer">
-              <div class="reactions">${reactionHtml}</div>
-              ${timestamp ? `<span class="timestamp">${timestamp}</span>` : ''}
-            </div>
-          </div>
-        `;
-      });
-      chatArea.innerHTML = html;
-      chatArea.scrollTop = chatArea.scrollHeight;
-
-      // Attach reaction clicks
-      document.querySelectorAll('.reaction-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
-          e.stopPropagation();
-          const msgId = this.dataset.msgid;
-          const emoji = this.dataset.emoji;
-          if (socket && currentGroup) {
-            socket.emit('react', { groupId: currentGroup, messageId: msgId, emoji, userId: USER_ID });
-          }
-        });
-      });
-
-      // Long‑press for message actions
-      let pressTimer = null;
-      document.querySelectorAll('.message-card').forEach(card => {
-        card.addEventListener('touchstart', (e) => {
-          pressTimer = setTimeout(() => {
-            showMessageActions(card);
-          }, 500);
-        });
-        card.addEventListener('touchmove', () => { clearTimeout(pressTimer); });
-        card.addEventListener('touchend', () => { clearTimeout(pressTimer); });
-        card.addEventListener('contextmenu', (e) => {
-          e.preventDefault();
-          showMessageActions(card);
-        });
-      });
-
-      // Swipe to reply
-      let startX = 0;
-      document.querySelectorAll('.message-card').forEach(card => {
-        card.addEventListener('touchstart', (e) => {
-          startX = e.touches[0].clientX;
-        }, { passive: true });
-        card.addEventListener('touchmove', (e) => {
-          const delta = e.touches[0].clientX - startX;
-          if (delta > 60) {
-            const id = card.dataset.id;
-            const msg = messages.find(m => m.id === id);
-            if (msg && !msg.deleted) {
-              setReplyTo({ id: msg.id, senderName: msg.senderName, text: msg.text });
-              card.style.transform = 'translateX(12px)';
-              setTimeout(() => { card.style.transform = ''; }, 300);
-            }
-          }
-        }, { passive: true });
-      });
-    }
-
-    function showMessageActions(card) {
-      const id = card.dataset.id;
-      const msg = messages.find(m => m.id === id);
-      if (!msg || msg.deleted) return;
-      const isSelf = msg.senderId === USER_ID;
-      const isAdmin = admins.includes(USER_ID) || createdBy === USER_ID;
-      const isCreator = createdBy === USER_ID;
-      const options = [];
-      if (isSelf) {
-        options.push({ label: '✏️ Edit', action: 'edit' });
-        options.push({ label: '🗑️ Delete for me', action: 'deleteSelf' });
-        if (isAdmin) options.push({ label: '🗑️ Delete for everyone', action: 'deleteAll' });
-      } else if (isAdmin) {
-        options.push({ label: '🗑️ Delete for everyone', action: 'deleteAll' });
+      function setHeaderForGroup(groupName) {
+        homeBtn.innerHTML = '🏠';
+        homeBtn.onclick = () => { if (currentGroup) { socket.emit('leaveGroup'); currentGroup = null; } renderHome(); };
+        groupTitle.textContent = groupName;
+        headerStatus.style.display = 'block';
       }
-      if (isAdmin) {
-        if (pinnedMessageId === id) options.push({ label: '📌 Unpin', action: 'unpin' });
-        else options.push({ label: '📌 Pin', action: 'pin' });
+
+      // Unread management
+      function incrementUnread(target, isPrivate = false) {
+        if (isPrivate) { privateUnread[target] = (privateUnread[target] || 0) + 1; savePrivateUnread(); renderPrivateChats(); }
+        else { unreadCounts[target] = (unreadCounts[target] || 0) + 1; saveUnread(); renderHomeGroups(); }
       }
-      options.push({ label: '🔁 Reply', action: 'reply' });
-      options.push({ label: '❌ Cancel', action: 'cancel' });
-
-      const choice = prompt(
-        `Message from ${msg.senderName}:\n"${msg.text.substring(0, 60)}${msg.text.length>60?'…':''}"\n\n` +
-        options.map((o, i) => `${i+1}. ${o.label}`).join('\n') +
-        '\n\nEnter number:'
-      );
-      if (choice === null) return;
-      const idx = parseInt(choice) - 1;
-      if (idx >= 0 && idx < options.length) {
-        const action = options[idx].action;
-        if (action === 'edit') {
-          const newText = prompt('Edit message:', msg.text);
-          if (newText !== null && newText.trim()) {
-            socket.emit('editMessage', { groupId: currentGroup, messageId: id, newText: newText.trim(), userId: USER_ID });
-          }
-        } else if (action === 'deleteSelf') {
-          socket.emit('deleteMessage', { groupId: currentGroup, messageId: id, userId: USER_ID, forAll: false });
-        } else if (action === 'deleteAll') {
-          if (confirm('Delete this message for everyone?')) {
-            socket.emit('deleteMessage', { groupId: currentGroup, messageId: id, userId: USER_ID, forAll: true });
-          }
-        } else if (action === 'pin') {
-          socket.emit('pinMessage', { groupId: currentGroup, messageId: id, userId: USER_ID });
-        } else if (action === 'unpin') {
-          socket.emit('pinMessage', { groupId: currentGroup, messageId: id, userId: USER_ID });
-        } else if (action === 'reply') {
-          setReplyTo({ id: msg.id, senderName: msg.senderName, text: msg.text });
-        }
+      function clearUnread(target, isPrivate = false) {
+        if (isPrivate) { delete privateUnread[target]; savePrivateUnread(); renderPrivateChats(); }
+        else { delete unreadCounts[target]; saveUnread(); renderHomeGroups(); }
       }
-    }
 
-    // ============================================================
-    // REPLY HANDLING
-    // ============================================================
-    function setReplyTo(data) {
-      if (!data) { replyTo = null; replyBar.classList.remove('show'); return; }
-      replyTo = data;
-      const replySender = document.querySelector('.reply-sender');
-      const replyText = document.querySelector('.reply-text');
-      if (replySender) replySender.textContent = data.senderName;
-      if (replyText) replyText.textContent = data.text.length > 60 ? data.text.substring(0,60)+'…' : data.text;
-      replyBar.classList.add('show');
-      messageInput.focus();
-    }
-    replyClose.addEventListener('click', () => setReplyTo(null));
-
-    // ============================================================
-    // AI TYPING INDICATOR
-    // ============================================================
-    let aiTypingEl = null;
-    function showAITyping() {
-      if (aiTypingEl) return;
-      aiTypingEl = document.createElement('div');
-      aiTypingEl.className = 'ai-typing-bubble';
-      aiTypingEl.innerHTML = '<div class="spinner"></div> ✦ AI is thinking...';
-      chatArea.appendChild(aiTypingEl);
-      chatArea.scrollTop = chatArea.scrollHeight;
-    }
-    function hideAITyping() {
-      if (aiTypingEl) { aiTypingEl.remove(); aiTypingEl = null; }
-    }
-
-    // ============================================================
-    // GROUP INFO PANEL
-    // ============================================================
-    function updateGroupInfoPanel() {
-      infoAvatar.textContent = groupMeta.avatar || '📚';
-      infoName.textContent = groupMeta.name || currentGroup || 'Group';
-      infoDesc.textContent = groupMeta.description || 'No description';
-      if (infoMemberList) {
-        infoMemberList.innerHTML = members.map(m => {
-          const isAdmin = admins.includes(m.id);
-          const isCreator = createdBy === m.id;
-          const crown = (isAdmin || isCreator) ? '👑' : '';
-          const you = m.id === USER_ID ? ' (you)' : '';
-          return `<div class="info-member-item">
-            <span style="font-weight:500;">${escapeHtml(m.name)}${you}</span>
-            ${crown ? `<span class="crown">${crown}</span>` : ''}
-            ${(createdBy === USER_ID && m.id !== USER_ID) ? `<button class="admin-toggle" data-id="${m.id}" data-admin="${isAdmin}" style="margin-left:auto; background:none; border:1px solid var(--accent); color:var(--accent); border-radius:20px; padding:2px 12px; font-size:11px; cursor:pointer;">${isAdmin ? 'Demote' : 'Promote'}</button>` : ''}
+      // Home page
+      function renderHome() {
+        homePage.style.display = 'block';
+        chatArea.style.display = 'none'; inputWrapper.style.display = 'none'; replyBar.style.display = 'none';
+        setHeaderForHome();
+        renderHomeGroups();
+        renderPrivateChats();
+      }
+      function renderHomeGroups() {
+        const valid = groups.filter(g => g && g.trim());
+        const publicList = document.getElementById('publicGroupList');
+        publicList.innerHTML = valid.map(g => {
+          const unread = unreadCounts[g] || 0;
+          const meta = groupMeta[g] || { name: g, avatar: '📚' };
+          return `<div class="group-item" data-group="${g}">
+            <div class="avatar">${(meta.avatar && meta.avatar.startsWith('data:') ? `<img src="${meta.avatar}" alt="">` : meta.avatar) || g.charAt(0).toUpperCase()}</div>
+            <div class="info"><div class="name">${escapeHtml(g)}</div><div class="preview">Tap to open</div></div>
+            ${unread > 0 ? `<span class="unread-badge">${unread}</span>` : ''}
           </div>`;
-        }).join('');
-        document.querySelectorAll('.admin-toggle').forEach(btn => {
-          btn.addEventListener('click', () => {
-            const targetId = btn.dataset.id;
-            const isAdmin = btn.dataset.admin === 'true';
-            socket.emit('toggleAdmin', { groupId: currentGroup, userId: USER_ID, targetUserId: targetId, add: !isAdmin });
+        }).join('') || '<div class="text-muted">No groups yet. Create or join one!</div>';
+        publicList.querySelectorAll('.group-item').forEach(item => item.addEventListener('click', () => switchGroup(item.dataset.group)));
+      }
+      function renderPrivateChats() {
+        const container = document.getElementById('privateChatList');
+        const chats = Object.keys(privateUnread);
+        container.innerHTML = chats.length ? chats.map(chatId => {
+          const otherUser = chatId.split(':').find(id => id !== USER_ID) || chatId;
+          return `<div class="group-item" data-chat="${chatId}">
+            <div class="avatar">${otherUser.charAt(0).toUpperCase()}</div>
+            <div class="info"><div class="name">Private with ${otherUser}</div><div class="preview">${privateUnread[chatId]} new message(s)</div></div>
+            <span class="unread-badge">${privateUnread[chatId]}</span>
+          </div>`;
+        }).join('') : '<div class="text-muted">No private chats yet.</div>';
+        container.querySelectorAll('.group-item').forEach(item => {
+          item.addEventListener('click', () => {
+            const chatId = item.dataset.chat;
+            socket.emit('joinPrivate', { chatId });
+            currentGroup = null;
+            setHeaderForGroup(`Private chat`);
+            homePage.style.display = 'none'; chatArea.style.display = 'flex'; inputWrapper.style.display = 'block';
+            messageInput.disabled = false; sendBtn.disabled = false;
+            messages = []; renderMessages();
+            clearUnread(chatId, true);
           });
         });
       }
-    }
 
-    function updateHeaderInfo() {
-      groupTitle.textContent = groupMeta.name || currentGroup || 'StudentNija';
-    }
-
-    document.querySelector('.group-info .name')?.addEventListener('click', () => {
-      if (currentGroup) {
-        updateGroupInfoPanel();
-        groupInfoPanel.classList.add('open');
-      }
-    });
-    closeInfo.addEventListener('click', () => groupInfoPanel.classList.remove('open'));
-
-    editGroupMetaBtn.addEventListener('click', () => {
-      if (!currentGroup) return;
-      const newDesc = prompt('Group description:', groupMeta.description);
-      const newAvatar = prompt('Group avatar (emoji):', groupMeta.avatar);
-      if (newDesc !== null || newAvatar !== null) {
-        const update = {};
-        if (newDesc !== null) update.description = newDesc.trim() || '';
-        if (newAvatar !== null) update.avatar = newAvatar.trim() || '📚';
-        socket.emit('updateGroupMeta', { groupId: currentGroup, userId: USER_ID, ...update });
-      }
-    });
-
-    // ============================================================
-    // RENDER GROUPS
-    // ============================================================
-    function renderGroups() {
-      if (!groupList) return;
-      const validGroups = groups.filter(g => g && typeof g === 'string' && g.trim().length > 0);
-      if (!validGroups.length) {
-        groupList.innerHTML = `<div style="padding:20px; text-align:center; color:var(--text-muted); font-size:13px;">No groups yet.<br>Create or join one!</div>`;
-        return;
-      }
-      const isCreator = (createdBy === USER_ID && currentGroup);
-      groupList.innerHTML = validGroups.map(g => {
-        const isActive = g === currentGroup;
-        const lastMsg = messages.length ? messages[messages.length-1].text : '';
-        const initial = g.charAt(0).toUpperCase();
-        const creatorBadge = (isActive && isCreator) ? '👑' : '';
-        return `
-          <div class="group-item ${isActive ? 'active' : ''}" data-group="${g}">
-            <div class="avatar">${initial}</div>
-            <div class="info">
-              <div class="name">${escapeHtml(g)} ${creatorBadge}</div>
-              <div class="preview">${lastMsg ? escapeHtml(lastMsg.substring(0, 40)) : 'No messages yet'}</div>
-            </div>
-            <div class="meta">
-              <div class="time">${messages.length ? new Date(messages[messages.length-1].timestamp).toLocaleTimeString() : ''}</div>
-            </div>
-            ${isActive && isCreator ? `<button class="group-admin-btn" data-group="${g}" data-action="manage">⚙️</button>` : ''}
-          </div>
-        `;
-      }).join('');
-
-      groupList.querySelectorAll('.group-item').forEach(el => {
-        const name = el.dataset.group;
-        el.addEventListener('click', (e) => {
-          if (e.target.classList.contains('group-admin-btn')) return;
-          switchGroup(name);
-          closeDrawer();
-        });
-      });
-      groupList.querySelectorAll('.group-admin-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const groupName = btn.dataset.group;
-          showGroupAdminMenu(groupName);
-        });
-      });
-    }
-
-    function updateMemberStatus() {
-      if (memberStatus) memberStatus.textContent = members.length + ' members';
-    }
-
-    function escapeHtml(str) {
-      if (!str) return '';
-      return str.replace(/[&<>]/g, m => ({ '&':'&amp;','<':'&lt;','>':'&gt;' })[m] || m);
-    }
-
-    // ============================================================
-    // ADMIN MENU
-    // ============================================================
-    function showGroupAdminMenu(groupName) {
-      const options = [
-        { label: '✏️ Rename Group', action: 'rename' },
-        { label: '🗑️ Delete Group', action: 'delete' },
-        { label: '👥 Manage Members', action: 'members' },
-        { label: '❌ Cancel', action: 'cancel' }
-      ];
-      const choice = prompt(
-        `Admin options for "${groupName}":\n` +
-        options.map((o,i) => `${i+1}. ${o.label}`).join('\n') +
-        '\n\nEnter number:'
-      );
-      if (choice === null) return;
-      const idx = parseInt(choice) - 1;
-      if (idx >= 0 && idx < options.length) {
-        const action = options[idx].action;
-        if (action === 'rename') {
-          const newName = prompt('Enter new group name:', groupName);
-          if (newName && newName.trim()) socket.emit('renameGroup', { groupId: groupName, newName: newName.trim(), userId: USER_ID });
-        } else if (action === 'delete') {
-          if (confirm(`Delete group "${groupName}"? This cannot be undone.`)) socket.emit('deleteGroup', { groupId: groupName, userId: USER_ID });
-        } else if (action === 'members') {
-          manageMembers(groupName);
-        }
-      }
-    }
-
-    function manageMembers(groupName) {
-      const memberList = members.map(m => `${m.name} (${m.id === USER_ID ? 'you' : ''})`).join('\n');
-      const action = prompt(
-        `Members in "${groupName}":\n${memberList}\n\n` +
-        `Enter "add" to add a member, "remove ID" to remove (e.g., remove user123), or "cancel".`
-      );
-      if (!action) return;
-      if (action.toLowerCase().startsWith('add')) {
-        const newUserId = prompt('Enter user ID (or email):');
-        if (newUserId) {
-          const newUserName = prompt('Display name:') || 'Student';
-          socket.emit('addMember', { groupId: groupName, userId: USER_ID, newUserId, newUserName });
-        }
-      } else if (action.toLowerCase().startsWith('remove')) {
-        const parts = action.split(' ');
-        const targetId = parts[1];
-        if (targetId && targetId !== USER_ID) {
-          if (confirm(`Remove member ${targetId}?`)) socket.emit('removeMember', { groupId: groupName, userId: USER_ID, targetUserId: targetId });
-        } else alert('Invalid or cannot remove yourself.');
-      }
-    }
-
-    // ============================================================
-    // GROUP MANAGEMENT
-    // ============================================================
-    function switchGroup(name) {
-      if (currentGroup === name) return;
-      if (currentGroup && socket) socket.emit('leaveGroup');
-      currentGroup = name;
-      groupTitle.textContent = name;
-      if (socket) socket.emit('joinGroup', { groupId: name, userName: USER_NAME, userId: USER_ID });
-      const saved = JSON.parse(localStorage.getItem('studentnija_groups') || '[]');
-      if (!saved.includes(name)) { saved.push(name); localStorage.setItem('studentnija_groups', JSON.stringify(saved)); }
-      renderGroups();
-      renderMessages();
-      localStorage.setItem('studentnija_last_group_v3', name);
-      if (groupInfoPanel.classList.contains('open')) updateGroupInfoPanel();
-    }
-
-    function createGroup(name) {
-      if (!name || !name.trim()) return;
-      const trimmed = name.trim();
-      const saved = JSON.parse(localStorage.getItem('studentnija_groups') || '[]');
-      if (saved.includes(trimmed)) {
-        switchGroup(trimmed);
-        closeDrawer();
-        return;
-      }
-      socket.emit('createGroup', { groupId: trimmed, userName: USER_NAME, userId: USER_ID }, (response) => {
-        if (response && response.success) {
-          if (!saved.includes(trimmed)) { saved.push(trimmed); localStorage.setItem('studentnija_groups', JSON.stringify(saved)); }
-          renderGroups();
-          currentGroup = trimmed;
-          groupTitle.textContent = trimmed;
-          members = response.members || [];
-          messages = response.messages || [];
-          createdBy = response.createdBy || USER_ID;
-          admins = [USER_ID];
-          groupMeta.name = trimmed;
-          groupMeta.description = '';
-          groupMeta.avatar = '📚';
-          renderMessages();
-          updateMemberStatus();
-          closeDrawer();
-        } else {
-          alert('Failed to create group: ' + (response?.error || 'Unknown error'));
-        }
-      });
-    }
-
-    function loadGroups() {
-      const saved = JSON.parse(localStorage.getItem('studentnija_groups') || '[]');
-      groups = saved;
-      renderGroups();
-      if (currentGroup && !groups.includes(currentGroup)) {
-        currentGroup = null;
-        groupTitle.textContent = 'StudentNija';
-        messages = []; members = [];
-        renderMessages(); updateMemberStatus();
-        if (socket) socket.emit('leaveGroup');
-      }
-    }
-
-    // ============================================================
-    // SEND MESSAGE
-    // ============================================================
-    function sendMessage() {
-      const text = messageInput.value.trim();
-      if (!text || !currentGroup || !socket) return;
-      messageInput.value = '';
-      const replyToId = replyTo ? replyTo.id : null;
-      socket.emit('sendMessage', {
-        groupId: currentGroup,
-        text,
-        senderName: USER_NAME,
-        senderId: USER_ID,
-        timestamp: new Date().toISOString(),
-        replyToId
-      });
-      if (replyTo) setReplyTo(null);
-      if (aiToggle && (aiToggle.checked || text.toLowerCase().startsWith('@ai'))) {
-        const cleanPrompt = text.replace(/^@ai\s*/i, '');
-        socket.emit('requestAI', {
-          groupId: currentGroup,
-          prompt: cleanPrompt || text,
-          context: messages.slice(-8).map(m => `${m.senderName}: ${m.text}`).join('\n'),
-          personality: settings.aiPersonality || 'Friendly Tutor',
-          senderName: USER_NAME,
-          senderId: USER_ID
-        });
-      }
-    }
-
-    // ============================================================
-    // DRAWER
-    // ============================================================
-    function openDrawer() { drawerOverlay.classList.add('open'); drawer.classList.add('open'); }
-    function closeDrawer() { drawerOverlay.classList.remove('open'); drawer.classList.remove('open'); }
-    drawerToggle.addEventListener('click', openDrawer);
-    drawerOverlay.addEventListener('click', closeDrawer);
-
-    // ============================================================
-    // MODAL
-    // ============================================================
-    let modalMode = 'create';
-    function showModal(mode) {
-      modalMode = mode;
-      modalTitle.textContent = mode === 'create' ? '✨ Create Group' : '🔗 Join Group';
-      modalInput.placeholder = mode === 'create' ? 'Enter group name...' : 'Enter group name to join...';
-      modalInput.value = '';
-      modalOverlay.classList.add('show');
-      setTimeout(() => modalInput.focus(), 100);
-    }
-    function hideModal() { modalOverlay.classList.remove('show'); }
-    function confirmModal() {
-      const val = modalInput.value.trim();
-      if (!val) return;
-      if (modalMode === 'create') createGroup(val);
-      else {
+      // Switch to group
+      function switchGroup(name) {
+        homePage.style.display = 'none'; chatArea.style.display = 'flex'; inputWrapper.style.display = 'block';
+        messageInput.disabled = false; sendBtn.disabled = false;
+        if (currentGroup === name) return;
+        if (currentGroup && socket) socket.emit('leaveGroup');
+        currentGroup = name;
+        setHeaderForGroup(name);
+        clearUnread(name);
+        socket.emit('joinGroup', { groupId: name, userName: USER_NAME, userId: USER_ID });
         const saved = JSON.parse(localStorage.getItem('studentnija_groups') || '[]');
-        if (!saved.includes(val)) { saved.push(val); localStorage.setItem('studentnija_groups', JSON.stringify(saved)); }
+        if (!saved.includes(name)) { saved.push(name); localStorage.setItem('studentnija_groups', JSON.stringify(saved)); groups = saved; }
+        localStorage.setItem('studentnija_last_group_v3', name);
         renderGroups();
-        switchGroup(val);
+        renderMessages();
       }
-      hideModal();
-    }
-    newGroupDrawerBtn.addEventListener('click', () => showModal('create'));
-    joinGroupDrawerBtn.addEventListener('click', () => showModal('join'));
-    modalConfirm.addEventListener('click', confirmModal);
-    modalCancel.addEventListener('click', hideModal);
-    modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) hideModal(); });
-    modalInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') confirmModal(); });
 
-    // ============================================================
-    // OTHER LISTENERS
-    // ============================================================
-    sendBtn.addEventListener('click', sendMessage);
-    messageInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
-    avatarBtn.addEventListener('click', () => alert('👤 ' + USER_NAME + '\nID: ' + USER_ID));
+      // Socket events
+      socket.on('groupState', data => {
+        members = data.members || []; messages = data.messages || [];
+        createdBy = data.createdBy || null; admins = data.admins || [];
+        pinnedMessageId = data.pinned || null;
+        groupMeta[data.name || currentGroup] = { name: data.name, description: data.description, avatar: data.avatar || '📚' };
+        renderMessages(); memberStatus.textContent = members.length + ' members'; updateGroupInfoPanel();
+      });
+      socket.on('newMessage', msg => {
+        messages.push(msg); renderMessages();
+        if (settings.sound) playSound();
+        if (!currentGroup || msg.groupId !== currentGroup) incrementUnread(msg.groupId);
+      });
+      socket.on('privateChatHistory', data => { messages = data.messages || []; renderMessages(); });
+      socket.on('newPrivateMessage', msg => { messages.push(msg); renderMessages(); if (settings.sound) playSound(); if (!currentGroup) { const chatId = [USER_ID, msg.senderId].sort().join(':'); incrementUnread(chatId, true); } });
+      socket.on('reactionUpdate', data => { const msg = messages.find(m => m.id === data.messageId); if (msg) { msg.reactions = data.reactions; renderMessages(); } });
+      socket.on('membersUpdate', updated => { members = updated; memberStatus.textContent = members.length + ' members'; updateGroupInfoPanel(); });
+      socket.on('groupMetaUpdated', data => { if (currentGroup) { groupMeta[currentGroup] = { ...groupMeta[currentGroup], description: data.description, avatar: data.avatar }; updateGroupInfoPanel(); } });
+      socket.on('groupRenamed', data => {
+        if (data.groupId === currentGroup) {
+          groupTitle.textContent = data.newName;
+          currentGroup = data.newName;
+          const idx = groups.indexOf(data.groupId);
+          if (idx !== -1) { groups[idx] = data.newName; localStorage.setItem('studentnija_groups', JSON.stringify(groups)); renderGroups(); }
+        }
+      });
+      socket.on('groupNotFound', data => {
+        groups = groups.filter(g => g !== data.groupId);
+        localStorage.setItem('studentnija_groups', JSON.stringify(groups));
+        renderGroups();
+        if (currentGroup === data.groupId) { currentGroup = null; setHeaderForHome(); messages = []; renderMessages(); }
+      });
+      socket.on('error', data => alert(data.message));
 
-    // ============================================================
-    // INIT
-    // ============================================================
-    loadSettings();
-    initSettings();
-    connectSocket();
-    loadGroups();
-    const last = localStorage.getItem('studentnija_last_group_v3');
-    if (last && groups.includes(last)) switchGroup(last);
-    console.log('🚀 StudentNija Chat (Production UI) loaded.');
+      function renderMessages() {
+        chatArea.innerHTML = '';
+        if (messages.length === 0) {
+          chatArea.innerHTML = `<div class="empty-state" style="padding:30px;text-align:center;color:var(--text-muted);"><div style="font-size:40px;">👋</div><p>No messages yet. Say hello!</p></div>`;
+          return;
+        }
+        messages.forEach(msg => {
+          const isSelf = msg.senderId === USER_ID;
+          const senderName = msg.senderName || 'User';
+          const avatarHtml = isSelf
+            ? `<img class="sender-avatar" src="${localStorage.getItem('studentnija_chat_user_avatar') || USER_AVATAR || 'data:image/svg+xml,...'}">`
+            : `<div class="sender-avatar" style="background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">${senderName.charAt(0).toUpperCase()}</div>`;
+          const reactionsHtml = Object.entries(msg.reactions || {}).map(([emoji, users]) =>
+            `<span class="reaction-btn" data-msgid="${msg.id}" data-emoji="${emoji}">${emoji} <span class="count">${users.length}</span></span>`
+          ).join('');
+          const contentHtml = msg.type === 'audio'
+            ? `<div class="audio-msg"><audio controls src="${msg.text}"></audio></div>`
+            : `<div class="text">${escapeHtml(msg.text)}</div>`;
+          const sentCheck = isSelf ? '<span class="sent-check">✓</span>' : '';
+          const div = document.createElement('div');
+          div.className = `message-card ${isSelf ? 'self' : 'other'}`;
+          div.dataset.id = msg.id; div.dataset.senderid = msg.senderId;
+          div.innerHTML = `
+            <div class="sender-row">${avatarHtml}<span class="sender-name">${escapeHtml(senderName)}</span></div>
+            ${contentHtml}
+            <div class="footer">
+              <div class="reactions">${reactionsHtml}</div>
+              <span class="timestamp">${new Date(msg.timestamp).toLocaleTimeString()}${sentCheck}</span>
+            </div>
+          `;
+          chatArea.appendChild(div);
+          // Double-tap / long-press
+          let tapCount = 0, tapTimer = null, longPressTimer = null;
+          div.addEventListener('touchstart', e => {
+            tapCount++;
+            if (tapCount === 1) tapTimer = setTimeout(() => { tapCount = 0; }, 300);
+            else if (tapCount === 2) { clearTimeout(tapTimer); tapCount = 0; showReactionPicker(div, msg.id); e.preventDefault(); }
+            longPressTimer = setTimeout(() => showContextMenu(div, msg), 500);
+          });
+          div.addEventListener('touchend', () => clearTimeout(longPressTimer));
+          div.addEventListener('touchmove', () => clearTimeout(longPressTimer));
+          div.addEventListener('contextmenu', e => { e.preventDefault(); showContextMenu(div, msg); });
+        });
+        chatArea.scrollTop = chatArea.scrollHeight;
+
+        // Swipe right to reply
+        let swipeStartX = 0;
+        chatArea.addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; }, { passive: true });
+        chatArea.addEventListener('touchmove', e => {
+          const delta = e.touches[0].clientX - swipeStartX;
+          if (delta > 80) {
+            const target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+            const card = target?.closest('.message-card');
+            if (card) {
+              const msgId = card.dataset.id;
+              const msg = messages.find(m => m.id === msgId);
+              if (msg && !msg.deleted) setReplyTo(msg);
+              card.style.transform = 'translateX(12px)';
+              setTimeout(() => card.style.transform = '', 300);
+            }
+          }
+        }, { passive: true });
+
+        chatArea.querySelectorAll('.reaction-btn').forEach(btn => {
+          btn.addEventListener('click', e => { e.stopPropagation(); socket.emit('react', { groupId: currentGroup, messageId: btn.dataset.msgid, emoji: btn.dataset.emoji, userId: USER_ID }); });
+        });
+      }
+
+      // Context menu
+      let activeContextMsg = null;
+      function showContextMenu(element, msg) {
+        activeContextMsg = msg;
+        const rect = element.getBoundingClientRect();
+        let top = rect.bottom + 4, left = rect.left;
+        if (top + 200 > window.innerHeight) top = rect.top - 200;
+        if (left + 180 > window.innerWidth) left = window.innerWidth - 190;
+        if (left < 10) left = 10;
+        contextMenu.style.top = top + 'px'; contextMenu.style.left = left + 'px';
+        contextMenu.style.display = 'flex';
+        document.getElementById('ctxDelete').style.display = msg.senderId === USER_ID ? 'flex' : 'none';
+        const isAdmin = admins.includes(USER_ID) || createdBy === USER_ID;
+        document.getElementById('ctxDeleteAll').style.display = (isAdmin && msg.senderId === USER_ID) ? 'flex' : 'none';
+        document.getElementById('ctxPin').style.display = isAdmin ? 'flex' : 'none';
+      }
+      document.getElementById('ctxCopy').addEventListener('click', () => { if (activeContextMsg) navigator.clipboard.writeText(activeContextMsg.text); contextMenu.style.display = 'none'; });
+      document.getElementById('ctxReply').addEventListener('click', () => { if (activeContextMsg) setReplyTo(activeContextMsg); contextMenu.style.display = 'none'; });
+      document.getElementById('ctxDelete').addEventListener('click', () => { if (activeContextMsg) { socket.emit('deleteMessage', { groupId: currentGroup, messageId: activeContextMsg.id, userId: USER_ID, forAll: false }); contextMenu.style.display = 'none'; } });
+      document.getElementById('ctxDeleteAll').addEventListener('click', () => { if (activeContextMsg) { socket.emit('deleteMessage', { groupId: currentGroup, messageId: activeContextMsg.id, userId: USER_ID, forAll: true }); contextMenu.style.display = 'none'; } });
+      document.getElementById('ctxPin').addEventListener('click', () => { if (activeContextMsg && (admins.includes(USER_ID) || createdBy === USER_ID)) { socket.emit('pinMessage', { groupId: currentGroup, messageId: activeContextMsg.id, userId: USER_ID }); contextMenu.style.display = 'none'; } });
+      document.getElementById('ctxStar').addEventListener('click', () => { if (activeContextMsg) { let starred = JSON.parse(localStorage.getItem('studentnija_starred') || '[]'); if (!starred.includes(activeContextMsg.id)) starred.push(activeContextMsg.id); localStorage.setItem('studentnija_starred', JSON.stringify(starred)); contextMenu.style.display = 'none'; } });
+      document.getElementById('ctxReport').addEventListener('click', () => { if (activeContextMsg) { document.getElementById('reportMsgModal').classList.add('open'); contextMenu.style.display = 'none'; window._reportMsgId = activeContextMsg.id; } });
+      document.getElementById('ctxCancel').addEventListener('click', () => contextMenu.style.display = 'none');
+      document.addEventListener('click', e => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
+
+      // Report message
+      document.getElementById('confirmReportMsgBtn').addEventListener('click', async () => {
+        const reason = document.getElementById('reportMsgReason').value.trim();
+        if (!reason) return;
+        await fetch(`${SERVER_URL}/api/feedback`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ userId: USER_ID, message: `[Message Report] ${activeContextMsg.text} - Reason: ${reason}` }) });
+        document.getElementById('reportMsgModal').classList.remove('open');
+        document.getElementById('reportMsgReason').value = '';
+      });
+      document.getElementById('cancelReportMsgBtn').addEventListener('click', () => document.getElementById('reportMsgModal').classList.remove('open'));
+
+      // Reply
+      function setReplyTo(msg) {
+        replyTo = msg;
+        document.querySelector('.reply-sender').textContent = msg.senderName;
+        document.querySelector('.reply-text').textContent = (msg.text || '').substring(0, 50);
+        replyBar.style.display = 'flex';
+        messageInput.focus();
+      }
+      replyClose.addEventListener('click', () => { replyTo = null; replyBar.style.display = 'none'; });
+
+      // Send message
+      function sendMessage(textOverride, type = 'text') {
+        const text = textOverride || messageInput.value.trim();
+        if (!text || (!currentGroup && !socket.id)) return;
+        let finalText = text;
+        if (replyTo && type === 'text') { finalText = `@${replyTo.senderName} ${text}`; replyTo = null; replyBar.style.display = 'none'; }
+        messageInput.value = '';
+        socket.emit('sendMessage', { groupId: currentGroup, text: finalText, senderName: USER_NAME, senderId: USER_ID, timestamp: new Date().toISOString(), replyToId: replyTo?.id, type });
+        if (aiToggle.checked || (type === 'text' && text.startsWith('@ai'))) {
+          socket.emit('requestAI', { groupId: currentGroup, prompt: type === 'text' ? text.replace(/^@ai\s*/i, '') : '[Voice note]', context: messages.slice(-10).map(m => `${m.senderName}: ${m.text}`).join('\n'), personality: 'Friendly Tutor', senderName: USER_NAME, senderId: USER_ID });
+        }
+      }
+
+      // Voice recording
+      async function startRecording() { try { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); mediaRecorder = new MediaRecorder(stream); audioChunks = []; mediaRecorder.ondataavailable = e => audioChunks.push(e.data); mediaRecorder.onstop = () => { const blob = new Blob(audioChunks, { type: 'audio/webm' }); const url = URL.createObjectURL(blob); socket.emit('sendMessage', { groupId: currentGroup, text: url, senderName: USER_NAME, senderId: USER_ID, timestamp: new Date().toISOString(), type: 'audio' }); stream.getTracks().forEach(t => t.stop()); recIndicator.style.display = 'none'; isRecording = false; }; mediaRecorder.start(); recIndicator.style.display = 'flex'; isRecording = true; } catch (e) { } }
+      function stopRecording() { if (mediaRecorder && isRecording) mediaRecorder.stop(); }
+      micBtn.addEventListener('mousedown', startRecording); micBtn.addEventListener('mouseup', stopRecording);
+      micBtn.addEventListener('touchstart', startRecording); micBtn.addEventListener('touchend', stopRecording);
+
+      // Reaction picker
+      let activeReactionMsgId = null;
+      function showReactionPicker(element, msgId) {
+        activeReactionMsgId = msgId;
+        const rect = element.getBoundingClientRect();
+        let top = rect.top - 60, left = rect.left + rect.width/2 - 120;
+        if (top < 10) top = 10; if (left < 10) left = 10;
+        if (left + 250 > window.innerWidth) left = window.innerWidth - 250;
+        reactionPicker.style.top = top + 'px'; reactionPicker.style.left = left + 'px'; reactionPicker.style.display = 'flex';
+      }
+      reactionPicker.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => { if (activeReactionMsgId) { socket.emit('react', { groupId: currentGroup, messageId: activeReactionMsgId, emoji: btn.dataset.emoji, userId: USER_ID }); reactionPicker.style.display = 'none'; } }));
+      document.addEventListener('click', e => { if (!reactionPicker.contains(e.target)) reactionPicker.style.display = 'none'; });
+
+      // Group info panel
+      function updateGroupInfoPanel() {
+        if (!currentGroup) return;
+        const meta = groupMeta[currentGroup] || { name: currentGroup, description: '', avatar: '📚' };
+        document.getElementById('groupInfoName').textContent = meta.name;
+        document.getElementById('groupInfoDesc').textContent = meta.description || 'No description';
+        if (meta.avatar && meta.avatar.startsWith('data:')) {
+          document.getElementById('groupLogoImg').src = meta.avatar; document.getElementById('groupLogoImg').style.display = 'block'; document.getElementById('groupLogoEmoji').style.display = 'none';
+        } else {
+          document.getElementById('groupLogoEmoji').textContent = meta.avatar || '📚'; document.getElementById('groupLogoEmoji').style.display = 'block'; document.getElementById('groupLogoImg').style.display = 'none';
+        }
+        const isAdmin = createdBy === USER_ID || admins.includes(USER_ID);
+        document.getElementById('adminActions').style.display = isAdmin ? 'block' : 'none';
+        const memberListEl = document.getElementById('memberList');
+        memberListEl.innerHTML = members.map(m => `
+          <div class="member-item">
+            <div class="member-avatar">${m.name.charAt(0).toUpperCase()}</div>
+            <span class="member-name">${escapeHtml(m.name)}${m.id === createdBy ? ' (Admin)' : ''}${admins.includes(m.id) ? ' <span class="admin-badge">Admin</span>' : ''}</span>
+            ${isAdmin && m.id !== USER_ID ? `<button class="btn-outline" style="padding:2px 8px;" data-uid="${m.id}" data-action="toggleAdmin">${admins.includes(m.id) ? 'Demote' : 'Promote'}</button>` : ''}
+            ${isAdmin && m.id !== USER_ID ? `<button class="btn-outline" style="padding:2px 8px; margin-left:4px;" data-uid="${m.id}" data-action="removeMember">Remove</button>` : ''}
+          </div>
+        `).join('');
+        document.querySelectorAll('[data-action="toggleAdmin"]').forEach(btn => btn.addEventListener('click', () => socket.emit('toggleAdmin', { groupId: currentGroup, userId: USER_ID, targetUserId: btn.dataset.uid, add: !admins.includes(btn.dataset.uid) })));
+        document.querySelectorAll('[data-action="removeMember"]').forEach(btn => btn.addEventListener('click', () => socket.emit('removeMember', { groupId: currentGroup, userId: USER_ID, targetUserId: btn.dataset.uid })));
+      }
+      document.getElementById('groupInfoHeader').addEventListener('click', () => { if (currentGroup) { updateGroupInfoPanel(); groupInfoPanel.classList.add('open'); } });
+      document.getElementById('closeGroupInfoBtn').addEventListener('click', () => groupInfoPanel.classList.remove('open'));
+
+      // Simple input modal for rename/description
+      let simpleInputCallback = null;
+      function openSimpleInput(title, placeholder, currentValue, callback) {
+        simpleInputTitle.textContent = title;
+        simpleInputField.placeholder = placeholder;
+        simpleInputField.value = currentValue || '';
+        simpleInputCallback = callback;
+        simpleInputModal.classList.add('open');
+      }
+      confirmSimpleInputBtn.addEventListener('click', () => {
+        const val = simpleInputField.value.trim();
+        if (val && simpleInputCallback) simpleInputCallback(val);
+        simpleInputModal.classList.remove('open');
+      });
+      cancelSimpleInputBtn.addEventListener('click', () => simpleInputModal.classList.remove('open'));
+
+      document.getElementById('renameGroupBtn').addEventListener('click', () => {
+        openSimpleInput('Rename Group', 'New group name', currentGroup, (newName) => socket.emit('renameGroup', { groupId: currentGroup, newName, userId: USER_ID }));
+      });
+      document.getElementById('editDescBtn').addEventListener('click', () => {
+        openSimpleInput('Edit Description', 'New description', groupMeta[currentGroup]?.description || '', (newDesc) => socket.emit('updateGroupMeta', { groupId: currentGroup, userId: USER_ID, description: newDesc }));
+      });
+      document.getElementById('deleteGroupBtn').addEventListener('click', () => showConfirm('Permanently delete this group?', () => socket.emit('deleteGroup', { groupId: currentGroup, userId: USER_ID })));
+      document.getElementById('changeGroupLogoBtn').addEventListener('click', () => { const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = e => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = ev => socket.emit('updateGroupMeta', { groupId: currentGroup, userId: USER_ID, avatar: ev.target.result }); reader.readAsDataURL(file); } }; input.click(); });
+      document.getElementById('reportGroupBtn').addEventListener('click', () => document.getElementById('reportGroupModal').classList.add('open'));
+      document.getElementById('confirmReportGroupBtn').addEventListener('click', async () => {
+        const reason = document.getElementById('reportGroupReason').value.trim();
+        if (!reason) return;
+        await fetch(`${SERVER_URL}/api/feedback`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ userId: USER_ID, message: `[Group Report] Group: ${currentGroup} - Reason: ${reason}` }) });
+        document.getElementById('reportGroupModal').classList.remove('open'); document.getElementById('reportGroupReason').value = '';
+      });
+      document.getElementById('cancelReportGroupBtn').addEventListener('click', () => document.getElementById('reportGroupModal').classList.remove('open'));
+
+      // Group creation / join modals
+      document.getElementById('newGroupDrawerBtn').addEventListener('click', () => createGroupModal.classList.add('open'));
+      document.getElementById('cancelCreateGroupBtn').addEventListener('click', () => createGroupModal.classList.remove('open'));
+      document.getElementById('confirmCreateGroupBtn').addEventListener('click', () => {
+        const name = document.getElementById('newGroupName').value.trim();
+        const desc = document.getElementById('newGroupDesc').value.trim();
+        const logoFile = document.getElementById('newGroupLogoFile').files[0];
+        const processCreation = (avatarData) => {
+          socket.emit('createGroup', { groupId: name, userName: USER_NAME, userId: USER_ID, description: desc, avatar: avatarData || '📚' }, response => {
+            if (response && response.success) { groups.push(name); localStorage.setItem('studentnija_groups', JSON.stringify(groups)); renderGroups(); switchGroup(name); closeDrawer(); createGroupModal.classList.remove('open'); }
+            else alert(response?.error || 'Failed');
+          });
+        };
+        if (!name) return;
+        if (logoFile) { const reader = new FileReader(); reader.onload = ev => processCreation(ev.target.result); reader.readAsDataURL(logoFile); }
+        else processCreation();
+      });
+      document.getElementById('pickLogoBtn').addEventListener('click', () => document.getElementById('newGroupLogoFile').click());
+      document.getElementById('joinGroupDrawerBtn').addEventListener('click', () => joinGroupModal.classList.add('open'));
+      document.getElementById('cancelJoinGroupBtn').addEventListener('click', () => joinGroupModal.classList.remove('open'));
+      document.getElementById('confirmJoinGroupBtn').addEventListener('click', () => {
+        const name = document.getElementById('joinGroupName').value.trim();
+        if (!name) return;
+        if (!groups.includes(name)) { groups.push(name); localStorage.setItem('studentnija_groups', JSON.stringify(groups)); renderGroups(); }
+        switchGroup(name); closeDrawer(); joinGroupModal.classList.remove('open');
+      });
+
+      function closeDrawer() { drawerOverlay.classList.remove('open'); drawer.classList.remove('open'); }
+      function loadGroups() { groups = JSON.parse(localStorage.getItem('studentnija_groups') || '[]'); renderGroups(); }
+      function renderGroups() { const valid = groups.filter(g => g && g.trim()); groupListEl.innerHTML = valid.map(g => `<div class="group-item" data-group="${g}"><div class="avatar">${g.charAt(0).toUpperCase()}</div><div><strong>${escapeHtml(g)}</strong></div></div>`).join(''); groupListEl.querySelectorAll('.group-item').forEach(el => el.addEventListener('click', () => switchGroup(el.dataset.group))); }
+
+      // Drawer & settings toggles
+      document.getElementById('drawerToggle').addEventListener('click', () => { drawerOverlay.classList.add('open'); drawer.classList.add('open'); });
+      drawerOverlay.addEventListener('click', closeDrawer);
+      document.getElementById('settingsBtn').addEventListener('click', () => { document.getElementById('settingsOverlay').classList.add('show'); document.getElementById('settingsPanel').classList.add('open'); });
+      document.getElementById('settingsClose').addEventListener('click', () => { document.getElementById('settingsOverlay').classList.remove('show'); document.getElementById('settingsPanel').classList.remove('open'); });
+      document.getElementById('settingsOverlay').addEventListener('click', e => { if (e.target === document.getElementById('settingsOverlay')) { e.target.classList.remove('show'); document.getElementById('settingsPanel').classList.remove('open'); } });
+      document.getElementById('groupSearch').addEventListener('input', e => { const q = e.target.value.toLowerCase(); document.querySelectorAll('#publicGroupList .group-item').forEach(el => el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none'); });
+      sendBtn.addEventListener('click', () => sendMessage()); messageInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
+      function escapeHtml(s) { return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+
+      // Emoji text picker
+      const textEmojiPicker = document.getElementById('textEmojiPicker');
+      const textEmojis = ['😊','😂','❤️','👍','🎉','🔥','📚','💪','🤓','✨','🥳','🤔','😭','🤗','💯','🙌','👏','🕊️','🌱','⭐'];
+      textEmojiPicker.innerHTML = textEmojis.map(e => `<button>${e}</button>`).join('');
+      document.getElementById('emojiBtn').addEventListener('click', e => { e.stopPropagation(); textEmojiPicker.classList.toggle('open'); });
+      textEmojiPicker.addEventListener('click', e => { if (e.target.tagName === 'BUTTON') { messageInput.value += e.target.textContent; messageInput.focus(); textEmojiPicker.classList.remove('open'); } });
+      document.addEventListener('click', e => { if (!textEmojiPicker.contains(e.target) && e.target !== document.getElementById('emojiBtn')) textEmojiPicker.classList.remove('open'); });
+
+      // Init
+      loadGroups();
+      renderHome();
+      setHeaderForHome();
+      socket.on('connect', () => console.log('✅ Connected'));
+    })();
   </script>
 </body>
 </html>
