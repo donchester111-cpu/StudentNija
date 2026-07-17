@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Sign in with Google</title>
+    <script>
+  // Auto‑hide mobile browser address bar
+  (function() {
+    var scrollTo = function() { window.scrollTo(0, 1); };
+    window.addEventListener('load', scrollTo);
+    window.addEventListener('orientationchange', scrollTo);
+    // iOS Safari sometimes needs a tiny delay
+    setTimeout(scrollTo, 100);
+  })();
+    </script>
+    
     <style>
         /* ---- Theme variables (synced with main app) ---- */
         :root {
