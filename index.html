@@ -2,36 +2,151 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="description" content="Study smarter and score higher with StudentNija — your all-in-one student companion for exam preparation, study tools, notes, flashcards, academic planning, reminders, and more. Stay organized, learn faster, and stay ahead throughout your academic journey.">
+
+  <!-- ============================================================
+       PRIMARY SEO
+       ============================================================ -->
+  <title>StudentNija | Study Smarter. Score Higher. Stay Ahead.</title>
+
+  <meta name="description"
+        content="StudentNija is an all-in-one student companion for Nigerian students. Study smarter with exam preparation, notes, flashcards, academic planning, reminders, study tools, and more.">
+
+  <meta name="keywords"
+        content="StudentNija, Student Nija, Nija Student, Nigerian student app, student app Nigeria, study app Nigeria, study tools for students, JAMB preparation, WAEC preparation, NECO preparation, exam preparation Nigeria, student planner, online study platform">
+
+  <meta name="author" content="StudentNija">
+
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+
+  <meta name="googlebot" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+
+  <link rel="canonical" href="https://studentnija.pages.dev/">
+
+  <!-- ============================================================
+       BRAND / MOBILE / THEME
+       ============================================================ -->
+  <meta name="application-name" content="StudentNija">
+  <meta name="apple-mobile-web-app-title" content="StudentNija">
+  <meta name="theme-color" content="#008751">
+  <meta name="color-scheme" content="light dark">
+
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <!-- ============================================================
+       GOOGLE ADSENSE
+       ============================================================ -->
   <meta name="google-adsense-account" content="ca-pub-2766834653586662">
-  <title>StudentNija | Study Smarter. Score Higher.</title>
+
+  <!-- ============================================================
+       OPEN GRAPH
+       ============================================================ -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="StudentNija">
+  <meta property="og:title" content="StudentNija | Study Smarter. Score Higher. Stay Ahead.">
+  <meta property="og:description" content="The all-in-one student companion for learning, exam preparation, academic planning, notes, flashcards, reminders, and smarter studying.">
+  <meta property="og:url" content="https://studentnija.pages.dev/">
+  <meta property="og:locale" content="en_NG">
+
+  <!-- Add a real 1200x630 image here when available -->
+  <meta property="og:image" content="https://studentnija.pages.dev/icons/icon.png">
+  <meta property="og:image:alt" content="StudentNija - Study Smarter. Score Higher.">
+
+  <!-- ============================================================
+       TWITTER / X CARD
+       ============================================================ -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="StudentNija | Study Smarter. Score Higher.">
+  <meta name="twitter:description" content="An all-in-one student companion built to help students study smarter, prepare better, and stay ahead.">
+  <meta name="twitter:image" content="https://studentnija.pages.dev/icons/icon.png">
+
+  <!-- ============================================================
+       PERFORMANCE
+       ============================================================ -->
+  <link rel="preconnect" href="https://cdn.socket.io" crossorigin>
+  <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossorigin>
+
+  <!-- ============================================================
+       ASSETS
+       ============================================================ -->
   <link rel="stylesheet" href="style.css">
+
   <link rel="icon" type="image/png" href="/icons/favicon.png">
-  <link rel="manifest" href="manifest.json" />
-  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-  <!-- Google AdSense (async) -->
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2766834653586662"
-     crossorigin="anonymous"></script>
-<script async custom-element="amp-auto-ads"
-        src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
-</script>
-  
-  <script>
-  // Auto‑hide mobile browser address bar
-  (function() {
-    var scrollTo = function() { window.scrollTo(0, 1); };
-    window.addEventListener('load', scrollTo);
-    window.addEventListener('orientationchange', scrollTo);
-    // iOS Safari sometimes needs a tiny delay
-    setTimeout(scrollTo, 100);
-  })();
+
+  <link rel="manifest" href="manifest.json">
+
+  <!-- ============================================================
+       STRUCTURED DATA
+       ============================================================ -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "StudentNija",
+    "alternateName": [
+      "Student Nija",
+      "Nija Student"
+    ],
+    "url": "https://studentnija.pages.dev/",
+    "description": "StudentNija is an all-in-one student companion for Nigerian students, providing study tools, exam preparation, notes, flashcards, academic planning, reminders, and other learning resources.",
+    "applicationCategory": "EducationalApplication",
+    "operatingSystem": "Web",
+    "browserRequirements": "Requires JavaScript",
+    "inLanguage": "en-NG",
+    "isAccessibleForFree": true,
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "NGN"
+    },
+    "audience": {
+      "@type": "EducationalAudience",
+      "educationalRole": "student"
+    }
+  }
   </script>
-  
+
+  <!-- ============================================================
+       SOCKET.IO
+       ============================================================ -->
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+  <!-- ============================================================
+       GOOGLE ADSENSE
+       ============================================================ -->
+  <script async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2766834653586662"
+          crossorigin="anonymous"></script>
+
+  <script async
+          custom-element="amp-auto-ads"
+          src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js">
+  </script>
+
+  <!-- ============================================================
+       MOBILE ADDRESS BAR
+       ============================================================ -->
+  <script>
+    (function() {
+      var scrollToTop = function() {
+        window.scrollTo(0, 1);
+      };
+
+      window.addEventListener('load', scrollToTop);
+      window.addEventListener('orientationchange', scrollToTop);
+
+      setTimeout(scrollToTop, 100);
+    })();
+  </script>
+
   <style>
     /* ============================================================
        PREMIUM MINIMAL LOADING SCREEN – Sleek & Elegant
        ============================================================ */
+
     :root {
       --accent: #008751;
       --accent-light: #00A86B;
@@ -49,7 +164,10 @@
 
     .loading-screen {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: var(--bg-primary);
       display: flex;
       align-items: center;
@@ -75,7 +193,6 @@
       padding: 0 32px;
     }
 
-    /* ---- Logo with gentle pulse ---- */
     .logo-wrapper {
       position: relative;
       width: 80px;
@@ -90,37 +207,58 @@
     }
 
     @keyframes softPulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.05); opacity: 0.9; }
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.05);
+        opacity: 0.9;
+      }
     }
 
     .logo-ring {
       position: absolute;
-      top: 50%; left: 50%;
-      width: 80px; height: 80px;
-      margin-left: -40px; margin-top: -40px;
+      top: 50%;
+      left: 50%;
+      width: 80px;
+      height: 80px;
+      margin-left: -40px;
+      margin-top: -40px;
       border: 2px solid transparent;
       border-radius: 50%;
       border-top-color: var(--accent);
       opacity: 0;
-      animation: ringSpin 2s linear infinite, ringFade 2s ease-in-out infinite;
+      animation: ringSpin 2s linear infinite,
+                 ringFade 2s ease-in-out infinite;
     }
 
     @keyframes ringSpin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     @keyframes ringFade {
-      0%, 100% { opacity: 0; }
-      50% { opacity: 0.7; }
+      0%, 100% {
+        opacity: 0;
+      }
+
+      50% {
+        opacity: 0.7;
+      }
     }
 
-    /* ---- Title & subtitle ---- */
     .loader-title {
       font-size: 32px;
       font-weight: 800;
       letter-spacing: -1px;
-      background: linear-gradient(135deg, var(--text-primary) 30%, var(--accent-light));
+      background: linear-gradient(
+        135deg,
+        var(--text-primary) 30%,
+        var(--accent-light)
+      );
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
@@ -137,11 +275,17 @@
     }
 
     @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
-    /* ---- Progress ring (SVG) ---- */
     .progress-ring-container {
       position: relative;
       width: 100px;
@@ -154,7 +298,7 @@
 
     .progress-ring-bg {
       fill: none;
-      stroke: rgba(128,128,128,0.1);
+      stroke: rgba(128, 128, 128, 0.1);
       stroke-width: 6;
     }
 
@@ -169,7 +313,8 @@
 
     .progress-percent {
       position: absolute;
-      top: 50%; left: 50%;
+      top: 50%;
+      left: 50%;
       transform: translate(-50%, -50%);
       font-size: 22px;
       font-weight: 700;
@@ -177,17 +322,16 @@
       font-variant-numeric: tabular-nums;
     }
 
-    /* ---- Tip text (static, elegant) ---- */
     .loader-tip {
       display: flex;
       align-items: center;
       gap: 8px;
       font-size: 14px;
       color: var(--text-muted);
-      background: rgba(0,135,81,0.04);
+      background: rgba(0, 135, 81, 0.04);
       padding: 10px 22px;
       border-radius: 40px;
-      border: 1px solid rgba(0,135,81,0.1);
+      border: 1px solid rgba(0, 135, 81, 0.1);
       backdrop-filter: blur(4px);
       animation: fadeInUp 0.8s ease 0.2s both;
     }
@@ -196,14 +340,13 @@
       font-size: 16px;
     }
 
-    /* ---- Ad note ---- */
     .loader-ad-note {
       font-size: 12px;
       color: var(--text-muted);
       opacity: 0.6;
       margin-top: 8px;
       padding-top: 18px;
-      border-top: 1px solid rgba(0,0,0,0.06);
+      border-top: 1px solid rgba(0, 0, 0, 0.06);
       animation: fadeInUp 0.8s ease 0.3s both;
     }
 
@@ -212,111 +355,291 @@
       opacity: 0.8;
     }
 
-    /* ---- Minimal flash (elegant white fade) ---- */
     .flash-overlay {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: white;
       z-index: 999;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.1s ease;
     }
+
     .flash-overlay.active {
       opacity: 0.5;
       transition: opacity 0s;
     }
 
-    /* ---- Responsive ---- */
+    /* ============================================================
+       SEO CONTENT
+       ============================================================ */
+
+    .seo-content {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+
     @media (max-width: 480px) {
-      .logo-icon { font-size: 56px; }
-      .logo-ring { width: 70px; height: 70px; margin-left: -35px; margin-top: -35px; }
-      .loader-title { font-size: 26px; }
-      .loader-subtitle { font-size: 14px; }
+      .logo-icon {
+        font-size: 56px;
+      }
+
+      .logo-ring {
+        width: 70px;
+        height: 70px;
+        margin-left: -35px;
+        margin-top: -35px;
+      }
+
+      .loader-title {
+        font-size: 26px;
+      }
+
+      .loader-subtitle {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
+
 <body class="light-theme">
-<amp-auto-ads type="adsense"
-        data-ad-client="ca-pub-2766834653586662">
-</amp-auto-ads>
-  <!-- Flash overlay -->
+
+  <!-- ============================================================
+       GOOGLE AUTO ADS
+       ============================================================ -->
+  <amp-auto-ads
+    type="adsense"
+    data-ad-client="ca-pub-2766834653586662">
+  </amp-auto-ads>
+
+  <!-- ============================================================
+       SEO CONTENT
+       ============================================================ -->
+  <main class="seo-content" id="seoContent">
+
+    <h1>StudentNija - Study Smarter. Score Higher. Stay Ahead.</h1>
+
+    <p>
+      StudentNija is an all-in-one student companion built for students,
+      especially students in Nigeria. It helps students study smarter,
+      prepare for examinations, organize their academic life, and stay ahead.
+    </p>
+
+    <h2>Study Smarter with StudentNija</h2>
+
+    <p>
+      Access powerful study tools, notes, flashcards, reminders, academic
+      planning tools, study resources, and other features designed to make
+      student life easier and more productive.
+    </p>
+
+    <h2>Exam Preparation for Students</h2>
+
+    <p>
+      StudentNija helps students prepare better for important examinations
+      through study resources, practice materials, revision tools, and
+      academic organization.
+    </p>
+
+    <h2>StudentNija for Nigerian Students</h2>
+
+    <p>
+      Built with the needs of modern Nigerian students in mind, StudentNija
+      brings useful academic tools and student resources together in one
+      smarter platform.
+    </p>
+
+  </main>
+
+  <!-- ============================================================
+       NOSCRIPT FALLBACK
+       ============================================================ -->
+  <noscript>
+    <section>
+      <h1>StudentNija - Study Smarter. Score Higher.</h1>
+
+      <p>
+        StudentNija is an all-in-one student companion for studying,
+        exam preparation, notes, flashcards, academic planning,
+        reminders, and other student tools.
+      </p>
+
+      <p>
+        Please enable JavaScript to access the complete StudentNija
+        application experience.
+      </p>
+    </section>
+  </noscript>
+
+  <!-- ============================================================
+       FLASH OVERLAY
+       ============================================================ -->
   <div class="flash-overlay" id="flashOverlay"></div>
 
-  <!-- Loading Screen -->
+  <!-- ============================================================
+       LOADING SCREEN
+       ============================================================ -->
   <div class="loading-screen" id="loadingScreen">
+
     <div class="loader-container">
-      <!-- Logo with subtle pulse and ring -->
+
       <div class="logo-wrapper">
         <div class="logo-icon">🇳🇬</div>
         <div class="logo-ring"></div>
       </div>
 
-      <h1 class="loader-title">StudentNija</h1>
-      <p class="loader-subtitle">Study Smarter. Score Higher.</p>
+      <h2 class="loader-title">StudentNija</h2>
 
-      <!-- Circular progress -->
+      <p class="loader-subtitle">
+        Study Smarter. Score Higher.
+      </p>
+
       <div class="progress-ring-container">
-        <svg width="100" height="100" viewBox="0 0 100 100" class="progress-ring">
-          <circle class="progress-ring-bg" cx="50" cy="50" r="42" />
-          <circle class="progress-ring-fill" id="progressRingFill" cx="50" cy="50" r="42"
-                  stroke-dasharray="263.89" stroke-dashoffset="263.89" />
+
+        <svg
+          width="100"
+          height="100"
+          viewBox="0 0 100 100"
+          class="progress-ring"
+          aria-label="Loading StudentNija">
+
+          <circle
+            class="progress-ring-bg"
+            cx="50"
+            cy="50"
+            r="42">
+          </circle>
+
+          <circle
+            class="progress-ring-fill"
+            id="progressRingFill"
+            cx="50"
+            cy="50"
+            r="42"
+            stroke-dasharray="263.89"
+            stroke-dashoffset="263.89">
+          </circle>
+
         </svg>
-        <div class="progress-percent" id="loaderPercent">0%</div>
+
+        <div
+          class="progress-percent"
+          id="loaderPercent">
+          0%
+        </div>
+
       </div>
 
-      <!-- Elegant tip -->
       <div class="loader-tip">
         <span class="tip-icon">💡</span>
-        <span id="tipText">Loading your study experience…</span>
+        <span id="tipText">
+          Loading your study experience…
+        </span>
       </div>
 
       <p class="loader-ad-note">
         This app contains advertisements<br>
-        <small>Ads help keep it free for all students</small>
+        <small>
+          Ads help keep it free for all students
+        </small>
       </p>
+
     </div>
+
   </div>
 
-  <!-- Main App -->
+  <!-- ============================================================
+       MAIN APPLICATION
+       ============================================================ -->
   <div class="app-main" id="appRoot">
-    <div id="connectionIndicator" class="connection-indicator"></div>
-    <div class="pages-container" id="pagesContainer"></div>
-    <div class="bottom-nav" id="bottomNav"></div>
+
+    <div
+      id="connectionIndicator"
+      class="connection-indicator">
+    </div>
+
+    <div
+      class="pages-container"
+      id="pagesContainer">
+    </div>
+
+    <div
+      class="bottom-nav"
+      id="bottomNav">
+    </div>
+
   </div>
 
-  <!-- Ad Unit -->
-  <ins class="adsbygoogle"
-       style="display:block"
-       data-ad-client="ca-pub-2766834653586662"
-       data-ad-slot="8698200940"
-       data-ad-format="auto"
-       data-full-width-responsive="true"></ins>
+  <!-- ============================================================
+       GOOGLE ADSENSE AD UNIT
+       ============================================================ -->
+  <ins
+    class="adsbygoogle"
+    style="display:block"
+    data-ad-client="ca-pub-2766834653586662"
+    data-ad-slot="8698200940"
+    data-ad-format="auto"
+    data-full-width-responsive="true">
+  </ins>
+
   <script>
     (adsbygoogle = window.adsbygoogle || []).push({});
   </script>
 
-  <!-- Import Map -->
+  <!-- ============================================================
+       IMPORT MAP
+       ============================================================ -->
   <script type="importmap">
-    { "imports": { "./state.js": "./state.js", "./pages/": "./pages/", "./tools/": "./tools/" } }
+  {
+    "imports": {
+      "./state.js": "./state.js",
+      "./pages/": "./pages/",
+      "./tools/": "./tools/"
+    }
+  }
   </script>
 
-  <!-- Service Worker -->
+  <!-- ============================================================
+       SERVICE WORKER
+       ============================================================ -->
   <script>
     if (typeof navigator.serviceWorker !== 'undefined') {
       navigator.serviceWorker.register('sw.js');
     }
   </script>
+
+  <!-- ============================================================
+       NOTIFICATIONS
+       ============================================================ -->
   <script src="notifications.js"></script>
 
-  <!-- ========== LOADING ANIMATION (SLOWED DOWN) ========== -->
+  <!-- ============================================================
+       LOADING ANIMATION
+       ============================================================ -->
   <script>
     (function() {
-      const loadingScreen = document.getElementById('loadingScreen');
-      const flashOverlay = document.getElementById('flashOverlay');
-      const progressRingFill = document.getElementById('progressRingFill');
-      const loaderPercent = document.getElementById('loaderPercent');
-      const tipText = document.getElementById('tipText');
+
+      const loadingScreen =
+        document.getElementById('loadingScreen');
+
+      const flashOverlay =
+        document.getElementById('flashOverlay');
+
+      const progressRingFill =
+        document.getElementById('progressRingFill');
+
+      const loaderPercent =
+        document.getElementById('loaderPercent');
+
+      const tipText =
+        document.getElementById('tipText');
 
       const tips = [
         "Use flashcards daily 📚",
@@ -326,61 +649,100 @@
         "Stay hydrated during exams! 💧"
       ];
 
-      // Change tip every 2.2 seconds
       let tipIndex = 0;
+
       setInterval(() => {
+
         tipIndex = (tipIndex + 1) % tips.length;
-        tipText.textContent = tips[tipIndex];
+
+        tipText.textContent =
+          tips[tipIndex];
+
       }, 2200);
 
-      // Circular progress setup
-      const circumference = 2 * Math.PI * 42; // ~263.89
-      progressRingFill.style.strokeDasharray = circumference;
-      progressRingFill.style.strokeDashoffset = circumference;
+      const circumference =
+        2 * Math.PI * 42;
+
+      progressRingFill.style.strokeDasharray =
+        circumference;
+
+      progressRingFill.style.strokeDashoffset =
+        circumference;
 
       function setProgress(percent) {
-        const offset = circumference - (percent / 100) * circumference;
-        progressRingFill.style.strokeDashoffset = offset;
-        loaderPercent.textContent = Math.round(percent) + '%';
+
+        const offset =
+          circumference -
+          (percent / 100) * circumference;
+
+        progressRingFill.style.strokeDashoffset =
+          offset;
+
+        loaderPercent.textContent =
+          Math.round(percent) + '%';
+
       }
 
-      // ---- SLOWER SIMULATED PROGRESS (takes ~5-6 seconds) ----
       let progress = 0;
-      const progressInterval = setInterval(() => {
-        progress += Math.random() * 8 + 2;   // 2–10 % each tick (slower)
-        if (progress >= 100) {
-          progress = 100;
+
+      const progressInterval =
+        setInterval(() => {
+
+          progress +=
+            Math.random() * 8 + 2;
+
+          if (progress >= 100) {
+
+            progress = 100;
+
+            clearInterval(progressInterval);
+
+          }
+
+          setProgress(progress);
+
+        }, 400);
+
+      window.hideLoadingScreen =
+        function() {
+
+          flashOverlay.classList.add('active');
+
+          setTimeout(() => {
+
+            flashOverlay.classList.remove('active');
+
+            loadingScreen.classList.add('hide');
+
+          }, 120);
+
           clearInterval(progressInterval);
-        }
-        setProgress(progress);
-      }, 400);   // tick every 400ms (was 300ms)
 
-      // Public function called by app.js when ready
-      window.hideLoadingScreen = function() {
-        // Elegant flash
-        flashOverlay.classList.add('active');
-        setTimeout(() => {
-          flashOverlay.classList.remove('active');
-          loadingScreen.classList.add('hide');
-        }, 120);
+          setProgress(100);
 
-        // Stop progress and jump to 100%
-        clearInterval(progressInterval);
-        setProgress(100);
-      };
+        };
+
     })();
   </script>
 
-  <!-- ========== MAIN APP MODULE ========== -->
+  <!-- ============================================================
+       MAIN APPLICATION MODULE
+       ============================================================ -->
   <script type="module">
+
     import { renderApp } from './app.js';
 
     window.addEventListener('load', async () => {
+
       await renderApp();
+
       if (window.hideLoadingScreen) {
         window.hideLoadingScreen();
       }
+
     });
+
   </script>
+
 </body>
-</html>
+          </html>
