@@ -5,7 +5,7 @@ import {
   escapeHtml, achievements, timetableEvents, exams
 } from '../state.js';
 
-// API helpers – adjust path if needed
+// API helpers
 const API_BASE = 'https://studentnija-public-chat.onrender.com';
 
 async function apiPost(path, body) {
@@ -77,9 +77,7 @@ export function renderProfilePage() {
         <span style="font-size:20px;">☁️</span>
         <h3 style="margin:0; font-size:16px; font-weight:600;">Cloud Backup</h3>
       </div>
-      <div id="cloudSyncStatus" class="text-muted" style="font-size:13px;">
-        Loading...
-      </div>
+      <div id="cloudSyncStatus" class="text-muted" style="font-size:13px;">Loading...</div>
       <button id="manualSyncBtn" class="btn-outline" style="width:100%; margin-top:8px;">🔄 Sync Now</button>
     </div>
 
@@ -89,9 +87,7 @@ export function renderProfilePage() {
         <span style="font-size:20px;">📜</span>
         <h3 style="margin:0; font-size:16px; font-weight:600;">Recent Activity</h3>
       </div>
-      <div id="activityLog" class="text-muted" style="font-size:13px;">
-        Loading...
-      </div>
+      <div id="activityLog" class="text-muted" style="font-size:13px;">Loading...</div>
     </div>
 
     <!-- ====== ACHIEVEMENTS ====== -->
@@ -121,31 +117,26 @@ export function renderProfilePage() {
         <h3 style="margin:0; font-size:18px; font-weight:600;">Personal Information</h3>
       </div>
       <div class="profile-grid">
-        <!-- School -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">🏫 School</div>
           <div class="profile-grid-value" id="profileSchool">${escapeHtml(currentUser.school || 'Not set')}</div>
           <button class="edit-field-btn" data-field="school" style="display:none;">✏️</button>
         </div>
-        <!-- Department -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">📚 Department</div>
           <div class="profile-grid-value" id="profileDept">${escapeHtml(currentUser.department || 'Not set')}</div>
           <button class="edit-field-btn" data-field="department" style="display:none;">✏️</button>
         </div>
-        <!-- Level -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">📖 Level</div>
           <div class="profile-grid-value" id="profileLevel">${escapeHtml(currentUser.level || 'Not set')}</div>
           <button class="edit-field-btn" data-field="level" style="display:none;">✏️</button>
         </div>
-        <!-- Student ID -->
         <div class="profile-grid-item">
           <div class="profile-grid-label">🆔 Student ID</div>
           <div class="profile-grid-value" id="profileStudentId">${escapeHtml(currentUser.studentId || 'Not set')}</div>
           <button class="edit-field-btn" data-field="studentId" style="display:none;">✏️</button>
         </div>
-        <!-- Bio (full width) -->
         <div class="profile-grid-item full-width">
           <div class="profile-grid-label">📝 Bio</div>
           <div class="profile-grid-value" id="profileBio">${escapeHtml(currentUser.bio || 'No bio yet')}</div>
@@ -170,14 +161,28 @@ export function renderProfilePage() {
       <button id="disableEmail2faBtn" class="btn-outline" style="display:none; margin-top:8px;">Disable 2FA</button>
     </div>
 
-    <!-- ====== EMAIL REMINDERS ====== -->
+    <!-- ====== EMAIL REMINDERS (toggle fixed) ====== -->
     <div class="glass-card" style="padding:20px; margin-bottom:16px;">
       <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
         <span style="font-size:20px;">📧</span>
         <h3 style="margin:0; font-size:18px; font-weight:600;">Email Reminders</h3>
       </div>
-      <label style="display:flex; align-items:center; gap:8px;">
-        <input type="checkbox" id="emailToggle" /> Send study reminders to my email
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+        <input type="checkbox" id="emailToggle" style="accent-color:var(--accent); width:18px; height:18px;">
+        <span>Send study reminders to my email</span>
+      </label>
+      <p id="emailToggleStatus" class="text-muted" style="margin-top:6px; font-size:12px;"></p>
+    </div>
+
+    <!-- ====== FULLSCREEN MODE ====== -->
+    <div class="glass-card" style="padding:20px; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+        <span style="font-size:20px;">🖥️</span>
+        <h3 style="margin:0; font-size:18px; font-weight:600;">Full Screen Mode</h3>
+      </div>
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+        <input type="checkbox" id="fullscreenToggle" style="accent-color:var(--accent); width:18px; height:18px;">
+        <span>Hide browser bars (fullscreen)</span>
       </label>
     </div>
 
@@ -213,8 +218,8 @@ export function renderProfilePage() {
       </div>
       <div class="profile-pref-item">
         <span>🔔 Notifications</span>
-        <label style="display:flex; align-items:center; gap:6px;">
-          <input type="checkbox" id="notifToggle" ${settings.notificationsEnabled?'checked':''}> Enable
+        <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+          <input type="checkbox" id="notifToggle" ${settings.notificationsEnabled?'checked':''} style="accent-color:var(--accent); width:18px; height:18px;"> Enable
         </label>
       </div>
       <div style="margin-top:12px;">
@@ -353,10 +358,7 @@ export function renderProfilePage() {
     btn.textContent = '⏳ Syncing...';
     btn.disabled = true;
     try {
-      // Trigger the global sync function
-      if (window.scheduleCloudSync) {
-        await window.syncUserDataToCloud?.();
-      }
+      if (window.syncUserDataToCloud) await window.syncUserDataToCloud();
       updateCloudStatus();
       addNotification('Cloud', 'Backup completed');
     } catch (e) {
@@ -398,7 +400,6 @@ export function renderProfilePage() {
   const disableBtn = document.getElementById('disableEmail2faBtn');
   const status2fa = document.getElementById('2faStatus');
 
-  // Check current 2FA status on load
   (async function load2FAStatus() {
     if (!currentUser?.id) return;
     const resp = await apiGet(`/api/2fa/status/${currentUser.id}`);
@@ -452,31 +453,61 @@ export function renderProfilePage() {
     }
   });
 
+  // ---- EMAIL REMINDERS (fixed toggle with immediate unsubscribe) ----
+  const emailToggle = document.getElementById('emailToggle');
+  const emailStatus = document.getElementById('emailToggleStatus');
+  if (emailToggle) {
+    // Load current subscription status – default to false unless previously enabled
+    emailToggle.checked = localStorage.getItem('email_reminders_enabled') === 'true';
+    emailStatus.textContent = emailToggle.checked ? 'You are subscribed.' : 'You are unsubscribed.';
 
-  // ---- EMAIL REMINDERS ----
-const emailToggle = document.getElementById('emailToggle');
-if (emailToggle) {
-  // Load current subscription status – check localStorage or default to false
-  emailToggle.checked = localStorage.getItem('email_reminders_enabled') !== 'false';
-
-  emailToggle.addEventListener('change', async (e) => {
-    const enabled = e.target.checked;
-    try {
-      if (enabled) {
-        await apiPost('/api/email/subscribe', { userId: currentUser.id, email: currentUser.email });
-        addNotification('Email', 'Subscribed to reminders');
-      } else {
-        await apiPost('/api/email/unsubscribe', { userId: currentUser.id });
-        addNotification('Email', 'Unsubscribed from reminders');
+    emailToggle.addEventListener('change', async function(e) {
+      const enabled = e.target.checked;
+      try {
+        if (enabled) {
+          await apiPost('/api/email/subscribe', { userId: currentUser.id, email: currentUser.email });
+          addNotification('Email', 'Subscribed to reminders');
+          emailStatus.textContent = 'You are subscribed.';
+        } else {
+          await apiPost('/api/email/unsubscribe', { userId: currentUser.id });
+          addNotification('Email', 'Unsubscribed from reminders');
+          emailStatus.textContent = 'You are unsubscribed.';
+        }
+        localStorage.setItem('email_reminders_enabled', enabled.toString());
+      } catch (err) {
+        // Revert toggle on error
+        this.checked = !enabled;
+        addNotification('Email', 'Update failed. Please try again.');
+        emailStatus.textContent = this.checked ? 'You are subscribed.' : 'You are unsubscribed.';
       }
-      localStorage.setItem('email_reminders_enabled', enabled);
-    } catch (err) {
-      // Revert the toggle if it fails
-      emailToggle.checked = !enabled;
-      addNotification('Email', 'Failed to update. Please try again.');
+    });
+  }
+
+  // ---- FULLSCREEN TOGGLE ----
+  const fullscreenToggle = document.getElementById('fullscreenToggle');
+  const fullscreenEnabled = localStorage.getItem('fullscreen_mode') === 'true';
+  if (fullscreenToggle) {
+    fullscreenToggle.checked = fullscreenEnabled;
+    if (fullscreenEnabled) {
+      document.body.classList.add('fullscreen-mode');
     }
-  });
-}
+
+    fullscreenToggle.addEventListener('change', function(e) {
+      const enable = e.target.checked;
+      localStorage.setItem('fullscreen_mode', enable.toString());
+      if (enable) {
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        }
+        document.body.classList.add('fullscreen-mode');
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+        document.body.classList.remove('fullscreen-mode');
+      }
+    });
+  }
 
   // ---- DATA EXPORT ----
   document.getElementById('exportDataBtn')?.addEventListener('click', async () => {
@@ -572,4 +603,4 @@ if (emailToggle) {
       }
     };
   }
-}
+                                                                                        }
