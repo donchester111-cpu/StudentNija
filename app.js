@@ -890,29 +890,135 @@ if (!window._aiMessageListener) {
 // ======================== ONBOARDING ========================
 function showOnboarding() {
   if (localStorage.getItem('studentnija_onboarded')) return;
+
+  // Clean up any previous overlay
+  const old = document.getElementById('onboardingOverlay');
+  if (old) old.remove();
+
   const overlay = document.createElement('div');
   overlay.id = 'onboardingOverlay';
   overlay.innerHTML = `
-    <div style="position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;">
-      <div class="glass-card" style="max-width:340px; text-align:center;">
-        <h2 style="margin-bottom:12px;">🚀 Welcome to StudentNija!</h2>
-        <p class="text-muted" style="margin-bottom:16px;">Your AI‑powered study companion.</p>
-        <div style="margin:16px 0; display:flex; flex-direction:column; gap:8px; text-align:left; padding:0 20px;">
-          <div>📚 Track your courses & CGPA</div>
-          <div>✅ Manage tasks & timetable</div>
-          <div>🧠 Get AI tutoring</div>
-          <div>📝 Practice past questions</div>
+    <style>
+      @keyframes floatEmoji {
+        0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+        50% { transform: translateY(-20px) rotate(10deg); opacity: 1; }
+      }
+      @keyframes floatEmoji2 {
+        0%, 100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.6; }
+        50% { transform: translateY(-30px) rotate(-8deg) scale(1.2); opacity: 1; }
+      }
+      @keyframes floatEmoji3 {
+        0%, 100% { transform: translateX(0) rotate(0deg); opacity: 0.5; }
+        50% { transform: translateX(15px) rotate(5deg); opacity: 0.9; }
+      }
+      @keyframes pulseBtn {
+        0% { box-shadow: 0 4px 12px rgba(0,135,81,0.4); }
+        50% { box-shadow: 0 6px 24px rgba(0,135,81,0.7); transform: scale(1.02); }
+        100% { box-shadow: 0 4px 12px rgba(0,135,81,0.4); }
+      }
+      @keyframes slideUp {
+        from { transform: translateY(40px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      .onboarding-backdrop {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        z-index: 9999; display: flex; align-items: center; justify-content: center;
+        padding: 20px; animation: fadeIn 0.4s ease;
+      }
+      .onboarding-card {
+        background: radial-gradient(circle at 20% 20%, rgba(0,135,81,0.08), var(--bg-secondary));
+        border-radius: 32px; padding: 32px 24px 28px; max-width: 360px; width: 100%;
+        border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        text-align: center; position: relative; overflow: hidden;
+        animation: slideUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1);
+      }
+      .onboarding-emoji-rain {
+        position: absolute; top: -10px; left: 0; width: 100%; pointer-events: none;
+        display: flex; justify-content: space-around; flex-wrap: wrap;
+      }
+      .onboarding-emoji-rain span {
+        font-size: 28px; animation: floatEmoji 3s infinite ease-in-out;
+      }
+      .onboarding-emoji-rain span:nth-child(odd) { animation-name: floatEmoji2; animation-duration: 3.5s; }
+      .onboarding-emoji-rain span:nth-child(3n) { animation-name: floatEmoji3; animation-duration: 4s; }
+      .onboarding-card h2 {
+        font-size: 28px; font-weight: 800; margin: 20px 0 8px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        background-clip: text; letter-spacing: -0.5px;
+      }
+      .onboarding-card .subtitle {
+        font-size: 16px; color: var(--text-muted); margin-bottom: 24px; font-weight: 500;
+      }
+      .onboarding-benefits {
+        display: flex; flex-direction: column; gap: 10px; text-align: left;
+        margin: 0 auto 24px; max-width: 280px;
+      }
+      .onboarding-benefits div {
+        display: flex; align-items: center; gap: 10px;
+        background: rgba(255,255,255,0.03); padding: 8px 14px;
+        border-radius: 14px; font-size: 14px;
+      }
+      .onboarding-benefits .emoji { font-size: 20px; flex-shrink: 0; }
+      .onboarding-btn {
+        background: linear-gradient(135deg, var(--accent), var(--accent-light));
+        border: none; color: white; padding: 14px 28px; border-radius: 40px;
+        font-weight: 700; font-size: 16px; cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        box-shadow: 0 4px 12px rgba(0,135,81,0.4);
+        animation: pulseBtn 2s infinite ease-in-out;
+        width: auto; display: inline-block; font-family: inherit;
+      }
+      .onboarding-btn:active { transform: scale(0.96); }
+    </style>
+    <div class="onboarding-backdrop" id="onboardingBackdrop">
+      <div class="onboarding-card">
+        <div class="onboarding-emoji-rain">
+          <span>📚</span><span>🎓</span><span>🔥</span><span>👑</span><span>🇳🇬</span><span>🎉</span><span>🃏</span><span>📝</span>
+          <span>📑</span><span>📒</span><span>📓</span><span>📗</span><span>📔</span><span>📕</span><span>📖</span><span>🗂️</span>
+          <span>📌</span><span>📇</span><span>📊</span><span>📈</span><span>📉</span><span>📤</span><span>📥</span><span>🏷️</span>
+          <span>⏰</span><span>⌛</span><span>⏳</span><span>🔔</span><span>🛎️</span><span>📢</span><span>🔊</span><span>🛡️</span>
+          <span>🔐</span><span>🔏</span><span>📜</span><span>🔍</span><span>🔎</span><span>🔮</span><span>💭</span><span>🗯️</span>
+          <span>💬</span><span>🗨️</span><span>❔</span><span>📳</span><span>📲</span><span>✅</span><span>🌐</span><span>🗓️</span>
+          <span>🔖</span><span>📙</span><span>📘</span><span>✏️</span><span>🖋️</span><span>⚙️</span><span>🖇️</span><span>✂️</span>
+          <span>🖊️</span><span>🖍️</span><span>🖌️</span>
         </div>
-        <button class="btn" id="onboardCloseBtn" style="margin-top:16px;">Let's Go!</button>
+        <h2>Welcome to StudentNija! 🚀</h2>
+        <p class="subtitle">Your AI‑powered study companion</p>
+        <div class="onboarding-benefits">
+          <div><span class="emoji">📚</span> Track courses & CGPA</div>
+          <div><span class="emoji">✅</span> Manage tasks & timetable</div>
+          <div><span class="emoji">🧠</span> Get AI tutoring</div>
+          <div><span class="emoji">📝</span> Practice past questions</div>
+          <div><span class="emoji">💬</span> Join study groups</div>
+        </div>
+        <button class="onboarding-btn" id="onboardCloseBtn">Let's Go!</button>
       </div>
     </div>
   `;
+
   document.body.appendChild(overlay);
-  document.getElementById('onboardCloseBtn').addEventListener('click', () => {
-    overlay.remove();
-    localStorage.setItem('studentnija_onboarded', 'true');
-  });
-}
+
+  setTimeout(() => {
+    const closeBtn = document.getElementById('onboardCloseBtn');
+    const backdrop = document.getElementById('onboardingBackdrop');
+
+    function dismiss() {
+      overlay.remove();
+      localStorage.setItem('studentnija_onboarded', 'true');
+    }
+
+    if (closeBtn) {
+      closeBtn.addEventListener('click', dismiss);
+    }
+    if (backdrop) {
+      backdrop.addEventListener('click', (e) => {
+        if (e.target === backdrop) dismiss();
+      });
+    }
+  }, 100);
+      }
 
 // ======================== BOOTSTRAP ========================
 window.addEventListener('load', async () => {
