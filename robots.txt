@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://studentnija.pages.dev/sitemap.xml
+urllist.txt
+Sitemap: https://studentnija.pages.dev/sitemap_4732931.html
+Sitemap: https://studentnija.pages.dev/sitemap_4732931.xml
