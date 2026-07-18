@@ -228,6 +228,586 @@ window.onerror = function(message, source, lineno, colno, error) {
 export let currentPage = "home";
 window.currentPage = currentPage;
 
+// ======================== ONBOARDING (WELCOME + GUIDED TOUR) ========================
+function showOnboarding() {
+  if (localStorage.getItem('studentnija_onboarded')) return;
+
+  const old = document.getElementById('onboardingOverlay');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'onboardingOverlay';
+
+  overlay.innerHTML = `
+    <style>
+      @keyframes onboardingFadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+
+      @keyframes onboardingScaleIn {
+        from { opacity: 0; transform: scale(0.92) translateY(30px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+
+      @keyframes onboardingFloat {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(3deg); }
+      }
+
+      @keyframes onboardingPulse {
+        0%, 100% { box-shadow: 0 8px 25px rgba(0, 135, 81, 0.28); }
+        50% { box-shadow: 0 12px 35px rgba(0, 135, 81, 0.5); }
+      }
+
+      @keyframes onboardingShine {
+        0% { transform: translateX(-150%) rotate(25deg); }
+        100% { transform: translateX(150%) rotate(25deg); }
+      }
+
+      #onboardingOverlay {
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+      }
+
+      .onboarding-backdrop {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        background:
+          radial-gradient(
+            circle at 50% 0%,
+            rgba(0, 135, 81, 0.14),
+            transparent 42%
+          ),
+          rgba(0, 0, 0, 0.82);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        animation: onboardingFadeIn 0.35s ease;
+      }
+
+      .onboarding-card {
+        position: relative;
+        width: min(100%, 420px);
+        max-height: calc(100vh - 36px);
+        overflow-y: auto;
+        overflow-x: hidden;
+        background:
+          linear-gradient(
+            145deg,
+            rgba(255,255,255,0.08),
+            rgba(255,255,255,0.025)
+          ),
+          var(--bg-secondary);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 30px;
+        box-shadow:
+          0 30px 100px rgba(0,0,0,0.65),
+          0 0 0 1px rgba(0,135,81,0.06);
+        animation: onboardingScaleIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1);
+        scrollbar-width: none;
+      }
+
+      .onboarding-card::-webkit-scrollbar { display: none; }
+
+      .onboarding-hero {
+        position: relative;
+        height: 190px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background:
+          radial-gradient(
+            circle at 50% 45%,
+            rgba(0, 135, 81, 0.38),
+            transparent 50%
+          ),
+          linear-gradient(
+            135deg,
+            rgba(0, 135, 81, 0.18),
+            transparent 65%
+          );
+      }
+
+      .onboarding-hero::before {
+        content: "";
+        position: absolute;
+        width: 260px;
+        height: 260px;
+        border-radius: 50%;
+        border: 1px solid rgba(0, 135, 81, 0.18);
+        box-shadow:
+          0 0 0 25px rgba(0, 135, 81, 0.035),
+          0 0 0 50px rgba(0, 135, 81, 0.025);
+      }
+
+      .onboarding-hero::after {
+        content: "";
+        position: absolute;
+        width: 80px;
+        height: 240px;
+        background: rgba(255,255,255,0.08);
+        filter: blur(25px);
+        transform: translateX(-180%) rotate(25deg);
+        animation: onboardingShine 5s infinite ease-in-out;
+      }
+
+      .onboarding-orb {
+        position: relative;
+        z-index: 2;
+        width: 92px;
+        height: 92px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 28px;
+        font-size: 48px;
+        background:
+          linear-gradient(
+            145deg,
+            var(--accent),
+            var(--accent-light)
+          );
+        box-shadow:
+          0 18px 40px rgba(0, 135, 81, 0.35),
+          inset 0 1px 1px rgba(255,255,255,0.25);
+        animation: onboardingFloat 4s ease-in-out infinite;
+      }
+
+      .onboarding-orb::after {
+        content: "";
+        position: absolute;
+        inset: -10px;
+        border-radius: 34px;
+        border: 1px solid rgba(0, 135, 81, 0.35);
+        animation: onboardingPulse 2.5s infinite ease-in-out;
+      }
+
+      .onboarding-status {
+        position: absolute;
+        top: 18px;
+        right: 18px;
+        z-index: 3;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 11px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--text-muted);
+        background: rgba(0,0,0,0.22);
+        border: 1px solid rgba(255,255,255,0.08);
+      }
+
+      .onboarding-status-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 10px var(--accent);
+      }
+
+      .onboarding-content {
+        padding: 26px 24px 24px;
+        text-align: center;
+      }
+
+      .onboarding-eyebrow {
+        margin-bottom: 9px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        color: var(--accent-light);
+      }
+
+      .onboarding-card h2 {
+        margin: 0;
+        font-size: clamp(27px, 7vw, 34px);
+        line-height: 1.1;
+        letter-spacing: -1px;
+        font-weight: 850;
+        color: var(--text-primary);
+      }
+
+      .onboarding-card h2 span {
+        background:
+          linear-gradient(
+            135deg,
+            var(--accent),
+            var(--accent-light)
+          );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .onboarding-description {
+        max-width: 340px;
+        margin: 14px auto 24px;
+        color: var(--text-muted);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .onboarding-features {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-bottom: 22px;
+        text-align: left;
+      }
+
+      .onboarding-feature {
+        position: relative;
+        min-height: 92px;
+        padding: 14px;
+        overflow: hidden;
+        border-radius: 18px;
+        background: rgba(255,255,255,0.035);
+        border: 1px solid rgba(255,255,255,0.065);
+        transition: transform 0.2s ease, background 0.2s ease;
+      }
+
+      .onboarding-feature:hover {
+        transform: translateY(-2px);
+        background: rgba(255,255,255,0.06);
+      }
+
+      .onboarding-feature-icon {
+        width: 34px;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 9px;
+        border-radius: 11px;
+        font-size: 18px;
+        background: rgba(0,135,81,0.14);
+      }
+
+      .onboarding-feature strong {
+        display: block;
+        margin-bottom: 3px;
+        font-size: 13px;
+        font-weight: 750;
+        color: var(--text-primary);
+      }
+
+      .onboarding-feature small {
+        display: block;
+        color: var(--text-muted);
+        font-size: 11px;
+        line-height: 1.35;
+      }
+
+      .onboarding-feature-wide {
+        grid-column: span 2;
+        min-height: auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .onboarding-feature-wide .onboarding-feature-icon {
+        flex-shrink: 0;
+        margin: 0;
+      }
+
+      .onboarding-feature-wide strong {
+        margin-bottom: 2px;
+      }
+
+      .onboarding-cta {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        padding: 15px 20px;
+        border: none;
+        border-radius: 16px;
+        color: white;
+        background:
+          linear-gradient(
+            135deg,
+            var(--accent),
+            var(--accent-light)
+          );
+        box-shadow: 0 8px 25px rgba(0,135,81,0.3);
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 800;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .onboarding-cta::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -100%;
+        width: 60%;
+        height: 200%;
+        background: rgba(255,255,255,0.18);
+        transform: rotate(25deg);
+        transition: left 0.6s ease;
+      }
+
+      .onboarding-cta:hover::after { left: 150%; }
+      .onboarding-cta:active { transform: scale(0.97); }
+
+      .onboarding-footer {
+        margin-top: 13px;
+        color: var(--text-muted);
+        font-size: 11px;
+        opacity: 0.75;
+      }
+
+      /* ========== GUIDED TOUR CSS ========== */
+      #studentnijaTour {
+        position: fixed; inset: 0; z-index: 100000; pointer-events: none;
+      }
+
+      .studentnija-tour-highlight {
+        position: fixed; z-index: 100001;
+        border: 2px solid var(--accent);
+        border-radius: 16px;
+        box-shadow: 0 0 0 9999px rgba(0,0,0,0.72), 0 0 0 6px rgba(0,135,81,0.15), 0 0 35px rgba(0,135,81,0.65);
+        pointer-events: none;
+        transition: top 0.35s ease, left 0.35s ease, width 0.35s ease, height 0.35s ease;
+      }
+
+      .studentnija-tour-tooltip {
+        position: fixed; z-index: 100003;
+        width: min(310px, calc(100vw - 32px));
+        padding: 18px;
+        border-radius: 20px;
+        background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04)), var(--bg-secondary);
+        border: 1px solid rgba(255,255,255,0.12);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        pointer-events: auto;
+        animation: tourTooltipIn 0.35s ease;
+      }
+
+      @keyframes tourTooltipIn {
+        from { opacity: 0; transform: translateY(10px) scale(0.96); }
+        to { opacity: 1; transform: translateY(0) scale(1); }
+      }
+
+      .studentnija-tour-tooltip::before {
+        content: ""; position: absolute;
+        width: 14px; height: 14px;
+        background: var(--bg-secondary);
+        border-left: 1px solid rgba(255,255,255,0.12);
+        border-top: 1px solid rgba(255,255,255,0.12);
+        transform: rotate(45deg);
+      }
+
+      .studentnija-tour-tooltip.top::before    { bottom: -8px; left: 50%; transform: translateX(-50%) rotate(225deg); }
+      .studentnija-tour-tooltip.bottom::before { top: -8px; left: 50%; transform: translateX(-50%) rotate(45deg); }
+      .studentnija-tour-tooltip.left::before   { right: -8px; top: 50%; transform: translateY(-50%) rotate(135deg); }
+      .studentnija-tour-tooltip.right::before  { left: -8px; top: 50%; transform: translateY(-50%) rotate(-45deg); }
+
+      .studentnija-tour-title { margin-bottom: 6px; color: var(--text-primary); font-size: 17px; font-weight: 800; }
+      .studentnija-tour-description { margin-bottom: 15px; color: var(--text-muted); font-size: 13px; line-height: 1.5; }
+      .studentnija-tour-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .studentnija-tour-progress { color: var(--text-muted); font-size: 11px; font-weight: 700; }
+      .studentnija-tour-buttons { display: flex; gap: 8px; }
+      .studentnija-tour-btn { padding: 9px 13px; border: none; border-radius: 10px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
+      .studentnija-tour-skip { color: var(--text-muted); background: rgba(255,255,255,0.06); }
+      .studentnija-tour-next { color: white; background: linear-gradient(135deg, var(--accent), var(--accent-light)); }
+
+      @media (max-width: 380px) {
+        .onboarding-card { border-radius: 25px; }
+        .onboarding-hero { height: 160px; }
+        .onboarding-content { padding: 22px 18px 20px; }
+        .onboarding-features { gap: 8px; }
+        .onboarding-feature { padding: 12px; }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+
+    <div class="onboarding-backdrop" id="onboardingBackdrop">
+      <div class="onboarding-card">
+        <div class="onboarding-hero">
+          <div class="onboarding-status"><span class="onboarding-status-dot"></span>Built for students</div>
+          <div class="onboarding-orb">🎓</div>
+        </div>
+        <div class="onboarding-content">
+          <div class="onboarding-eyebrow">Welcome to your new advantage</div>
+          <h2>Study smarter.<br><span>Go further.</span> 🚀</h2>
+          <p class="onboarding-description">StudentNija brings your academic life into one powerful space. Plan your semester, stay organized, learn with AI, and keep moving toward your goals.</p>
+          <div class="onboarding-features">
+            <div class="onboarding-feature"><div class="onboarding-feature-icon">📚</div><strong>Academic Hub</strong><small>Manage courses, CGPA and academic progress.</small></div>
+            <div class="onboarding-feature"><div class="onboarding-feature-icon">🧠</div><strong>AI Learning</strong><small>Get help, explanations and smarter study support.</small></div>
+            <div class="onboarding-feature"><div class="onboarding-feature-icon">⏱️</div><strong>Stay Organized</strong><small>Tasks, timetable, reminders and exam planning.</small></div>
+            <div class="onboarding-feature"><div class="onboarding-feature-icon">📝</div><strong>Practice More</strong><small>Prepare with questions and revision tools.</small></div>
+            <div class="onboarding-feature onboarding-feature-wide"><div class="onboarding-feature-icon">🌍</div><div><strong>Your student life. One smarter platform.</strong><small>Everything you need to learn, plan and progress.</small></div></div>
+          </div>
+          <button class="onboarding-cta" id="onboardCloseBtn">Let's Get Started <span>→</span></button>
+          <div class="onboarding-footer">Built to help you learn faster and achieve more.</div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  const closeBtn = document.getElementById('onboardCloseBtn');
+  const backdrop = document.getElementById('onboardingBackdrop');
+
+  function dismiss() {
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.25s ease';
+    setTimeout(() => {
+      overlay.remove();
+      localStorage.setItem('studentnija_onboarded', 'true');
+      // Start guided tour if not already done
+      setTimeout(() => {
+        if (!localStorage.getItem('studentnija_tour_completed')) {
+          startStudentNijaTour();
+        }
+      }, 500);
+    }, 250);
+  }
+
+  if (closeBtn) closeBtn.addEventListener('click', dismiss);
+  if (backdrop) backdrop.addEventListener('click', (e) => { if (e.target === backdrop) dismiss(); });
+}
+
+// ======================== GUIDED TOUR FUNCTION ========================
+function startStudentNijaTour() {
+  const tourSteps = [
+    { target: '#bottomNav', title: 'Navigate the app', description: 'Use the bottom bar to jump between Home, Academics, Planner, and more.', position: 'top' },
+    { target: '#homeContent', title: 'Your Dashboard', description: 'See your study stats, upcoming exams, and quick tools here.', position: 'bottom' },
+    { target: '#academicsContent', title: 'Track Your Courses', description: 'Add courses, calculate CGPA, and manage your academic record.', position: 'right' },
+    { target: '#plannerContent', title: 'Plan Your Time', description: 'Manage tasks, classes, and exams with the smart planner.', position: 'left' },
+    { target: '#aiContent', title: 'AI Study Assistant', description: 'Ask any question and get instant help from your personal AI tutor.', position: 'top' }
+  ];
+
+  let currentStep = 0;
+
+  const tour = document.createElement('div');
+  tour.id = 'studentnijaTour';
+  tour.innerHTML = `
+    <div class="studentnija-tour-highlight" id="studentnijaTourHighlight"></div>
+    <div class="studentnija-tour-tooltip" id="studentnijaTourTooltip">
+      <div class="studentnija-tour-title" id="studentnijaTourTitle"></div>
+      <div class="studentnija-tour-description" id="studentnijaTourDescription"></div>
+      <div class="studentnija-tour-footer">
+        <div class="studentnija-tour-progress" id="studentnijaTourProgress"></div>
+        <div class="studentnija-tour-buttons">
+          <button class="studentnija-tour-btn studentnija-tour-skip" id="studentnijaTourSkip">Skip</button>
+          <button class="studentnija-tour-btn studentnija-tour-next" id="studentnijaTourNext">Next</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(tour);
+
+  const highlight = document.getElementById('studentnijaTourHighlight');
+  const tooltip = document.getElementById('studentnijaTourTooltip');
+  const title = document.getElementById('studentnijaTourTitle');
+  const description = document.getElementById('studentnijaTourDescription');
+  const progress = document.getElementById('studentnijaTourProgress');
+  const nextButton = document.getElementById('studentnijaTourNext');
+  const skipButton = document.getElementById('studentnijaTourSkip');
+
+  function showStep() {
+    const step = tourSteps[currentStep];
+    const target = document.querySelector(step.target);
+    if (!target) {
+      currentStep++;
+      if (currentStep < tourSteps.length) showStep();
+      else finishTour();
+      return;
+    }
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    setTimeout(() => {
+      const rect = target.getBoundingClientRect();
+      const padding = 8;
+      highlight.style.top = `${rect.top - padding}px`;
+      highlight.style.left = `${rect.left - padding}px`;
+      highlight.style.width = `${rect.width + padding * 2}px`;
+      highlight.style.height = `${rect.height + padding * 2}px`;
+      title.textContent = step.title;
+      description.textContent = step.description;
+      progress.textContent = `${currentStep + 1} of ${tourSteps.length}`;
+      nextButton.textContent = currentStep === tourSteps.length - 1 ? 'Finish' : 'Next';
+      positionTooltip(rect, step.position);
+    }, 350);
+  }
+
+  function positionTooltip(rect, position) {
+    const tooltipWidth = Math.min(310, window.innerWidth - 32);
+    const tooltipHeight = 190;
+    let top, left;
+    if (position === 'top') {
+      top = rect.top - tooltipHeight - 20;
+      left = rect.left + rect.width / 2 - tooltipWidth / 2;
+      tooltip.className = 'studentnija-tour-tooltip top';
+    } else if (position === 'left') {
+      top = rect.top + rect.height / 2 - tooltipHeight / 2;
+      left = rect.left - tooltipWidth - 20;
+      tooltip.className = 'studentnija-tour-tooltip left';
+    } else if (position === 'right') {
+      top = rect.top + rect.height / 2 - tooltipHeight / 2;
+      left = rect.right + 20;
+      tooltip.className = 'studentnija-tour-tooltip right';
+    } else {
+      top = rect.bottom + 20;
+      left = rect.left + rect.width / 2 - tooltipWidth / 2;
+      tooltip.className = 'studentnija-tour-tooltip bottom';
+    }
+    const margin = 16;
+    left = Math.max(margin, Math.min(left, window.innerWidth - tooltipWidth - margin));
+    top = Math.max(margin, Math.min(top, window.innerHeight - tooltipHeight - margin));
+    tooltip.style.width = `${tooltipWidth}px`;
+    tooltip.style.top = `${top}px`;
+    tooltip.style.left = `${left}px`;
+  }
+
+  function nextStep() { currentStep++; if (currentStep >= tourSteps.length) finishTour(); else showStep(); }
+  function finishTour() {
+    tour.style.opacity = '0';
+    tour.style.transition = 'opacity 0.25s ease';
+    setTimeout(() => tour.remove(), 250);
+    localStorage.setItem('studentnija_tour_completed', 'true');
+  }
+
+  nextButton.addEventListener('click', nextStep);
+  skipButton.addEventListener('click', finishTour);
+  window.addEventListener('resize', showStep);
+  showStep();
+}
+
+// ======================== AUTO FULLSCREEN ON FIRST TAP ========================
+(function() {
+  let fullscreenRequested = false;
+  function requestFullscreen() {
+    if (fullscreenRequested) return;
+    fullscreenRequested = true;
+    const el = document.documentElement;
+    if (el.requestFullscreen) el.requestFullscreen().catch(() => {});
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
+  }
+  document.addEventListener('click', requestFullscreen, { once: true });
+  document.addEventListener('touchstart', requestFullscreen, { once: true });
+})();
+
 // ======================== HIDE LOADING SCREEN ========================
 function hideLoadingScreen() {
   const loadingScreen = document.getElementById('loadingScreen');
@@ -292,16 +872,13 @@ export function showAuthForm(formType) {
       const pwd = document.getElementById('loginPass').value;
       const rem = document.getElementById('rememberMe')?.checked;
       if (loginUser(email, pwd, rem)) {
-        // If remember me is checked, persist the user session
         if (rem) {
           localStorage.setItem('remember_me', 'true');
           localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
         } else {
           localStorage.removeItem('remember_me');
         }
-        // Sync user to server database
         syncLocalUserToServer(currentUser);
-        // Clear any previous data and render app
         renderApp();
       } else {
         alert('Invalid credentials');
@@ -349,7 +926,6 @@ export function showAuthForm(formType) {
       } else if (!email.includes('@')) {
         alert('Invalid email');
       } else if (registerUser(name, email, pass, school, dept, level)) {
-        // Sync new user to server
         syncLocalUserToServer(currentUser);
         alert('Registration successful! Please login.');
         showAuthForm('login');
@@ -376,7 +952,6 @@ export function showAuthForm(formType) {
         alert('Please enter a valid email.');
         return;
       }
-      // Call the server to send a password reset email
       try {
         await apiPost('/api/auth/forgot-password', { email });
         alert('If an account with that email exists, a reset link has been sent.');
@@ -436,16 +1011,11 @@ function processGoogleUser(userData) {
   localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
   addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
 
-  // Sync Google user to server (ensure they are in the DB)
   syncLocalUserToServer(currentUser);
-
-  // Load cloud data
   loadCloudData(currentUser.id).then(() => {
-    // Show onboarding if first time
     if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
   });
 
-  // Push subscription
   if (window.NotifBridge && window.NotifBridge.subscribeToPush) {
     window.NotifBridge.subscribeToPush();
   }
@@ -476,14 +1046,9 @@ export function renderApp() {
       try {
         const user = JSON.parse(storedUser);
         if (user.email) {
-          // Auto-login with stored user
           const existing = users.find(u => u.email === user.email);
-          if (existing) {
-            Object.assign(currentUser, existing);
-          } else {
-            // Recreate the user from stored data? Not safe. Just restore the basic info.
-            Object.assign(currentUser, user);
-          }
+          if (existing) Object.assign(currentUser, existing);
+          else Object.assign(currentUser, user);
           clearPreviousUserData();
           loadCloudData(currentUser.id).then(() => renderMainApp()).catch(() => renderMainApp());
           return;
@@ -883,143 +1448,6 @@ if (!window._aiMessageListener) {
   window._aiMessageListener = true;
 }
 
-// ======================== PASSWORD RESET (server endpoint required) ========================
-// This function is called from the forgot password form.
-// The server endpoint /api/auth/forgot-password is assumed to exist (see below).
-
-// ======================== ONBOARDING ========================
-function showOnboarding() {
-  if (localStorage.getItem('studentnija_onboarded')) return;
-
-  // Clean up any previous overlay
-  const old = document.getElementById('onboardingOverlay');
-  if (old) old.remove();
-
-  const overlay = document.createElement('div');
-  overlay.id = 'onboardingOverlay';
-  overlay.innerHTML = `
-    <style>
-      @keyframes floatEmoji {
-        0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
-        50% { transform: translateY(-20px) rotate(10deg); opacity: 1; }
-      }
-      @keyframes floatEmoji2 {
-        0%, 100% { transform: translateY(0) rotate(0deg) scale(1); opacity: 0.6; }
-        50% { transform: translateY(-30px) rotate(-8deg) scale(1.2); opacity: 1; }
-      }
-      @keyframes floatEmoji3 {
-        0%, 100% { transform: translateX(0) rotate(0deg); opacity: 0.5; }
-        50% { transform: translateX(15px) rotate(5deg); opacity: 0.9; }
-      }
-      @keyframes pulseBtn {
-        0% { box-shadow: 0 4px 12px rgba(0,135,81,0.4); }
-        50% { box-shadow: 0 6px 24px rgba(0,135,81,0.7); transform: scale(1.02); }
-        100% { box-shadow: 0 4px 12px rgba(0,135,81,0.4); }
-      }
-      @keyframes slideUp {
-        from { transform: translateY(40px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-      }
-      .onboarding-backdrop {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.75);
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-        z-index: 9999; display: flex; align-items: center; justify-content: center;
-        padding: 20px; animation: fadeIn 0.4s ease;
-      }
-      .onboarding-card {
-        background: radial-gradient(circle at 20% 20%, rgba(0,135,81,0.08), var(--bg-secondary));
-        border-radius: 32px; padding: 32px 24px 28px; max-width: 360px; width: 100%;
-        border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        text-align: center; position: relative; overflow: hidden;
-        animation: slideUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1);
-      }
-      .onboarding-emoji-rain {
-        position: absolute; top: -10px; left: 0; width: 100%; pointer-events: none;
-        display: flex; justify-content: space-around; flex-wrap: wrap;
-      }
-      .onboarding-emoji-rain span {
-        font-size: 28px; animation: floatEmoji 3s infinite ease-in-out;
-      }
-      .onboarding-emoji-rain span:nth-child(odd) { animation-name: floatEmoji2; animation-duration: 3.5s; }
-      .onboarding-emoji-rain span:nth-child(3n) { animation-name: floatEmoji3; animation-duration: 4s; }
-      .onboarding-card h2 {
-        font-size: 28px; font-weight: 800; margin: 20px 0 8px;
-        background: linear-gradient(135deg, var(--accent), var(--accent-light));
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-        background-clip: text; letter-spacing: -0.5px;
-      }
-      .onboarding-card .subtitle {
-        font-size: 16px; color: var(--text-muted); margin-bottom: 24px; font-weight: 500;
-      }
-      .onboarding-benefits {
-        display: flex; flex-direction: column; gap: 10px; text-align: left;
-        margin: 0 auto 24px; max-width: 280px;
-      }
-      .onboarding-benefits div {
-        display: flex; align-items: center; gap: 10px;
-        background: rgba(255,255,255,0.03); padding: 8px 14px;
-        border-radius: 14px; font-size: 14px;
-      }
-      .onboarding-benefits .emoji { font-size: 20px; flex-shrink: 0; }
-      .onboarding-btn {
-        background: linear-gradient(135deg, var(--accent), var(--accent-light));
-        border: none; color: white; padding: 14px 28px; border-radius: 40px;
-        font-weight: 700; font-size: 16px; cursor: pointer;
-        transition: transform 0.2s, box-shadow 0.2s;
-        box-shadow: 0 4px 12px rgba(0,135,81,0.4);
-        animation: pulseBtn 2s infinite ease-in-out;
-        width: auto; display: inline-block; font-family: inherit;
-      }
-      .onboarding-btn:active { transform: scale(0.96); }
-    </style>
-    <div class="onboarding-backdrop" id="onboardingBackdrop">
-      <div class="onboarding-card">
-        <div class="onboarding-emoji-rain">
-          <span>📚</span><span>🎓</span><span>🔥</span><span>👑</span><span>🇳🇬</span><span>🎉</span><span>🃏</span><span>📝</span>
-          <span>📑</span><span>📒</span><span>📓</span><span>📗</span><span>📔</span><span>📕</span><span>📖</span><span>🗂️</span>
-          <span>📌</span><span>📇</span><span>📊</span><span>📈</span><span>📉</span><span>📤</span><span>📥</span><span>🏷️</span>
-          <span>⏰</span><span>⌛</span><span>⏳</span><span>🔔</span><span>🛎️</span><span>📢</span><span>🔊</span><span>🛡️</span>
-          <span>🔐</span><span>🔏</span><span>📜</span><span>🔍</span><span>🔎</span><span>🔮</span><span>💭</span><span>🗯️</span>
-          <span>💬</span><span>🗨️</span><span>❔</span><span>📳</span><span>📲</span><span>✅</span><span>🌐</span><span>🗓️</span>
-          <span>🔖</span><span>📙</span><span>📘</span><span>✏️</span><span>🖋️</span><span>⚙️</span><span>🖇️</span><span>✂️</span>
-          <span>🖊️</span><span>🖍️</span><span>🖌️</span>
-        </div>
-        <h2>Welcome to StudentNija! 🚀</h2>
-        <p class="subtitle">Your AI‑powered study companion</p>
-        <div class="onboarding-benefits">
-          <div><span class="emoji">📚</span> Track courses & CGPA</div>
-          <div><span class="emoji">✅</span> Manage tasks & timetable</div>
-          <div><span class="emoji">🧠</span> Get AI tutoring</div>
-          <div><span class="emoji">📝</span> Practice past questions</div>
-          <div><span class="emoji">💬</span> Join study groups</div>
-        </div>
-        <button class="onboarding-btn" id="onboardCloseBtn">Let's Go!</button>
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  setTimeout(() => {
-    const closeBtn = document.getElementById('onboardCloseBtn');
-    const backdrop = document.getElementById('onboardingBackdrop');
-
-    function dismiss() {
-      overlay.remove();
-      localStorage.setItem('studentnija_onboarded', 'true');
-    }
-
-    if (closeBtn) {
-      closeBtn.addEventListener('click', dismiss);
-    }
-    if (backdrop) {
-      backdrop.addEventListener('click', (e) => {
-        if (e.target === backdrop) dismiss();
-      });
-    }
-  }, 100);
-      }
-
 // ======================== BOOTSTRAP ========================
 window.addEventListener('load', async () => {
   console.log('🚀 App bootstrapping...');
@@ -1036,7 +1464,6 @@ window.addEventListener('load', async () => {
         if (existing) {
           Object.assign(currentUser, existing);
         } else {
-          // If user not in local users array, create a minimal entry
           currentUser = user;
           if (!users.find(u => u.email === user.email)) users.push(user);
         }
