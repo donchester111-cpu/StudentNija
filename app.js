@@ -12,7 +12,26 @@ import {
   updateConnectionIndicator
 } from './state.js';
 
-import { initErrorHandler } from './tools/errors.js';
+import { renderHome } from './pages/home.js';
+import { renderAcademics } from './pages/academics.js';
+import { renderPlannerPage } from './pages/planner.js';
+import { renderProfilePage } from './pages/profile.js';
+
+import { openCalculator } from './tools/calculator.js';
+import { openMathSolver } from './tools/mathSolver.js';
+import { openDictionary } from './tools/dictionary.js';
+import { openLibrary } from './tools/library.js';
+import { openFlashcards } from './tools/flashcards.js';
+import { openGradePredictor } from './tools/gradePredictor.js';
+import { openAITutor } from './tools/aiTutor.js';
+import { openEssayAssistant } from './tools/essayAssistant.js';
+import { openSmartSearch } from './tools/smartSearch.js';
+import { openDataManager } from './tools/dataManager.js';
+import { openNotepad } from './tools/notepad.js';
+import { openPastQuestions } from './tools/pastQuestions.js';
+import { openBrowser } from './tools/browser.js';
+import { openQuiz } from './tools/quiz.js';
+import { openGuessNumber } from './tools/guessNumber.js';
 
 import { openToolModal, closeToolModal } from './tools/modal.js';
 window.openToolModal = openToolModal;
@@ -188,8 +207,22 @@ function clearPreviousUserData() {
   }
 }
 
-// ======================== ERROR HANDLERS (now in tools/errors.js, but we keep the global ones) ========================
-// (initErrorHandler is called in bootstrap)
+// ======================== ERROR HANDLERS ========================
+window.addEventListener('unhandledrejection', function(event) {
+  console.error('Unhandled promise rejection:', event.reason);
+  if (window.showToast) {
+    showToast('⚠️ An error occurred. Please try again.');
+  }
+  event.preventDefault();
+});
+
+window.onerror = function(message, source, lineno, colno, error) {
+  console.error('Global error:', message, 'at', source, ':', lineno);
+  if (window.showToast) {
+    showToast('⚠️ Something went wrong. Please reload.');
+  }
+  return true;
+};
 
 // ======================== GLOBALS ========================
 export let currentPage = "home";
@@ -254,49 +287,25 @@ export function showAuthForm(formType) {
       <button class="btn-outline" id="gotoRegister" style="margin-top:8px;">Create Account</button>
     `;
 
-    document.getElementById('doLogin')?.addEventListener('click', async function() {
+    document.getElementById('doLogin')?.addEventListener('click', function() {
       const email = document.getElementById('loginEmail').value;
       const pwd = document.getElementById('loginPass').value;
       const rem = document.getElementById('rememberMe')?.checked;
-
-      if (!loginUser(email, pwd, rem)) {
-        alert('Invalid credentials');
-        return;
-      }
-
-      // Check if user has 2FA enabled
-      if (currentUser.twoFactorEnabled) {
-        try {
-          const res = await apiPost('/api/2fa/email/send', { userId: currentUser.id });
-          if (!res.success) throw new Error('Failed to send code');
-          open2FAModal(async (code) => {
-            const verifyRes = await apiPost('/api/auth/login-2fa', { userId: currentUser.id, code });
-            if (verifyRes.success) {
-              if (rem) {
-                localStorage.setItem('remember_me', 'true');
-                localStorage.setItem('studentnija_currentUser', JSON.stringify(verifyRes.user));
-              }
-              syncLocalUserToServer(verifyRes.user);
-              renderApp();
-            } else {
-              alert(verifyRes.error || 'Invalid code');
-            }
-          });
-        } catch (e) {
-          alert('Could not send 2FA code');
+      if (loginUser(email, pwd, rem)) {
+        // If remember me is checked, persist the user session
+        if (rem) {
+          localStorage.setItem('remember_me', 'true');
+          localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
+        } else {
+          localStorage.removeItem('remember_me');
         }
-        return;
-      }
-
-      // No 2FA – login normally
-      if (rem) {
-        localStorage.setItem('remember_me', 'true');
-        localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
+        // Sync user to server database
+        syncLocalUserToServer(currentUser);
+        // Clear any previous data and render app
+        renderApp();
       } else {
-        localStorage.removeItem('remember_me');
+        alert('Invalid credentials');
       }
-      syncLocalUserToServer(currentUser);
-      renderApp();
     });
 
     document.getElementById('googleSignInBtn')?.addEventListener('click', function() {
@@ -340,6 +349,7 @@ export function showAuthForm(formType) {
       } else if (!email.includes('@')) {
         alert('Invalid email');
       } else if (registerUser(name, email, pass, school, dept, level)) {
+        // Sync new user to server
         syncLocalUserToServer(currentUser);
         alert('Registration successful! Please login.');
         showAuthForm('login');
@@ -366,6 +376,7 @@ export function showAuthForm(formType) {
         alert('Please enter a valid email.');
         return;
       }
+      // Call the server to send a password reset email
       try {
         await apiPost('/api/auth/forgot-password', { email });
         alert('If an account with that email exists, a reset link has been sent.');
@@ -379,30 +390,6 @@ export function showAuthForm(formType) {
       showAuthForm('login');
     });
   }
-}
-
-// ======================== 2FA MODAL ========================
-function open2FAModal(callback) {
-  const modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:10000;';
-  modal.innerHTML = `
-    <div style="background:var(--bg-secondary); border-radius:24px; padding:24px; max-width:360px; width:90%; box-shadow:var(--shadow); text-align:center;">
-      <h3>🔐 Two‑Factor Authentication</h3>
-      <p class="text-muted" style="margin:12px 0;">A verification code has been sent to your email.</p>
-      <input type="text" id="login2faCode" placeholder="6‑digit code" maxlength="6" style="width:100%; padding:12px 16px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); background:var(--bg-primary); color:var(--text-primary);">
-      <div style="display:flex; gap:10px; justify-content:center; margin-top:16px;">
-        <button class="btn-outline" id="cancel2faBtn">Cancel</button>
-        <button class="btn" id="verify2faBtn">Verify</button>
-      </div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  document.getElementById('cancel2faBtn').addEventListener('click', () => modal.remove());
-  document.getElementById('verify2faBtn').addEventListener('click', () => {
-    const code = document.getElementById('login2faCode').value.trim();
-    modal.remove();
-    callback(code);
-  });
 }
 
 // ======================== GOOGLE SIGN-IN ========================
@@ -449,12 +436,16 @@ function processGoogleUser(userData) {
   localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
   addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
 
+  // Sync Google user to server (ensure they are in the DB)
   syncLocalUserToServer(currentUser);
 
+  // Load cloud data
   loadCloudData(currentUser.id).then(() => {
+    // Show onboarding if first time
     if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
   });
 
+  // Push subscription
   if (window.NotifBridge && window.NotifBridge.subscribeToPush) {
     window.NotifBridge.subscribeToPush();
   }
@@ -477,7 +468,7 @@ export function renderApp() {
     }
   }
 
-  // Check for "Remember Me" stored user
+  // Check for "Remember Me" stored user (auto-login)
   if (!currentUser || !currentUser.email) {
     const rememberMe = localStorage.getItem('remember_me');
     const storedUser = localStorage.getItem('studentnija_currentUser');
@@ -485,10 +476,12 @@ export function renderApp() {
       try {
         const user = JSON.parse(storedUser);
         if (user.email) {
+          // Auto-login with stored user
           const existing = users.find(u => u.email === user.email);
           if (existing) {
             Object.assign(currentUser, existing);
           } else {
+            // Recreate the user from stored data? Not safe. Just restore the basic info.
             Object.assign(currentUser, user);
           }
           clearPreviousUserData();
@@ -536,22 +529,24 @@ export function renderMainApp() {
     window.currentPage = 'home';
   }
 
-  // Tool openers – attached to window
-  window.openCalculator = () => import('./tools/calculator.js').then(m => m.openCalculator());
-  window.openMathSolver = () => import('./tools/mathSolver.js').then(m => m.openMathSolver());
-  window.openDictionary = () => import('./tools/dictionary.js').then(m => m.openDictionary());
-  window.openLibrary = () => import('./tools/library.js').then(m => m.openLibrary());
-  window.openFlashcards = () => import('./tools/flashcards.js').then(m => m.openFlashcards());
-  window.openGradePredictor = () => import('./tools/gradePredictor.js').then(m => m.openGradePredictor());
-  window.openAITutor = () => import('./tools/aiTutor.js').then(m => m.openAITutor());
-  window.openEssayAssistant = () => import('./tools/essayAssistant.js').then(m => m.openEssayAssistant());
-  window.openSmartSearch = () => import('./tools/smartSearch.js').then(m => m.openSmartSearch());
-  window.openDataManager = () => import('./tools/dataManager.js').then(m => m.openDataManager());
-  window.openNotepad = () => import('./tools/notepad.js').then(m => m.openNotepad());
-  window.openPastQuestions = () => import('./tools/pastQuestions.js').then(m => m.openPastQuestions());
-  window.openBrowser = () => import('./tools/browser.js').then(m => m.openBrowser());
-  window.openQuiz = () => import('./tools/quiz.js').then(m => m.openQuiz());
-  window.openGuessNumber = () => import('./tools/guessNumber.js').then(m => m.openGuessNumber());
+  window.openCalculator = openCalculator;
+  window.openMathSolver = openMathSolver;
+  window.openDictionary = openDictionary;
+  window.openLibrary = openLibrary;
+  window.openFlashcards = openFlashcards;
+  window.openGradePredictor = openGradePredictor;
+  window.openAITutor = openAITutor;
+  window.openEssayAssistant = openEssayAssistant;
+  window.openSmartSearch = openSmartSearch;
+  window.openDataManager = openDataManager;
+  window.openNotepad = openNotepad;
+  window.openPastQuestions = openPastQuestions;
+  window.openBrowser = openBrowser;
+  window.openQuiz = openQuiz;
+  window.openGuessNumber = openGuessNumber;
+
+  window.renderMainApp = renderMainApp;
+  window.currentPage = currentPage;
 
   const pagesContainer = document.getElementById('pagesContainer');
   if (!pagesContainer) {
@@ -603,19 +598,14 @@ export function renderMainApp() {
   activePage.style.display = 'block';
   console.log(`📄 Active page: ${currentPage}`);
 
-  // Dynamic page import and render
-  const pageLoaders = {
-    home: () => import('./pages/home.js').then(m => m.renderHome()),
-    academics: () => import('./pages/academics.js').then(m => m.renderAcademics()),
-    planner: () => import('./pages/planner.js').then(m => m.renderPlannerPage()),
-    profile: () => import('./pages/profile.js').then(m => m.renderProfilePage()),
-  };
-
-  if (pageLoaders[currentPage]) {
-    pageLoaders[currentPage]().catch(err => {
-      console.error(`Failed to load ${currentPage} page:`, err);
-      activePage.innerHTML = `<div class="text-muted" style="padding:20px; text-align:center;">⚠️ Could not load this page. Please try again.</div>`;
-    });
+  if (currentPage === 'home') {
+    renderHome();
+  } else if (currentPage === 'academics') {
+    renderAcademics();
+  } else if (currentPage === 'planner') {
+    renderPlannerPage();
+  } else if (currentPage === 'profile') {
+    renderProfilePage();
   }
 
   ['aiBackBtn', 'studyGroupsBackBtn', 'examsBackBtn'].forEach(id => {
@@ -893,6 +883,10 @@ if (!window._aiMessageListener) {
   window._aiMessageListener = true;
 }
 
+// ======================== PASSWORD RESET (server endpoint required) ========================
+// This function is called from the forgot password form.
+// The server endpoint /api/auth/forgot-password is assumed to exist (see below).
+
 // ======================== ONBOARDING ========================
 function showOnboarding() {
   if (localStorage.getItem('studentnija_onboarded')) return;
@@ -900,7 +894,7 @@ function showOnboarding() {
   overlay.id = 'onboardingOverlay';
   overlay.innerHTML = `
     <div style="position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;">
-      <div class="card" style="max-width:340px; text-align:center;">
+      <div class="glass-card" style="max-width:340px; text-align:center;">
         <h2 style="margin-bottom:12px;">🚀 Welcome to StudentNija!</h2>
         <p class="text-muted" style="margin-bottom:16px;">Your AI‑powered study companion.</p>
         <div style="margin:16px 0; display:flex; flex-direction:column; gap:8px; text-align:left; padding:0 20px;">
@@ -922,11 +916,10 @@ function showOnboarding() {
 
 // ======================== BOOTSTRAP ========================
 window.addEventListener('load', async () => {
-  initErrorHandler();
   console.log('🚀 App bootstrapping...');
   loadAll();
 
-  // Auto-login with Remember Me
+  // Check for "Remember Me" auto-login first
   const rememberMe = localStorage.getItem('remember_me');
   const storedUser = localStorage.getItem('studentnija_currentUser');
   if (rememberMe === 'true' && storedUser && !currentUser?.email) {
@@ -937,6 +930,7 @@ window.addEventListener('load', async () => {
         if (existing) {
           Object.assign(currentUser, existing);
         } else {
+          // If user not in local users array, create a minimal entry
           currentUser = user;
           if (!users.find(u => u.email === user.email)) users.push(user);
         }
