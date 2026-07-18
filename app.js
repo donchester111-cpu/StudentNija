@@ -12,26 +12,7 @@ import {
   updateConnectionIndicator
 } from './state.js';
 
-import { renderHome } from './pages/home.js';
-import { renderAcademics } from './pages/academics.js';
-import { renderPlannerPage } from './pages/planner.js';
-import { renderProfilePage } from './pages/profile.js';
-
-import { openCalculator } from './tools/calculator.js';
-import { openMathSolver } from './tools/mathSolver.js';
-import { openDictionary } from './tools/dictionary.js';
-import { openLibrary } from './tools/library.js';
-import { openFlashcards } from './tools/flashcards.js';
-import { openGradePredictor } from './tools/gradePredictor.js';
-import { openAITutor } from './tools/aiTutor.js';
-import { openEssayAssistant } from './tools/essayAssistant.js';
-import { openSmartSearch } from './tools/smartSearch.js';
-import { openDataManager } from './tools/dataManager.js';
-import { openNotepad } from './tools/notepad.js';
-import { openPastQuestions } from './tools/pastQuestions.js';
-import { openBrowser } from './tools/browser.js';
-import { openQuiz } from './tools/quiz.js';
-import { openGuessNumber } from './tools/guessNumber.js';
+import { initErrorHandler } from './tools/errors.js';
 
 import { openToolModal, closeToolModal } from './tools/modal.js';
 window.openToolModal = openToolModal;
@@ -40,7 +21,18 @@ window.closeToolModal = closeToolModal;
 // ======================== API HELPER ========================
 import { apiPost, apiGet } from './api.js';
 
-// ======================== CLOUD SYNC ========================
+// ======================== CLOUD AUTO‑SYNC ========================
+let syncTimer = null;
+function scheduleCloudSync() {
+  if (!currentUser || !currentUser.id) return;
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => {
+    syncUserDataToCloud();
+  }, 1000);
+}
+window.scheduleCloudSync = scheduleCloudSync;
+
+// ======================== CLOUD SYNC FUNCTIONS ========================
 async function syncUserDataToCloud() {
   if (!currentUser || !currentUser.id) return;
   const userId = currentUser.id;
@@ -50,6 +42,36 @@ async function syncUserDataToCloud() {
     exams: exams,
     flashcards: flashcards,
     notes: savedNotes,
+    timetable: timetableEvents,
+    settings: {
+      theme: settings.theme,
+      accentColor: settings.accentColor,
+      notificationsEnabled: settings.notificationsEnabled,
+      classNotifications: settings.classNotifications,
+      examNotifications: settings.examNotifications,
+    },
+    profile: {
+      id: currentUser.id,
+      fullName: currentUser.fullName,
+      email: currentUser.email,
+      school: currentUser.school || '',
+      department: currentUser.department || '',
+      level: currentUser.level || '',
+      studentId: currentUser.studentId || '',
+      bio: currentUser.bio || '',
+      profilePic: currentUser.profilePic || '',
+      googleAuth: currentUser.googleAuth || false,
+    },
+    stats: {
+      studyStreak: userStats.studyStreak || 0,
+      totalQuestions: userStats.totalQuestions || 0,
+      totalQuizzes: userStats.totalQuizzes || 0,
+      correctAnswers: userStats.correctAnswers || 0,
+      bestScore: userStats.bestScore || 0,
+      level: userStats.level || 1,
+      xp: userStats.xp || 0,
+    },
+    backedUpAt: new Date().toISOString(),
   };
   try {
     await apiPost('/api/sync/save', { userId, data });
@@ -63,7 +85,6 @@ async function loadCloudData(userId) {
   try {
     const resp = await apiGet(`/api/sync/load/${userId}`);
     if (resp.data && Object.keys(resp.data).length > 0) {
-      // Merge with current state (simple merge – avoids duplicates)
       if (resp.data.courses) Object.assign(coursesData, resp.data.courses);
       if (resp.data.tasks) {
         const existingIds = new Set(plannerTasks.map(t => t.id));
@@ -81,7 +102,26 @@ async function loadCloudData(userId) {
         const existingTitles = new Set(savedNotes.map(n => n.title));
         resp.data.notes.forEach(n => { if (!existingTitles.has(n.title)) savedNotes.push(n); });
       }
-      saveAll(); // persist merged data
+      if (resp.data.timetable) {
+        const existingIds = new Set(timetableEvents.map(e => e.id));
+        resp.data.timetable.forEach(e => { if (!existingIds.has(e.id)) timetableEvents.push(e); });
+      }
+      if (resp.data.settings && typeof resp.data.settings === 'object') {
+        Object.assign(settings, resp.data.settings);
+      }
+      if (resp.data.profile && typeof resp.data.profile === 'object') {
+        const safe = resp.data.profile;
+        if (safe.school) currentUser.school = safe.school;
+        if (safe.department) currentUser.department = safe.department;
+        if (safe.level) currentUser.level = safe.level;
+        if (safe.studentId) currentUser.studentId = safe.studentId;
+        if (safe.bio) currentUser.bio = safe.bio;
+        if (safe.profilePic) currentUser.profilePic = safe.profilePic;
+      }
+      if (resp.data.stats && typeof resp.data.stats === 'object') {
+        Object.assign(userStats, resp.data.stats);
+      }
+      saveAll();
       console.log('✅ Cloud data loaded and merged');
     }
   } catch (e) {
@@ -97,9 +137,24 @@ export async function trackEvent(eventType, payload = {}) {
   } catch (e) { /* ignore */ }
 }
 
+// ======================== SYNC LOCAL USER TO SERVER ========================
+async function syncLocalUserToServer(user) {
+  try {
+    await apiPost('/api/local-user/sync', {
+      email: user.email,
+      fullName: user.fullName,
+      school: user.school || '',
+      department: user.department || '',
+      level: user.level || ''
+    });
+    console.log('✅ Local user synced with server');
+  } catch (e) {
+    console.error('Local user sync failed', e);
+  }
+}
+
 // ======================== CLEAN PREVIOUS SESSION DATA ========================
 function clearPreviousUserData() {
-  // Remove all user‑specific data keys, but keep settings/theme
   const keysToRemove = [
     'studentnija_courses',
     'studentnija_tasks',
@@ -112,11 +167,9 @@ function clearPreviousUserData() {
     'studentnija_achievements',
     'studentnija_planner_tasks',
     'studentnija_coursesData',
-    // Add any other keys used for user data
   ];
   keysToRemove.forEach(key => localStorage.removeItem(key));
   
-  // Also clear the in‑memory state objects so they don't carry over old data
   Object.keys(coursesData).forEach(k => delete coursesData[k]);
   plannerTasks.length = 0;
   timetableEvents.length = 0;
@@ -124,30 +177,19 @@ function clearPreviousUserData() {
   flashcards.length = 0;
   savedNotes.length = 0;
   notifications.length = 0;
-  // Reset userStats to defaults (if needed)
   if (userStats) {
     userStats.studyStreak = 0;
-    // other stats reset if required
+    userStats.totalQuestions = 0;
+    userStats.totalQuizzes = 0;
+    userStats.correctAnswers = 0;
+    userStats.bestScore = 0;
+    userStats.level = 1;
+    userStats.xp = 0;
   }
-  // Also clear any other in‑memory arrays/objects that hold user data
 }
 
-// ======================== ERROR HANDLERS ========================
-window.addEventListener('unhandledrejection', function(event) {
-  console.error('Unhandled promise rejection:', event.reason);
-  if (window.showToast) {
-    showToast('⚠️ An error occurred. Please try again.');
-  }
-  event.preventDefault();
-});
-
-window.onerror = function(message, source, lineno, colno, error) {
-  console.error('Global error:', message, 'at', source, ':', lineno);
-  if (window.showToast) {
-    showToast('⚠️ Something went wrong. Please reload.');
-  }
-  return true;
-};
+// ======================== ERROR HANDLERS (now in tools/errors.js, but we keep the global ones) ========================
+// (initErrorHandler is called in bootstrap)
 
 // ======================== GLOBALS ========================
 export let currentPage = "home";
@@ -212,15 +254,49 @@ export function showAuthForm(formType) {
       <button class="btn-outline" id="gotoRegister" style="margin-top:8px;">Create Account</button>
     `;
 
-    document.getElementById('doLogin')?.addEventListener('click', function() {
+    document.getElementById('doLogin')?.addEventListener('click', async function() {
       const email = document.getElementById('loginEmail').value;
       const pwd = document.getElementById('loginPass').value;
       const rem = document.getElementById('rememberMe')?.checked;
-      if (loginUser(email, pwd, rem)) {
-        renderApp();
-      } else {
+
+      if (!loginUser(email, pwd, rem)) {
         alert('Invalid credentials');
+        return;
       }
+
+      // Check if user has 2FA enabled
+      if (currentUser.twoFactorEnabled) {
+        try {
+          const res = await apiPost('/api/2fa/email/send', { userId: currentUser.id });
+          if (!res.success) throw new Error('Failed to send code');
+          open2FAModal(async (code) => {
+            const verifyRes = await apiPost('/api/auth/login-2fa', { userId: currentUser.id, code });
+            if (verifyRes.success) {
+              if (rem) {
+                localStorage.setItem('remember_me', 'true');
+                localStorage.setItem('studentnija_currentUser', JSON.stringify(verifyRes.user));
+              }
+              syncLocalUserToServer(verifyRes.user);
+              renderApp();
+            } else {
+              alert(verifyRes.error || 'Invalid code');
+            }
+          });
+        } catch (e) {
+          alert('Could not send 2FA code');
+        }
+        return;
+      }
+
+      // No 2FA – login normally
+      if (rem) {
+        localStorage.setItem('remember_me', 'true');
+        localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
+      } else {
+        localStorage.removeItem('remember_me');
+      }
+      syncLocalUserToServer(currentUser);
+      renderApp();
     });
 
     document.getElementById('googleSignInBtn')?.addEventListener('click', function() {
@@ -264,6 +340,7 @@ export function showAuthForm(formType) {
       } else if (!email.includes('@')) {
         alert('Invalid email');
       } else if (registerUser(name, email, pass, school, dept, level)) {
+        syncLocalUserToServer(currentUser);
         alert('Registration successful! Please login.');
         showAuthForm('login');
       } else {
@@ -277,24 +354,58 @@ export function showAuthForm(formType) {
 
   } else if (formType === 'forgot') {
     container.innerHTML = `
-      <p>Enter your email to receive a reset link (coming soon).</p>
+      <p>Enter your email to receive a password reset link.</p>
       <input id="resetEmail" placeholder="Email">
-      <button class="btn-primary" id="resetSend">Send Link</button>
-      <button class="btn-outline" id="backLogin">Back</button>
+      <button class="btn-primary" id="sendResetBtn">Send Reset Link</button>
+      <button class="btn-outline" id="backToLoginBtn" style="margin-top:8px;">Back to Login</button>
     `;
 
-    document.getElementById('resetSend')?.addEventListener('click', function() {
-      alert('Reset: Password reset link (Coming soon).');
-      showAuthForm('login');
+    document.getElementById('sendResetBtn')?.addEventListener('click', async function() {
+      const email = document.getElementById('resetEmail').value.trim();
+      if (!email || !email.includes('@')) {
+        alert('Please enter a valid email.');
+        return;
+      }
+      try {
+        await apiPost('/api/auth/forgot-password', { email });
+        alert('If an account with that email exists, a reset link has been sent.');
+        showAuthForm('login');
+      } catch (e) {
+        alert('Could not send reset email. Please try again later.');
+      }
     });
 
-    document.getElementById('backLogin')?.addEventListener('click', function() {
+    document.getElementById('backToLoginBtn')?.addEventListener('click', function() {
       showAuthForm('login');
     });
   }
 }
 
-// ======================== GOOGLE SIGN-IN (same‑tab redirect) ========================
+// ======================== 2FA MODAL ========================
+function open2FAModal(callback) {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:10000;';
+  modal.innerHTML = `
+    <div style="background:var(--bg-secondary); border-radius:24px; padding:24px; max-width:360px; width:90%; box-shadow:var(--shadow); text-align:center;">
+      <h3>🔐 Two‑Factor Authentication</h3>
+      <p class="text-muted" style="margin:12px 0;">A verification code has been sent to your email.</p>
+      <input type="text" id="login2faCode" placeholder="6‑digit code" maxlength="6" style="width:100%; padding:12px 16px; border-radius:14px; border:1px solid rgba(255,255,255,0.08); background:var(--bg-primary); color:var(--text-primary);">
+      <div style="display:flex; gap:10px; justify-content:center; margin-top:16px;">
+        <button class="btn-outline" id="cancel2faBtn">Cancel</button>
+        <button class="btn" id="verify2faBtn">Verify</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  document.getElementById('cancel2faBtn').addEventListener('click', () => modal.remove());
+  document.getElementById('verify2faBtn').addEventListener('click', () => {
+    const code = document.getElementById('login2faCode').value.trim();
+    modal.remove();
+    callback(code);
+  });
+}
+
+// ======================== GOOGLE SIGN-IN ========================
 export function startGoogleSignIn() {
   window.location.href = 'studentnija_sync.html';
 }
@@ -306,7 +417,6 @@ function processGoogleUser(userData) {
     return;
   }
 
-  // Clear any data from a previous session (prevents data leakage)
   clearPreviousUserData();
 
   let existingUser = users.find(u => u.email === userData.email);
@@ -339,13 +449,12 @@ function processGoogleUser(userData) {
   localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
   addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
 
-  // Load cloud data for this user (no immediate upload – we'll sync later)
+  syncLocalUserToServer(currentUser);
+
   loadCloudData(currentUser.id).then(() => {
-    // After cloud data is merged, we may want to re‑render the app
-    // but renderApp will be called by the caller.
+    if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
   });
 
-  // Push subscription
   if (window.NotifBridge && window.NotifBridge.subscribeToPush) {
     window.NotifBridge.subscribeToPush();
   }
@@ -368,16 +477,43 @@ export function renderApp() {
     }
   }
 
+  // Check for "Remember Me" stored user
+  if (!currentUser || !currentUser.email) {
+    const rememberMe = localStorage.getItem('remember_me');
+    const storedUser = localStorage.getItem('studentnija_currentUser');
+    if (rememberMe === 'true' && storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        if (user.email) {
+          const existing = users.find(u => u.email === user.email);
+          if (existing) {
+            Object.assign(currentUser, existing);
+          } else {
+            Object.assign(currentUser, user);
+          }
+          clearPreviousUserData();
+          loadCloudData(currentUser.id).then(() => renderMainApp()).catch(() => renderMainApp());
+          return;
+        }
+      } catch (_) {}
+    }
+  }
+
   if (currentUser && currentUser.email) {
-    // If already logged in, just show main app
+    clearPreviousUserData();
     renderMainApp();
+    if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
   } else {
     const stored = localStorage.getItem('studentnija_currentUser');
     if (stored) {
       try {
         const user = JSON.parse(stored);
         Object.assign(currentUser, user);
-        loadCloudData(currentUser.id).then(() => renderMainApp());
+        clearPreviousUserData();
+        loadCloudData(currentUser.id).then(() => {
+          renderMainApp();
+          if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
+        }).catch(() => renderMainApp());
       } catch (_) {
         localStorage.removeItem('studentnija_currentUser');
         renderAuth();
@@ -400,24 +536,22 @@ export function renderMainApp() {
     window.currentPage = 'home';
   }
 
-  window.openCalculator = openCalculator;
-  window.openMathSolver = openMathSolver;
-  window.openDictionary = openDictionary;
-  window.openLibrary = openLibrary;
-  window.openFlashcards = openFlashcards;
-  window.openGradePredictor = openGradePredictor;
-  window.openAITutor = openAITutor;
-  window.openEssayAssistant = openEssayAssistant;
-  window.openSmartSearch = openSmartSearch;
-  window.openDataManager = openDataManager;
-  window.openNotepad = openNotepad;
-  window.openPastQuestions = openPastQuestions;
-  window.openBrowser = openBrowser;
-  window.openQuiz = openQuiz;
-  window.openGuessNumber = openGuessNumber;
-
-  window.renderMainApp = renderMainApp;
-  window.currentPage = currentPage;
+  // Tool openers – attached to window
+  window.openCalculator = () => import('./tools/calculator.js').then(m => m.openCalculator());
+  window.openMathSolver = () => import('./tools/mathSolver.js').then(m => m.openMathSolver());
+  window.openDictionary = () => import('./tools/dictionary.js').then(m => m.openDictionary());
+  window.openLibrary = () => import('./tools/library.js').then(m => m.openLibrary());
+  window.openFlashcards = () => import('./tools/flashcards.js').then(m => m.openFlashcards());
+  window.openGradePredictor = () => import('./tools/gradePredictor.js').then(m => m.openGradePredictor());
+  window.openAITutor = () => import('./tools/aiTutor.js').then(m => m.openAITutor());
+  window.openEssayAssistant = () => import('./tools/essayAssistant.js').then(m => m.openEssayAssistant());
+  window.openSmartSearch = () => import('./tools/smartSearch.js').then(m => m.openSmartSearch());
+  window.openDataManager = () => import('./tools/dataManager.js').then(m => m.openDataManager());
+  window.openNotepad = () => import('./tools/notepad.js').then(m => m.openNotepad());
+  window.openPastQuestions = () => import('./tools/pastQuestions.js').then(m => m.openPastQuestions());
+  window.openBrowser = () => import('./tools/browser.js').then(m => m.openBrowser());
+  window.openQuiz = () => import('./tools/quiz.js').then(m => m.openQuiz());
+  window.openGuessNumber = () => import('./tools/guessNumber.js').then(m => m.openGuessNumber());
 
   const pagesContainer = document.getElementById('pagesContainer');
   if (!pagesContainer) {
@@ -469,14 +603,19 @@ export function renderMainApp() {
   activePage.style.display = 'block';
   console.log(`📄 Active page: ${currentPage}`);
 
-  if (currentPage === 'home') {
-    renderHome();
-  } else if (currentPage === 'academics') {
-    renderAcademics();
-  } else if (currentPage === 'planner') {
-    renderPlannerPage();
-  } else if (currentPage === 'profile') {
-    renderProfilePage();
+  // Dynamic page import and render
+  const pageLoaders = {
+    home: () => import('./pages/home.js').then(m => m.renderHome()),
+    academics: () => import('./pages/academics.js').then(m => m.renderAcademics()),
+    planner: () => import('./pages/planner.js').then(m => m.renderPlannerPage()),
+    profile: () => import('./pages/profile.js').then(m => m.renderProfilePage()),
+  };
+
+  if (pageLoaders[currentPage]) {
+    pageLoaders[currentPage]().catch(err => {
+      console.error(`Failed to load ${currentPage} page:`, err);
+      activePage.innerHTML = `<div class="text-muted" style="padding:20px; text-align:center;">⚠️ Could not load this page. Please try again.</div>`;
+    });
   }
 
   ['aiBackBtn', 'studyGroupsBackBtn', 'examsBackBtn'].forEach(id => {
@@ -623,6 +762,7 @@ function handleAICommand(action, data, requestId) {
             if (!coursesData[data.semester]) coursesData[data.semester] = [];
             coursesData[data.semester].push(newCourse);
             saveAll();
+            scheduleCloudSync();
             result = { success: true, message: `Course ${data.code} added to ${data.semester}` };
           } else throw new Error('Invalid grade');
         } else throw new Error('Missing course data');
@@ -632,6 +772,7 @@ function handleAICommand(action, data, requestId) {
           const newTask = { id: Date.now(), title: data.title, priority: data.priority || 'Medium', date: new Date().toISOString().slice(0,10), completed: false };
           plannerTasks.push(newTask);
           saveAll();
+          scheduleCloudSync();
           result = { success: true, message: `Task "${data.title}" added` };
         }
         break;
@@ -639,12 +780,14 @@ function handleAICommand(action, data, requestId) {
         if (data && data.question && data.answer) {
           flashcards.push({ question: data.question, answer: data.answer });
           localStorage.setItem('studentnija_flashcards', JSON.stringify(flashcards));
+          scheduleCloudSync();
           result = { success: true, message: 'Flashcard added' };
         }
         break;
       case 'addClass':
         if (data && data.day && data.time && data.subject) {
           originalAddClass(data.day, data.time, data.subject, data.location || '');
+          scheduleCloudSync();
           result = { success: true, message: `Class ${data.subject} added to ${data.day} at ${data.time}` };
         }
         break;
@@ -654,6 +797,7 @@ function handleAICommand(action, data, requestId) {
       case 'addExam':
         if (data && data.courseName && data.examDate) {
           originalAddExam(data.courseName, data.examDate);
+          scheduleCloudSync();
           result = { success: true, message: `Exam for ${data.courseName} added` };
         }
         break;
@@ -663,6 +807,7 @@ function handleAICommand(action, data, requestId) {
           if (task) {
             task.completed = true;
             saveAll();
+            scheduleCloudSync();
             result = { success: true, message: `Task "${task.title}" completed` };
           } else throw new Error('Task not found');
         }
@@ -670,6 +815,7 @@ function handleAICommand(action, data, requestId) {
       case 'setTheme':
         if (data && data.theme) {
           applyTheme(data.theme);
+          scheduleCloudSync();
           result = { success: true, message: `Theme changed to ${data.theme}` };
         }
         break;
@@ -747,10 +893,61 @@ if (!window._aiMessageListener) {
   window._aiMessageListener = true;
 }
 
+// ======================== ONBOARDING ========================
+function showOnboarding() {
+  if (localStorage.getItem('studentnija_onboarded')) return;
+  const overlay = document.createElement('div');
+  overlay.id = 'onboardingOverlay';
+  overlay.innerHTML = `
+    <div style="position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:9999; display:flex; align-items:center; justify-content:center; padding:20px;">
+      <div class="card" style="max-width:340px; text-align:center;">
+        <h2 style="margin-bottom:12px;">🚀 Welcome to StudentNija!</h2>
+        <p class="text-muted" style="margin-bottom:16px;">Your AI‑powered study companion.</p>
+        <div style="margin:16px 0; display:flex; flex-direction:column; gap:8px; text-align:left; padding:0 20px;">
+          <div>📚 Track your courses & CGPA</div>
+          <div>✅ Manage tasks & timetable</div>
+          <div>🧠 Get AI tutoring</div>
+          <div>📝 Practice past questions</div>
+        </div>
+        <button class="btn" id="onboardCloseBtn" style="margin-top:16px;">Let's Go!</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('onboardCloseBtn').addEventListener('click', () => {
+    overlay.remove();
+    localStorage.setItem('studentnija_onboarded', 'true');
+  });
+}
+
 // ======================== BOOTSTRAP ========================
 window.addEventListener('load', async () => {
+  initErrorHandler();
   console.log('🚀 App bootstrapping...');
   loadAll();
+
+  // Auto-login with Remember Me
+  const rememberMe = localStorage.getItem('remember_me');
+  const storedUser = localStorage.getItem('studentnija_currentUser');
+  if (rememberMe === 'true' && storedUser && !currentUser?.email) {
+    try {
+      const user = JSON.parse(storedUser);
+      if (user.email) {
+        const existing = users.find(u => u.email === user.email);
+        if (existing) {
+          Object.assign(currentUser, existing);
+        } else {
+          currentUser = user;
+          if (!users.find(u => u.email === user.email)) users.push(user);
+        }
+        clearPreviousUserData();
+        await loadCloudData(currentUser.id);
+        renderMainApp();
+        if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
+        return;
+      }
+    } catch (_) {}
+  }
 
   const tempUser = localStorage.getItem('studentnija_user');
   if (tempUser) {
@@ -769,11 +966,10 @@ window.addEventListener('load', async () => {
       try {
         const user = JSON.parse(stored);
         Object.assign(currentUser, user);
-        loadCloudData(currentUser.id).then(() => {
-          renderMainApp();
-        }).catch(() => {
-          renderMainApp();
-        });
+        clearPreviousUserData();
+        await loadCloudData(currentUser.id);
+        renderMainApp();
+        if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
       } catch (_) {
         localStorage.removeItem('studentnija_currentUser');
         renderAuth();
@@ -782,12 +978,16 @@ window.addEventListener('load', async () => {
       renderAuth();
     }
   } else {
+    clearPreviousUserData();
+    await loadCloudData(currentUser.id);
     renderMainApp();
+    if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
   }
 
   window.addEventListener('app:logout', () => {
     clearPreviousUserData();
     localStorage.removeItem('studentnija_currentUser');
+    localStorage.removeItem('remember_me');
     renderApp();
   });
 
@@ -812,4 +1012,4 @@ window.addEventListener('load', async () => {
   setTimeout(() => {
     hideLoadingScreen();
   }, 3000);
-  });
+});
