@@ -63,11 +63,18 @@
       "label": "StudentNija Home Dashboard"
     },
     {
-      "src": "/screenshots/public_chat.png",
+      "src": "/screenshots/studygroups.png",
       "sizes": "1920x1080",
       "type": "image/png",
       "form_factor": "wide",
-      "label": "StudentNija Public Chat"
+      "label": "StudentNija Studygroups"
+    },
+    {
+      "src": "/screenshots/planner.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "StudentNija Planner"
     }
   ],
 
