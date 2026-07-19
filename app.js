@@ -58,6 +58,20 @@ async function verifyTurnstile(token) {
   }
 }
 
+// ======================== TURNSTILE DYNAMIC RENDER HELPER ========================
+function resetTurnstile() {
+  if (typeof turnstile !== 'undefined') {
+    const existingWidget = document.querySelector('.cf-turnstile');
+    if (existingWidget) {
+      const widgetId = existingWidget.getAttribute('data-widget-id');
+      if (widgetId) turnstile.remove(widgetId);
+    }
+    setTimeout(() => {
+      turnstile.render('.cf-turnstile');
+    }, 50);
+  }
+}
+
 // ======================== CLOUD AUTO‑SYNC ========================
 let syncTimer = null;
 function scheduleCloudSync() {
@@ -790,6 +804,7 @@ export function showAuthForm(formType) {
       </button>
       <button class="btn-outline" id="gotoRegister" style="margin-top:8px;">Create Account</button>
     `;
+    resetTurnstile();
 
     document.getElementById('doLogin')?.addEventListener('click', async function() {
       const email = document.getElementById('loginEmail').value;
@@ -840,6 +855,7 @@ export function showAuthForm(formType) {
       <button class="btn-primary" id="doRegister">Register</button>
       <button class="btn-outline" id="backLogin" style="margin-top:8px;">Back to Login</button>
     `;
+    resetTurnstile();
 
     document.getElementById('doRegister')?.addEventListener('click', async function() {
       const name = document.getElementById('regName').value;
@@ -884,6 +900,7 @@ export function showAuthForm(formType) {
       <button class="btn-primary" id="sendResetBtn">Send Reset Link</button>
       <button class="btn-outline" id="backToLoginBtn" style="margin-top:8px;">Back to Login</button>
     `;
+    resetTurnstile();
 
     document.getElementById('sendResetBtn')?.addEventListener('click', async function() {
       const email = document.getElementById('resetEmail').value.trim();
