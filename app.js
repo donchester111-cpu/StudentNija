@@ -40,6 +40,24 @@ window.closeToolModal = closeToolModal;
 // ======================== API HELPER ========================
 import { apiPost, apiGet } from './api.js';
 
+// ======================== TURNSTILE CONFIG ========================
+const TURNSTILE_SITE_KEY = '0x4AAAAAAD46hrOUi9OGHQUP';  // ← paste your Cloudflare Turnstile site key here
+const API_BASE = 'https://studentnija-public-chat.onrender.com';
+
+async function verifyTurnstile(token) {
+  try {
+    const res = await fetch(`${API_BASE}/api/verify-turnstile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token })
+    });
+    const data = await res.json();
+    return data.success;
+  } catch (e) {
+    return false;
+  }
+}
+
 // ======================== CLOUD AUTO‑SYNC ========================
 let syncTimer = null;
 function scheduleCloudSync() {
@@ -51,7 +69,6 @@ function scheduleCloudSync() {
 }
 window.scheduleCloudSync = scheduleCloudSync;
 
-// ======================== CLOUD SYNC FUNCTIONS ========================
 async function syncUserDataToCloud() {
   if (!currentUser || !currentUser.id) return;
   const userId = currentUser.id;
@@ -240,403 +257,61 @@ function showOnboarding() {
 
   overlay.innerHTML = `
     <style>
-      @keyframes onboardingFadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-
-      @keyframes onboardingScaleIn {
-        from { opacity: 0; transform: scale(0.92) translateY(30px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
-      }
-
-      @keyframes onboardingFloat {
-        0%, 100% { transform: translateY(0) rotate(0deg); }
-        50% { transform: translateY(-10px) rotate(3deg); }
-      }
-
-      @keyframes onboardingPulse {
-        0%, 100% { box-shadow: 0 8px 25px rgba(0, 135, 81, 0.28); }
-        50% { box-shadow: 0 12px 35px rgba(0, 135, 81, 0.5); }
-      }
-
-      @keyframes onboardingShine {
-        0% { transform: translateX(-150%) rotate(25deg); }
-        100% { transform: translateX(150%) rotate(25deg); }
-      }
-
-      #onboardingOverlay {
-        position: fixed;
-        inset: 0;
-        z-index: 99999;
-      }
-
-      .onboarding-backdrop {
-        position: fixed;
-        inset: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 18px;
-        background:
-          radial-gradient(
-            circle at 50% 0%,
-            rgba(0, 135, 81, 0.14),
-            transparent 42%
-          ),
-          rgba(0, 0, 0, 0.82);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
-        animation: onboardingFadeIn 0.35s ease;
-      }
-
-      .onboarding-card {
-        position: relative;
-        width: min(100%, 420px);
-        max-height: calc(100vh - 36px);
-        overflow-y: auto;
-        overflow-x: hidden;
-        background:
-          linear-gradient(
-            145deg,
-            rgba(255,255,255,0.08),
-            rgba(255,255,255,0.025)
-          ),
-          var(--bg-secondary);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 30px;
-        box-shadow:
-          0 30px 100px rgba(0,0,0,0.65),
-          0 0 0 1px rgba(0,135,81,0.06);
-        animation: onboardingScaleIn 0.55s cubic-bezier(0.2, 0.9, 0.3, 1);
-        scrollbar-width: none;
-      }
-
-      .onboarding-card::-webkit-scrollbar { display: none; }
-
-      .onboarding-hero {
-        position: relative;
-        height: 190px;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background:
-          radial-gradient(
-            circle at 50% 45%,
-            rgba(0, 135, 81, 0.38),
-            transparent 50%
-          ),
-          linear-gradient(
-            135deg,
-            rgba(0, 135, 81, 0.18),
-            transparent 65%
-          );
-      }
-
-      .onboarding-hero::before {
-        content: "";
-        position: absolute;
-        width: 260px;
-        height: 260px;
-        border-radius: 50%;
-        border: 1px solid rgba(0, 135, 81, 0.18);
-        box-shadow:
-          0 0 0 25px rgba(0, 135, 81, 0.035),
-          0 0 0 50px rgba(0, 135, 81, 0.025);
-      }
-
-      .onboarding-hero::after {
-        content: "";
-        position: absolute;
-        width: 80px;
-        height: 240px;
-        background: rgba(255,255,255,0.08);
-        filter: blur(25px);
-        transform: translateX(-180%) rotate(25deg);
-        animation: onboardingShine 5s infinite ease-in-out;
-      }
-
-      .onboarding-orb {
-        position: relative;
-        z-index: 2;
-        width: 92px;
-        height: 92px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 28px;
-        font-size: 48px;
-        background:
-          linear-gradient(
-            145deg,
-            var(--accent),
-            var(--accent-light)
-          );
-        box-shadow:
-          0 18px 40px rgba(0, 135, 81, 0.35),
-          inset 0 1px 1px rgba(255,255,255,0.25);
-        animation: onboardingFloat 4s ease-in-out infinite;
-      }
-
-      .onboarding-orb::after {
-        content: "";
-        position: absolute;
-        inset: -10px;
-        border-radius: 34px;
-        border: 1px solid rgba(0, 135, 81, 0.35);
-        animation: onboardingPulse 2.5s infinite ease-in-out;
-      }
-
-      .onboarding-status {
-        position: absolute;
-        top: 18px;
-        right: 18px;
-        z-index: 3;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        padding: 7px 11px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 700;
-        color: var(--text-muted);
-        background: rgba(0,0,0,0.22);
-        border: 1px solid rgba(255,255,255,0.08);
-      }
-
-      .onboarding-status-dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        background: var(--accent);
-        box-shadow: 0 0 10px var(--accent);
-      }
-
-      .onboarding-content {
-        padding: 26px 24px 24px;
-        text-align: center;
-      }
-
-      .onboarding-eyebrow {
-        margin-bottom: 9px;
-        font-size: 11px;
-        font-weight: 800;
-        letter-spacing: 1.6px;
-        text-transform: uppercase;
-        color: var(--accent-light);
-      }
-
-      .onboarding-card h2 {
-        margin: 0;
-        font-size: clamp(27px, 7vw, 34px);
-        line-height: 1.1;
-        letter-spacing: -1px;
-        font-weight: 850;
-        color: var(--text-primary);
-      }
-
-      .onboarding-card h2 span {
-        background:
-          linear-gradient(
-            135deg,
-            var(--accent),
-            var(--accent-light)
-          );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-      }
-
-      .onboarding-description {
-        max-width: 340px;
-        margin: 14px auto 24px;
-        color: var(--text-muted);
-        font-size: 15px;
-        line-height: 1.55;
-      }
-
-      .onboarding-features {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
-        margin-bottom: 22px;
-        text-align: left;
-      }
-
-      .onboarding-feature {
-        position: relative;
-        min-height: 92px;
-        padding: 14px;
-        overflow: hidden;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.035);
-        border: 1px solid rgba(255,255,255,0.065);
-        transition: transform 0.2s ease, background 0.2s ease;
-      }
-
-      .onboarding-feature:hover {
-        transform: translateY(-2px);
-        background: rgba(255,255,255,0.06);
-      }
-
-      .onboarding-feature-icon {
-        width: 34px;
-        height: 34px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 9px;
-        border-radius: 11px;
-        font-size: 18px;
-        background: rgba(0,135,81,0.14);
-      }
-
-      .onboarding-feature strong {
-        display: block;
-        margin-bottom: 3px;
-        font-size: 13px;
-        font-weight: 750;
-        color: var(--text-primary);
-      }
-
-      .onboarding-feature small {
-        display: block;
-        color: var(--text-muted);
-        font-size: 11px;
-        line-height: 1.35;
-      }
-
-      .onboarding-feature-wide {
-        grid-column: span 2;
-        min-height: auto;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-
-      .onboarding-feature-wide .onboarding-feature-icon {
-        flex-shrink: 0;
-        margin: 0;
-      }
-
-      .onboarding-feature-wide strong {
-        margin-bottom: 2px;
-      }
-
-      .onboarding-cta {
-        position: relative;
-        width: 100%;
-        overflow: hidden;
-        padding: 15px 20px;
-        border: none;
-        border-radius: 16px;
-        color: white;
-        background:
-          linear-gradient(
-            135deg,
-            var(--accent),
-            var(--accent-light)
-          );
-        box-shadow: 0 8px 25px rgba(0,135,81,0.3);
-        font-family: inherit;
-        font-size: 16px;
-        font-weight: 800;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-      }
-
-      .onboarding-cta::after {
-        content: "";
-        position: absolute;
-        top: -50%;
-        left: -100%;
-        width: 60%;
-        height: 200%;
-        background: rgba(255,255,255,0.18);
-        transform: rotate(25deg);
-        transition: left 0.6s ease;
-      }
-
-      .onboarding-cta:hover::after { left: 150%; }
-      .onboarding-cta:active { transform: scale(0.97); }
-
-      .onboarding-footer {
-        margin-top: 13px;
-        color: var(--text-muted);
-        font-size: 11px;
-        opacity: 0.75;
-      }
-
+      @keyframes onboardingFadeIn { from { opacity:0; } to { opacity:1; } }
+      @keyframes onboardingScaleIn { from { opacity:0; transform:scale(0.92) translateY(30px); } to { opacity:1; transform:scale(1) translateY(0); } }
+      @keyframes onboardingFloat { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-10px) rotate(3deg); } }
+      @keyframes onboardingPulse { 0%,100% { box-shadow:0 8px 25px rgba(0,135,81,0.28); } 50% { box-shadow:0 12px 35px rgba(0,135,81,0.5); } }
+      @keyframes onboardingShine { 0% { transform:translateX(-150%) rotate(25deg); } 100% { transform:translateX(150%) rotate(25deg); } }
+      #onboardingOverlay { position:fixed; inset:0; z-index:99999; }
+      .onboarding-backdrop { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; padding:18px; background:radial-gradient(circle at 50% 0%, rgba(0,135,81,0.14), transparent 42%), rgba(0,0,0,0.82); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); animation:onboardingFadeIn 0.35s ease; }
+      .onboarding-card { position:relative; width:min(100%,420px); max-height:calc(100vh - 36px); overflow-y:auto; overflow-x:hidden; background:linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025)), var(--bg-secondary); border:1px solid rgba(255,255,255,0.1); border-radius:30px; box-shadow:0 30px 100px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,135,81,0.06); animation:onboardingScaleIn 0.55s cubic-bezier(0.2,0.9,0.3,1); scrollbar-width:none; }
+      .onboarding-card::-webkit-scrollbar { display:none; }
+      .onboarding-hero { position:relative; height:190px; overflow:hidden; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 50% 45%, rgba(0,135,81,0.38), transparent 50%), linear-gradient(135deg, rgba(0,135,81,0.18), transparent 65%); }
+      .onboarding-hero::before { content:""; position:absolute; width:260px; height:260px; border-radius:50%; border:1px solid rgba(0,135,81,0.18); box-shadow:0 0 0 25px rgba(0,135,81,0.035), 0 0 0 50px rgba(0,135,81,0.025); }
+      .onboarding-hero::after { content:""; position:absolute; width:80px; height:240px; background:rgba(255,255,255,0.08); filter:blur(25px); transform:translateX(-180%) rotate(25deg); animation:onboardingShine 5s infinite ease-in-out; }
+      .onboarding-orb { position:relative; z-index:2; width:92px; height:92px; display:flex; align-items:center; justify-content:center; border-radius:28px; font-size:48px; background:linear-gradient(145deg, var(--accent), var(--accent-light)); box-shadow:0 18px 40px rgba(0,135,81,0.35), inset 0 1px 1px rgba(255,255,255,0.25); animation:onboardingFloat 4s ease-in-out infinite; }
+      .onboarding-orb::after { content:""; position:absolute; inset:-10px; border-radius:34px; border:1px solid rgba(0,135,81,0.35); animation:onboardingPulse 2.5s infinite ease-in-out; }
+      .onboarding-status { position:absolute; top:18px; right:18px; z-index:3; display:flex; align-items:center; gap:6px; padding:7px 11px; border-radius:20px; font-size:11px; font-weight:700; color:var(--text-muted); background:rgba(0,0,0,0.22); border:1px solid rgba(255,255,255,0.08); }
+      .onboarding-status-dot { width:7px; height:7px; border-radius:50%; background:var(--accent); box-shadow:0 0 10px var(--accent); }
+      .onboarding-content { padding:26px 24px 24px; text-align:center; }
+      .onboarding-eyebrow { margin-bottom:9px; font-size:11px; font-weight:800; letter-spacing:1.6px; text-transform:uppercase; color:var(--accent-light); }
+      .onboarding-card h2 { margin:0; font-size:clamp(27px, 7vw, 34px); line-height:1.1; letter-spacing:-1px; font-weight:850; color:var(--text-primary); }
+      .onboarding-card h2 span { background:linear-gradient(135deg, var(--accent), var(--accent-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+      .onboarding-description { max-width:340px; margin:14px auto 24px; color:var(--text-muted); font-size:15px; line-height:1.55; }
+      .onboarding-features { display:grid; grid-template-columns: repeat(2,1fr); gap:10px; margin-bottom:22px; text-align:left; }
+      .onboarding-feature { position:relative; min-height:92px; padding:14px; overflow:hidden; border-radius:18px; background:rgba(255,255,255,0.035); border:1px solid rgba(255,255,255,0.065); transition:transform 0.2s ease, background 0.2s ease; }
+      .onboarding-feature:hover { transform:translateY(-2px); background:rgba(255,255,255,0.06); }
+      .onboarding-feature-icon { width:34px; height:34px; display:flex; align-items:center; justify-content:center; margin-bottom:9px; border-radius:11px; font-size:18px; background:rgba(0,135,81,0.14); }
+      .onboarding-feature strong { display:block; margin-bottom:3px; font-size:13px; font-weight:750; color:var(--text-primary); }
+      .onboarding-feature small { display:block; color:var(--text-muted); font-size:11px; line-height:1.35; }
+      .onboarding-feature-wide { grid-column:span 2; min-height:auto; display:flex; align-items:center; gap:12px; }
+      .onboarding-feature-wide .onboarding-feature-icon { flex-shrink:0; margin:0; }
+      .onboarding-feature-wide strong { margin-bottom:2px; }
+      .onboarding-cta { position:relative; width:100%; overflow:hidden; padding:15px 20px; border:none; border-radius:16px; color:white; background:linear-gradient(135deg, var(--accent), var(--accent-light)); box-shadow:0 8px 25px rgba(0,135,81,0.3); font-family:inherit; font-size:16px; font-weight:800; cursor:pointer; transition:transform 0.2s ease, box-shadow 0.2s ease; }
+      .onboarding-cta::after { content:""; position:absolute; top:-50%; left:-100%; width:60%; height:200%; background:rgba(255,255,255,0.18); transform:rotate(25deg); transition:left 0.6s ease; }
+      .onboarding-cta:hover::after { left:150%; }
+      .onboarding-cta:active { transform:scale(0.97); }
+      .onboarding-footer { margin-top:13px; color:var(--text-muted); font-size:11px; opacity:0.75; }
       /* ========== GUIDED TOUR CSS ========== */
-      #studentnijaTour {
-        position: fixed; inset: 0; z-index: 100000; pointer-events: none;
-      }
-
-      .studentnija-tour-highlight {
-        position: fixed; z-index: 100001;
-        border: 2px solid var(--accent);
-        border-radius: 16px;
-        box-shadow: 0 0 0 9999px rgba(0,0,0,0.72), 0 0 0 6px rgba(0,135,81,0.15), 0 0 35px rgba(0,135,81,0.65);
-        pointer-events: none;
-        transition: top 0.35s ease, left 0.35s ease, width 0.35s ease, height 0.35s ease;
-      }
-
-      .studentnija-tour-tooltip {
-        position: fixed; z-index: 100003;
-        width: min(310px, calc(100vw - 32px));
-        padding: 18px;
-        border-radius: 20px;
-        background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04)), var(--bg-secondary);
-        border: 1px solid rgba(255,255,255,0.12);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-        pointer-events: auto;
-        animation: tourTooltipIn 0.35s ease;
-      }
-
-      @keyframes tourTooltipIn {
-        from { opacity: 0; transform: translateY(10px) scale(0.96); }
-        to { opacity: 1; transform: translateY(0) scale(1); }
-      }
-
-      .studentnija-tour-tooltip::before {
-        content: ""; position: absolute;
-        width: 14px; height: 14px;
-        background: var(--bg-secondary);
-        border-left: 1px solid rgba(255,255,255,0.12);
-        border-top: 1px solid rgba(255,255,255,0.12);
-        transform: rotate(45deg);
-      }
-
-      .studentnija-tour-tooltip.top::before    { bottom: -8px; left: 50%; transform: translateX(-50%) rotate(225deg); }
-      .studentnija-tour-tooltip.bottom::before { top: -8px; left: 50%; transform: translateX(-50%) rotate(45deg); }
-      .studentnija-tour-tooltip.left::before   { right: -8px; top: 50%; transform: translateY(-50%) rotate(135deg); }
-      .studentnija-tour-tooltip.right::before  { left: -8px; top: 50%; transform: translateY(-50%) rotate(-45deg); }
-
-      .studentnija-tour-title { margin-bottom: 6px; color: var(--text-primary); font-size: 17px; font-weight: 800; }
-      .studentnija-tour-description { margin-bottom: 15px; color: var(--text-muted); font-size: 13px; line-height: 1.5; }
-      .studentnija-tour-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-      .studentnija-tour-progress { color: var(--text-muted); font-size: 11px; font-weight: 700; }
-      .studentnija-tour-buttons { display: flex; gap: 8px; }
-      .studentnija-tour-btn { padding: 9px 13px; border: none; border-radius: 10px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; }
-      .studentnija-tour-skip { color: var(--text-muted); background: rgba(255,255,255,0.06); }
-      .studentnija-tour-next { color: white; background: linear-gradient(135deg, var(--accent), var(--accent-light)); }
-
-      @media (max-width: 380px) {
-        .onboarding-card { border-radius: 25px; }
-        .onboarding-hero { height: 160px; }
-        .onboarding-content { padding: 22px 18px 20px; }
-        .onboarding-features { gap: 8px; }
-        .onboarding-feature { padding: 12px; }
-      }
-
-      @media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after {
-          animation-duration: 0.01ms !important;
-          animation-iteration-count: 1 !important;
-          transition-duration: 0.01ms !important;
-        }
-      }
+      #studentnijaTour { position:fixed; inset:0; z-index:100000; pointer-events:none; }
+      .studentnija-tour-highlight { position:fixed; z-index:100001; border:2px solid var(--accent); border-radius:16px; box-shadow:0 0 0 9999px rgba(0,0,0,0.72), 0 0 0 6px rgba(0,135,81,0.15), 0 0 35px rgba(0,135,81,0.65); pointer-events:none; transition:top 0.35s ease, left 0.35s ease, width 0.35s ease, height 0.35s ease; }
+      .studentnija-tour-tooltip { position:fixed; z-index:100003; width:min(310px, calc(100vw - 32px)); padding:18px; border-radius:20px; background:linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04)), var(--bg-secondary); border:1px solid rgba(255,255,255,0.12); box-shadow:0 20px 60px rgba(0,0,0,0.5); pointer-events:auto; animation:tourTooltipIn 0.35s ease; }
+      @keyframes tourTooltipIn { from { opacity:0; transform:translateY(10px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+      .studentnija-tour-tooltip::before { content:""; position:absolute; width:14px; height:14px; background:var(--bg-secondary); border-left:1px solid rgba(255,255,255,0.12); border-top:1px solid rgba(255,255,255,0.12); transform:rotate(45deg); }
+      .studentnija-tour-tooltip.top::before { bottom:-8px; left:50%; transform:translateX(-50%) rotate(225deg); }
+      .studentnija-tour-tooltip.bottom::before { top:-8px; left:50%; transform:translateX(-50%) rotate(45deg); }
+      .studentnija-tour-tooltip.left::before { right:-8px; top:50%; transform:translateY(-50%) rotate(135deg); }
+      .studentnija-tour-tooltip.right::before { left:-8px; top:50%; transform:translateY(-50%) rotate(-45deg); }
+      .studentnija-tour-title { margin-bottom:6px; color:var(--text-primary); font-size:17px; font-weight:800; }
+      .studentnija-tour-description { margin-bottom:15px; color:var(--text-muted); font-size:13px; line-height:1.5; }
+      .studentnija-tour-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+      .studentnija-tour-progress { color:var(--text-muted); font-size:11px; font-weight:700; }
+      .studentnija-tour-buttons { display:flex; gap:8px; }
+      .studentnija-tour-btn { padding:9px 13px; border:none; border-radius:10px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+      .studentnija-tour-skip { color:var(--text-muted); background:rgba(255,255,255,0.06); }
+      .studentnija-tour-next { color:white; background:linear-gradient(135deg, var(--accent), var(--accent-light)); }
+      @media (max-width:380px) { .onboarding-card { border-radius:25px; } .onboarding-hero { height:160px; } .onboarding-content { padding:22px 18px 20px; } .onboarding-features { gap:8px; } .onboarding-feature { padding:12px; } }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; } }
     </style>
 
     <div class="onboarding-backdrop" id="onboardingBackdrop">
@@ -674,7 +349,6 @@ function showOnboarding() {
     setTimeout(() => {
       overlay.remove();
       localStorage.setItem('studentnija_onboarded', 'true');
-      // Start guided tour if not already done
       setTimeout(() => {
         if (!localStorage.getItem('studentnija_tour_completed')) {
           startStudentNijaTour();
@@ -855,6 +529,7 @@ export function showAuthForm(formType) {
         <label><input type="checkbox" id="rememberMe" checked> Remember Me</label>
         <span id="forgotBtn" style="color:#F4B400; cursor:pointer;">Forgot?</span>
       </div>
+      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}"></div>
       <button class="btn-primary" id="doLogin">Login</button>
       <div style="display:flex; align-items:center; margin:12px 0;">
         <hr style="flex:1; border:0; border-top:1px solid var(--border-light);">
@@ -867,10 +542,17 @@ export function showAuthForm(formType) {
       <button class="btn-outline" id="gotoRegister" style="margin-top:8px;">Create Account</button>
     `;
 
-    document.getElementById('doLogin')?.addEventListener('click', function() {
+    document.getElementById('doLogin')?.addEventListener('click', async function() {
       const email = document.getElementById('loginEmail').value;
       const pwd = document.getElementById('loginPass').value;
       const rem = document.getElementById('rememberMe')?.checked;
+
+      // Turnstile verification
+      const token = turnstile.getResponse();
+      if (!token) { alert('Please verify you are human.'); return; }
+      const human = await verifyTurnstile(token);
+      if (!human) { alert('Verification failed. Please try again.'); return; }
+
       if (loginUser(email, pwd, rem)) {
         if (rem) {
           localStorage.setItem('remember_me', 'true');
@@ -906,11 +588,12 @@ export function showAuthForm(formType) {
       <input id="regSchool" placeholder="School / University">
       <input id="regDept" placeholder="Department">
       <input id="regLevel" placeholder="Level (e.g., 300L)">
+      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}"></div>
       <button class="btn-primary" id="doRegister">Register</button>
       <button class="btn-outline" id="backLogin" style="margin-top:8px;">Back to Login</button>
     `;
 
-    document.getElementById('doRegister')?.addEventListener('click', function() {
+    document.getElementById('doRegister')?.addEventListener('click', async function() {
       const name = document.getElementById('regName').value;
       const email = document.getElementById('regEmail').value;
       const pass = document.getElementById('regPass').value;
@@ -925,12 +608,19 @@ export function showAuthForm(formType) {
         alert('Passwords do not match');
       } else if (!email.includes('@')) {
         alert('Invalid email');
-      } else if (registerUser(name, email, pass, school, dept, level)) {
-        syncLocalUserToServer(currentUser);
-        alert('Registration successful! Please login.');
-        showAuthForm('login');
       } else {
-        alert('Email already exists');
+        const token = turnstile.getResponse();
+        if (!token) { alert('Please verify you are human.'); return; }
+        const human = await verifyTurnstile(token);
+        if (!human) { alert('Verification failed. Please try again.'); return; }
+
+        if (registerUser(name, email, pass, school, dept, level)) {
+          syncLocalUserToServer(currentUser);
+          alert('Registration successful! Please login.');
+          showAuthForm('login');
+        } else {
+          alert('Email already exists');
+        }
       }
     });
 
@@ -942,6 +632,7 @@ export function showAuthForm(formType) {
     container.innerHTML = `
       <p>Enter your email to receive a password reset link.</p>
       <input id="resetEmail" placeholder="Email">
+      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}"></div>
       <button class="btn-primary" id="sendResetBtn">Send Reset Link</button>
       <button class="btn-outline" id="backToLoginBtn" style="margin-top:8px;">Back to Login</button>
     `;
@@ -952,6 +643,12 @@ export function showAuthForm(formType) {
         alert('Please enter a valid email.');
         return;
       }
+
+      const token = turnstile.getResponse();
+      if (!token) { alert('Please verify you are human.'); return; }
+      const human = await verifyTurnstile(token);
+      if (!human) { alert('Verification failed. Please try again.'); return; }
+
       try {
         await apiPost('/api/auth/forgot-password', { email });
         alert('If an account with that email exists, a reset link has been sent.');
