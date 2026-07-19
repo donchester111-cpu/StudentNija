@@ -41,7 +41,7 @@ window.closeToolModal = closeToolModal;
 import { apiPost, apiGet } from './api.js';
 
 // ======================== TURNSTILE CONFIG ========================
-const TURNSTILE_SITE_KEY = '0x4AAAAAAD46hrOUi9OGHQUP';  // ← paste your Cloudflare Turnstile site key here
+const TURNSTILE_SITE_KEY = '0x4AAAAAAD46hrOUi9OGHQUP';
 const API_BASE = 'https://studentnija-public-chat.onrender.com';
 
 async function verifyTurnstile(token) {
@@ -245,7 +245,7 @@ window.onerror = function(message, source, lineno, colno, error) {
 export let currentPage = "home";
 window.currentPage = currentPage;
 
-// ======================== ONBOARDING (WELCOME + GUIDED TOUR) ========================
+// ======================== ONBOARDING (WELCOME + DETAILED GUIDE) ========================
 function showOnboarding() {
   if (localStorage.getItem('studentnija_onboarded')) return;
 
@@ -292,24 +292,6 @@ function showOnboarding() {
       .onboarding-cta:hover::after { left:150%; }
       .onboarding-cta:active { transform:scale(0.97); }
       .onboarding-footer { margin-top:13px; color:var(--text-muted); font-size:11px; opacity:0.75; }
-      /* ========== GUIDED TOUR CSS ========== */
-      #studentnijaTour { position:fixed; inset:0; z-index:100000; pointer-events:none; }
-      .studentnija-tour-highlight { position:fixed; z-index:100001; border:2px solid var(--accent); border-radius:16px; box-shadow:0 0 0 9999px rgba(0,0,0,0.72), 0 0 0 6px rgba(0,135,81,0.15), 0 0 35px rgba(0,135,81,0.65); pointer-events:none; transition:top 0.35s ease, left 0.35s ease, width 0.35s ease, height 0.35s ease; }
-      .studentnija-tour-tooltip { position:fixed; z-index:100003; width:min(310px, calc(100vw - 32px)); padding:18px; border-radius:20px; background:linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.04)), var(--bg-secondary); border:1px solid rgba(255,255,255,0.12); box-shadow:0 20px 60px rgba(0,0,0,0.5); pointer-events:auto; animation:tourTooltipIn 0.35s ease; }
-      @keyframes tourTooltipIn { from { opacity:0; transform:translateY(10px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
-      .studentnija-tour-tooltip::before { content:""; position:absolute; width:14px; height:14px; background:var(--bg-secondary); border-left:1px solid rgba(255,255,255,0.12); border-top:1px solid rgba(255,255,255,0.12); transform:rotate(45deg); }
-      .studentnija-tour-tooltip.top::before { bottom:-8px; left:50%; transform:translateX(-50%) rotate(225deg); }
-      .studentnija-tour-tooltip.bottom::before { top:-8px; left:50%; transform:translateX(-50%) rotate(45deg); }
-      .studentnija-tour-tooltip.left::before { right:-8px; top:50%; transform:translateY(-50%) rotate(135deg); }
-      .studentnija-tour-tooltip.right::before { left:-8px; top:50%; transform:translateY(-50%) rotate(-45deg); }
-      .studentnija-tour-title { margin-bottom:6px; color:var(--text-primary); font-size:17px; font-weight:800; }
-      .studentnija-tour-description { margin-bottom:15px; color:var(--text-muted); font-size:13px; line-height:1.5; }
-      .studentnija-tour-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-      .studentnija-tour-progress { color:var(--text-muted); font-size:11px; font-weight:700; }
-      .studentnija-tour-buttons { display:flex; gap:8px; }
-      .studentnija-tour-btn { padding:9px 13px; border:none; border-radius:10px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; }
-      .studentnija-tour-skip { color:var(--text-muted); background:rgba(255,255,255,0.06); }
-      .studentnija-tour-next { color:white; background:linear-gradient(135deg, var(--accent), var(--accent-light)); }
       @media (max-width:380px) { .onboarding-card { border-radius:25px; } .onboarding-hero { height:160px; } .onboarding-content { padding:22px 18px 20px; } .onboarding-features { gap:8px; } .onboarding-feature { padding:12px; } }
       @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; } }
     </style>
@@ -350,7 +332,7 @@ function showOnboarding() {
       overlay.remove();
       localStorage.setItem('studentnija_onboarded', 'true');
       setTimeout(() => {
-        if (!localStorage.getItem('studentnija_tour_completed')) {
+        if (!localStorage.getItem('studentnija_instructions_read')) {
           startStudentNijaTour();
         }
       }, 500);
@@ -361,110 +343,378 @@ function showOnboarding() {
   if (backdrop) backdrop.addEventListener('click', (e) => { if (e.target === backdrop) dismiss(); });
 }
 
-// ======================== GUIDED TOUR FUNCTION ========================
+// ======================== DETAILED ONBOARDING (18‑step guided tour) ========================
 function startStudentNijaTour() {
-  const tourSteps = [
-    { target: '#bottomNav', title: 'Navigate the app', description: 'Use the bottom bar to jump between Home, Academics, Planner, and more.', position: 'top' },
-    { target: '#homeContent', title: 'Your Dashboard', description: 'See your study stats, upcoming exams, and quick tools here.', position: 'bottom' },
-    { target: '#academicsContent', title: 'Track Your Courses', description: 'Add courses, calculate CGPA, and manage your academic record.', position: 'right' },
-    { target: '#plannerContent', title: 'Plan Your Time', description: 'Manage tasks, classes, and exams with the smart planner.', position: 'left' },
-    { target: '#aiContent', title: 'AI Study Assistant', description: 'Ask any question and get instant help from your personal AI tutor.', position: 'top' }
-  ];
+  if (localStorage.getItem('studentnija_instructions_read')) return;
 
   let currentStep = 0;
 
-  const tour = document.createElement('div');
-  tour.id = 'studentnijaTour';
-  tour.innerHTML = `
-    <div class="studentnija-tour-highlight" id="studentnijaTourHighlight"></div>
-    <div class="studentnija-tour-tooltip" id="studentnijaTourTooltip">
-      <div class="studentnija-tour-title" id="studentnijaTourTitle"></div>
-      <div class="studentnija-tour-description" id="studentnijaTourDescription"></div>
-      <div class="studentnija-tour-footer">
-        <div class="studentnija-tour-progress" id="studentnijaTourProgress"></div>
-        <div class="studentnija-tour-buttons">
-          <button class="studentnija-tour-btn studentnija-tour-skip" id="studentnijaTourSkip">Skip</button>
-          <button class="studentnija-tour-btn studentnija-tour-next" id="studentnijaTourNext">Next</button>
+  const steps = [
+    {
+      category: 'YOUR STUDENT COMMAND CENTER',
+      icon: '🏠',
+      title: 'Welcome to Your Dashboard',
+      description:
+        'Your StudentNija dashboard gives you a complete overview of your academic life. Check your study streak, upcoming exams, pending tasks, academic progress, recent activity, and quick-access tools from one central place.',
+      features: [
+        'Daily study streak',
+        'Academic overview',
+        'Upcoming activities',
+        'Quick tools'
+      ]
+    },
+    {
+      category: 'ACADEMIC PERFORMANCE',
+      icon: '🎓',
+      title: 'Manage Your Academics',
+      description:
+        'Keep your academic journey organized from your first semester to graduation. Add your courses, record your results, track your grades, calculate your GPA and CGPA, and monitor your progress over time.',
+      features: [
+        'Course management',
+        'Semester results',
+        'GPA & CGPA tracking',
+        'Academic progress'
+      ]
+    },
+    {
+      category: 'SMART ACADEMIC PLANNING',
+      icon: '📊',
+      title: 'Understand Your Performance',
+      description:
+        'StudentNija helps you understand where you stand academically. Set academic goals, monitor your grade performance, and see the progress you need to make toward your target GPA or CGPA.',
+      features: [
+        'Target GPA planning',
+        'Grade analysis',
+        'Semester tracking',
+        'Performance insights'
+      ]
+    },
+    {
+      category: 'PRODUCTIVITY',
+      icon: '✅',
+      title: 'Never Lose Track of Your Tasks',
+      description:
+        'Create and manage your academic tasks in one place. Add assignments, personal goals, deadlines, recurring activities, and priorities so you always know what needs your attention next.',
+      features: [
+        'Daily tasks',
+        'Priority levels',
+        'Deadlines',
+        'Recurring tasks'
+      ]
+    },
+    {
+      category: 'TIME MANAGEMENT',
+      icon: '🗓️',
+      title: 'Plan Your Week',
+      description:
+        'Build your personal academic timetable and organize your weekly schedule. Add classes, study sessions, important events, and activities to create a clearer picture of your time.',
+      features: [
+        'Weekly timetable',
+        'Class schedules',
+        'Study sessions',
+        'Time organization'
+      ]
+    },
+    {
+      category: 'EXAM PREPARATION',
+      icon: '⏳',
+      title: 'Stay Ahead of Exams',
+      description:
+        'Never be surprised by an important examination again. Create exam countdowns, track important dates, and plan your preparation around the time you have remaining.',
+      features: [
+        'Exam countdowns',
+        'Important dates',
+        'Revision planning',
+        'Preparation tracking'
+      ]
+    },
+    {
+      category: 'AI-POWERED LEARNING',
+      icon: '🧠',
+      title: 'Meet Your AI Study Companion',
+      description:
+        'Ask questions, request explanations, simplify difficult concepts, brainstorm ideas, and get personalized academic assistance. Your AI Tutor is designed to help you understand, not simply give you answers.',
+      features: [
+        'Ask academic questions',
+        'Understand difficult topics',
+        'Get explanations',
+        'Study with AI'
+      ]
+    },
+    {
+      category: 'EXAM PRACTICE',
+      icon: '📝',
+      title: 'Practice With Past Questions',
+      description:
+        'Prepare more effectively by practicing questions related to your examinations. Test your knowledge, identify weak areas, and use practice sessions to improve your confidence before the real exam.',
+      features: [
+        'Past questions',
+        'Practice sessions',
+        'Subject preparation',
+        'Knowledge testing'
+      ]
+    },
+    {
+      category: 'STUDY RESOURCES',
+      icon: '📚',
+      title: 'Build Your Digital Study Space',
+      description:
+        'Keep your academic resources organized and accessible. Use your notes, saved materials, library resources, flashcards, and other study tools to build a personal learning environment.',
+      features: [
+        'Study notes',
+        'Saved resources',
+        'Digital library',
+        'Flashcards'
+      ]
+    },
+    {
+      category: 'ACTIVE RECALL',
+      icon: '🃏',
+      title: 'Remember More With Flashcards',
+      description:
+        'Create digital flashcards to revise important concepts, definitions, formulas, and key information. Flashcards help you actively test your memory instead of simply reading the same material repeatedly.',
+      features: [
+        'Create flashcards',
+        'Review concepts',
+        'Active recall',
+        'Faster revision'
+      ]
+    },
+    {
+      category: 'STUDENT COMMUNITY',
+      icon: '💬',
+      title: 'Learn Together With Study Groups',
+      description:
+        'Connect with other students through study groups. Collaborate, discuss difficult topics, share academic resources, ask questions, and learn with people who are working toward similar goals.',
+      features: [
+        'Join study groups',
+        'Create communities',
+        'Share resources',
+        'Discuss topics'
+      ]
+    },
+    {
+      category: 'PERSONAL PRODUCTIVITY',
+      icon: '🧮',
+      title: 'Useful Tools When You Need Them',
+      description:
+        'StudentNija includes quick-access tools designed to help with everyday academic tasks. Use the calculator, math solver, dictionary, and other utilities without leaving your study environment.',
+      features: [
+        'Calculator',
+        'Math Solver',
+        'Dictionary',
+        'Quick utilities'
+      ]
+    },
+    {
+      category: 'ACHIEVEMENT SYSTEM',
+      icon: '🏆',
+      title: 'Track Your Progress',
+      description:
+        'Your academic journey is built one step at a time. Track your study activity, maintain your streaks, unlock achievements, and see the progress you are making toward becoming a better student.',
+      features: [
+        'Study streaks',
+        'Achievements',
+        'Progress tracking',
+        'Personal milestones'
+      ]
+    },
+    {
+      category: 'SMART REMINDERS',
+      icon: '🔔',
+      title: 'Stay Informed',
+      description:
+        'Important tasks and academic activities should not depend entirely on your memory. StudentNija helps you stay aware of reminders, deadlines, updates, and other important events.',
+      features: [
+        'Task reminders',
+        'Deadline awareness',
+        'Academic updates',
+        'Notifications'
+      ]
+    },
+    {
+      category: 'PERSONALIZATION',
+      icon: '⚙️',
+      title: 'Make StudentNija Yours',
+      description:
+        'Customize your experience through your profile and settings. Manage your personal information, preferences, notifications, account security, and the way you interact with the platform.',
+      features: [
+        'Profile management',
+        'App preferences',
+        'Notification settings',
+        'Account controls'
+      ]
+    },
+    {
+      category: 'YOUR DATA',
+      icon: '☁️',
+      title: 'Keep Your Progress Safe',
+      description:
+        'Your academic progress matters. Cloud synchronization helps keep your important StudentNija data backed up and available across supported devices. Use Sync Now whenever you want to update your cloud data.',
+      features: [
+        'Cloud synchronization',
+        'Data backup',
+        'Cross-device access',
+        'Sync controls'
+      ]
+    },
+    {
+      category: 'SECURITY',
+      icon: '🛡️',
+      title: 'Protect Your Account',
+      description:
+        'Manage important security features from your account settings. Keep your profile secure and use available account protection tools to help safeguard your StudentNija experience.',
+      features: [
+        'Account security',
+        'Security settings',
+        'Two-factor authentication',
+        'Account protection'
+      ]
+    },
+    {
+      category: 'YOUR ACADEMIC FUTURE',
+      icon: '🚀',
+      title: 'Everything Starts Here',
+      description:
+        'StudentNija is more than a place to store notes. It is your personal academic command center — helping you plan better, study smarter, stay organized, prepare for exams, and keep moving toward your goals.',
+      features: [
+        'Learn',
+        'Plan',
+        'Practice',
+        'Progress'
+      ]
+    }
+  ];
+
+  const overlay = document.createElement('div');
+  overlay.id = 'detailedOnboardingOverlay';
+  overlay.innerHTML = `
+    <style>
+      #detailedOnboardingOverlay {
+        position: fixed; inset: 0; z-index: 100000;
+        display: flex; align-items: center; justify-content: center; padding: 16px;
+        background: radial-gradient(circle at 50% 0%, rgba(0,135,81,0.16), transparent 42%), rgba(0,0,0,0.82);
+        backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        animation: onboardingFadeIn 0.35s ease;
+      }
+      @keyframes onboardingFadeIn { from { opacity:0; } to { opacity:1; } }
+      @keyframes onboardingCardIn { from { opacity:0; transform:translateY(25px) scale(0.96); } to { opacity:1; transform:translateY(0) scale(1); } }
+      @keyframes iconFloat { 0%,100% { transform:translateY(0) rotate(0deg); } 50% { transform:translateY(-7px) rotate(3deg); } }
+      .tour-card {
+        position: relative; width: min(100%, 440px); max-height: calc(100vh - 32px);
+        overflow-y: auto; overflow-x: hidden; padding: 26px 22px 20px;
+        border-radius: 30px; color: var(--text-primary, #f5f5f5);
+        background: linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.025)), var(--bg-secondary, #1e1e2f);
+        border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 30px 90px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,135,81,0.05);
+        animation: onboardingCardIn 0.5s cubic-bezier(0.2,0.9,0.3,1); scrollbar-width: none;
+      }
+      .tour-card::-webkit-scrollbar { display:none; }
+      .tour-top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:22px; }
+      .tour-brand { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:800; letter-spacing:-0.2px; }
+      .tour-brand-mark { width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:9px; font-size:15px; background:linear-gradient(135deg, var(--accent, #008751), var(--accent-light, #48b985)); }
+      .tour-counter { color:var(--text-muted, #999); font-size:11px; font-weight:700; }
+      .step-indicators { display:flex; align-items:center; gap:5px; margin-bottom:22px; }
+      .dot { height:4px; flex:1; max-width:28px; border-radius:10px; background:rgba(255,255,255,0.12); transition:background 0.3s ease, max-width 0.3s ease; }
+      .dot.active { max-width:48px; background:var(--accent, #008751); }
+      .tour-category { margin-bottom:10px; color:var(--accent-light, #48b985); font-size:10px; font-weight:900; letter-spacing:1.5px; }
+      .step-icon-wrapper { width:78px; height:78px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; border-radius:24px; background:radial-gradient(circle at 30% 20%, rgba(255,255,255,0.16), transparent 60%), rgba(0,135,81,0.14); border:1px solid rgba(0,135,81,0.25); box-shadow:0 12px 35px rgba(0,135,81,0.14); animation:iconFloat 4s ease-in-out infinite; }
+      .step-icon { font-size:42px; display:block; }
+      .step-title { margin:0 0 12px; font-size:clamp(22px, 6vw, 28px); line-height:1.15; font-weight:850; letter-spacing:-0.8px; }
+      .step-description { margin:0 auto 20px; max-width:390px; color:var(--text-muted, #b0b0c0); font-size:14px; line-height:1.65; }
+      .step-features { display:grid; grid-template-columns: repeat(2,1fr); gap:8px; margin-bottom:24px; text-align:left; }
+      .step-feature { display:flex; align-items:center; gap:7px; padding:9px 10px; border-radius:12px; color:var(--text-muted, #b0b0c0); background:rgba(255,255,255,0.035); border:1px solid rgba(255,255,255,0.06); font-size:11px; font-weight:600; }
+      .step-feature::before { content:"✓"; color:var(--accent-light, #48b985); font-size:13px; font-weight:900; }
+      .tour-actions { display:flex; align-items:center; gap:8px; margin-top:4px; }
+      .skip-link { padding:9px 4px; border:none; color:var(--text-muted, #888); background:transparent; font-size:12px; cursor:pointer; }
+      .skip-link:hover { color:var(--text-primary, #fff); }
+      .flex-spacer { flex:1; }
+      .btn-outline, .btn-primary { border-radius:13px; padding:11px 16px; font-family:inherit; font-size:13px; font-weight:750; cursor:pointer; transition:transform 0.2s ease, opacity 0.2s ease, background 0.2s ease; }
+      .btn-outline { color:var(--text-primary, #fff); background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); }
+      .btn-primary { color:white; background:linear-gradient(135deg, var(--accent, #008751), var(--accent-light, #48b985)); border:none; box-shadow:0 8px 22px rgba(0,135,81,0.25); }
+      .btn-outline:hover, .btn-primary:hover { transform:translateY(-1px); }
+      .btn-primary:active, .btn-outline:active { transform:scale(0.96); }
+      @media (max-width:380px) { .tour-card { padding:22px 17px 17px; border-radius:25px; } .step-icon-wrapper { width:68px; height:68px; } .step-icon { font-size:36px; } .step-description { font-size:13px; } .step-feature { font-size:10px; } }
+      @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; } }
+    </style>
+
+    <div class="tour-card">
+      <div class="tour-top">
+        <div class="tour-brand">
+          <div class="tour-brand-mark">🎓</div>
+          StudentNija
         </div>
+        <div class="tour-counter" id="tourCounter">1 / ${steps.length}</div>
+      </div>
+      <div class="step-indicators" id="stepDots">${steps.map((_, i) => `<span class="dot ${i === 0 ? 'active' : ''}"></span>`).join('')}</div>
+      <div class="tour-category" id="tourCategory">${steps[0].category}</div>
+      <div class="step-icon-wrapper"><span class="step-icon" id="stepIcon">${steps[0].icon}</span></div>
+      <div class="step-title" id="stepTitle">${steps[0].title}</div>
+      <div class="step-description" id="stepDescription">${steps[0].description}</div>
+      <div class="step-features" id="stepFeatures">${steps[0].features.map(feature => `<div class="step-feature">${feature}</div>`).join('')}</div>
+      <div class="tour-actions">
+        <button class="skip-link" id="skipTourBtn">Skip tour</button>
+        <div class="flex-spacer"></div>
+        <button class="btn-outline" id="prevStepBtn" style="display:none;">← Back</button>
+        <button class="btn-primary" id="nextStepBtn">Next →</button>
+        <button class="btn-primary" id="finishTourBtn" style="display:none;">Get Started 🚀</button>
       </div>
     </div>
   `;
-  document.body.appendChild(tour);
 
-  const highlight = document.getElementById('studentnijaTourHighlight');
-  const tooltip = document.getElementById('studentnijaTourTooltip');
-  const title = document.getElementById('studentnijaTourTitle');
-  const description = document.getElementById('studentnijaTourDescription');
-  const progress = document.getElementById('studentnijaTourProgress');
-  const nextButton = document.getElementById('studentnijaTourNext');
-  const skipButton = document.getElementById('studentnijaTourSkip');
+  document.body.appendChild(overlay);
 
-  function showStep() {
-    const step = tourSteps[currentStep];
-    const target = document.querySelector(step.target);
-    if (!target) {
-      currentStep++;
-      if (currentStep < tourSteps.length) showStep();
-      else finishTour();
-      return;
-    }
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    setTimeout(() => {
-      const rect = target.getBoundingClientRect();
-      const padding = 8;
-      highlight.style.top = `${rect.top - padding}px`;
-      highlight.style.left = `${rect.left - padding}px`;
-      highlight.style.width = `${rect.width + padding * 2}px`;
-      highlight.style.height = `${rect.height + padding * 2}px`;
-      title.textContent = step.title;
-      description.textContent = step.description;
-      progress.textContent = `${currentStep + 1} of ${tourSteps.length}`;
-      nextButton.textContent = currentStep === tourSteps.length - 1 ? 'Finish' : 'Next';
-      positionTooltip(rect, step.position);
-    }, 350);
+  const dots = overlay.querySelectorAll('.dot');
+  const iconEl = overlay.querySelector('#stepIcon');
+  const titleEl = overlay.querySelector('#stepTitle');
+  const descEl = overlay.querySelector('#stepDescription');
+  const categoryEl = overlay.querySelector('#tourCategory');
+  const featuresEl = overlay.querySelector('#stepFeatures');
+  const counterEl = overlay.querySelector('#tourCounter');
+  const prevBtn = overlay.querySelector('#prevStepBtn');
+  const nextBtn = overlay.querySelector('#nextStepBtn');
+  const finishBtn = overlay.querySelector('#finishTourBtn');
+  const skipBtn = overlay.querySelector('#skipTourBtn');
+
+  function renderStep(index) {
+    const step = steps[index];
+    iconEl.textContent = step.icon;
+    titleEl.textContent = step.title;
+    descEl.textContent = step.description;
+    categoryEl.textContent = step.category;
+    counterEl.textContent = `${index + 1} / ${steps.length}`;
+    featuresEl.innerHTML = step.features.map(feature => `<div class="step-feature">${feature}</div>`).join('');
+    dots.forEach((dot, i) => { dot.classList.toggle('active', i === index); });
+    prevBtn.style.display = index === 0 ? 'none' : 'inline-block';
+    nextBtn.style.display = index === steps.length - 1 ? 'none' : 'inline-block';
+    finishBtn.style.display = index === steps.length - 1 ? 'inline-block' : 'none';
   }
 
-  function positionTooltip(rect, position) {
-    const tooltipWidth = Math.min(310, window.innerWidth - 32);
-    const tooltipHeight = 190;
-    let top, left;
-    if (position === 'top') {
-      top = rect.top - tooltipHeight - 20;
-      left = rect.left + rect.width / 2 - tooltipWidth / 2;
-      tooltip.className = 'studentnija-tour-tooltip top';
-    } else if (position === 'left') {
-      top = rect.top + rect.height / 2 - tooltipHeight / 2;
-      left = rect.left - tooltipWidth - 20;
-      tooltip.className = 'studentnija-tour-tooltip left';
-    } else if (position === 'right') {
-      top = rect.top + rect.height / 2 - tooltipHeight / 2;
-      left = rect.right + 20;
-      tooltip.className = 'studentnija-tour-tooltip right';
-    } else {
-      top = rect.bottom + 20;
-      left = rect.left + rect.width / 2 - tooltipWidth / 2;
-      tooltip.className = 'studentnija-tour-tooltip bottom';
-    }
-    const margin = 16;
-    left = Math.max(margin, Math.min(left, window.innerWidth - tooltipWidth - margin));
-    top = Math.max(margin, Math.min(top, window.innerHeight - tooltipHeight - margin));
-    tooltip.style.width = `${tooltipWidth}px`;
-    tooltip.style.top = `${top}px`;
-    tooltip.style.left = `${left}px`;
-  }
-
-  function nextStep() { currentStep++; if (currentStep >= tourSteps.length) finishTour(); else showStep(); }
+  function goToStep(index) { if (index < 0 || index >= steps.length) return; currentStep = index; renderStep(currentStep); }
+  function nextStep() { if (currentStep < steps.length - 1) goToStep(currentStep + 1); }
+  function prevStep() { if (currentStep > 0) goToStep(currentStep - 1); }
   function finishTour() {
-    tour.style.opacity = '0';
-    tour.style.transition = 'opacity 0.25s ease';
-    setTimeout(() => tour.remove(), 250);
-    localStorage.setItem('studentnija_tour_completed', 'true');
+    overlay.style.opacity = '0';
+    overlay.style.transition = 'opacity 0.25s ease';
+    setTimeout(() => overlay.remove(), 250);
+    localStorage.setItem('studentnija_instructions_read', 'true');
   }
 
-  nextButton.addEventListener('click', nextStep);
-  skipButton.addEventListener('click', finishTour);
-  window.addEventListener('resize', showStep);
-  showStep();
+  nextBtn.addEventListener('click', nextStep);
+  prevBtn.addEventListener('click', prevStep);
+  finishBtn.addEventListener('click', finishTour);
+  skipBtn.addEventListener('click', finishTour);
+
+  function keyboardHandler(event) {
+    if (!document.body.contains(overlay)) { document.removeEventListener('keydown', keyboardHandler); return; }
+    if (event.key === 'ArrowRight' || event.key === 'ArrowDown') { event.preventDefault(); if (currentStep < steps.length - 1) nextStep(); }
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') { event.preventDefault(); if (currentStep > 0) prevStep(); }
+    else if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); if (currentStep === steps.length - 1) finishTour(); else nextStep(); }
+    else if (event.key === 'Escape') { finishTour(); }
+  }
+  document.addEventListener('keydown', keyboardHandler);
+
+  renderStep(0);
 }
 
 // ======================== AUTO FULLSCREEN ON FIRST TAP ========================
@@ -497,7 +747,6 @@ function hideLoadingScreen() {
 export function renderAuth() {
   console.log('🔐 renderAuth() called – showing login page');
   hideLoadingScreen();
-
   const container = document.getElementById('pagesContainer');
   if (container) container.innerHTML = `<div class="page active-page" id="auth-page">${getAuthHTML()}</div>`;
   const bottomNav = document.getElementById('bottomNav');
@@ -529,7 +778,7 @@ export function showAuthForm(formType) {
         <label><input type="checkbox" id="rememberMe" checked> Remember Me</label>
         <span id="forgotBtn" style="color:#F4B400; cursor:pointer;">Forgot?</span>
       </div>
-      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}"></div>
+      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}" data-appearance="always"></div>
       <button class="btn-primary" id="doLogin">Login</button>
       <div style="display:flex; align-items:center; margin:12px 0;">
         <hr style="flex:1; border:0; border-top:1px solid var(--border-light);">
@@ -547,7 +796,6 @@ export function showAuthForm(formType) {
       const pwd = document.getElementById('loginPass').value;
       const rem = document.getElementById('rememberMe')?.checked;
 
-      // Turnstile verification
       const token = turnstile.getResponse();
       if (!token) { alert('Please verify you are human.'); return; }
       const human = await verifyTurnstile(token);
@@ -588,7 +836,7 @@ export function showAuthForm(formType) {
       <input id="regSchool" placeholder="School / University">
       <input id="regDept" placeholder="Department">
       <input id="regLevel" placeholder="Level (e.g., 300L)">
-      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}"></div>
+      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}" data-appearance="always"></div>
       <button class="btn-primary" id="doRegister">Register</button>
       <button class="btn-outline" id="backLogin" style="margin-top:8px;">Back to Login</button>
     `;
@@ -632,17 +880,14 @@ export function showAuthForm(formType) {
     container.innerHTML = `
       <p>Enter your email to receive a password reset link.</p>
       <input id="resetEmail" placeholder="Email">
-      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}"></div>
+      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}" data-appearance="always"></div>
       <button class="btn-primary" id="sendResetBtn">Send Reset Link</button>
       <button class="btn-outline" id="backToLoginBtn" style="margin-top:8px;">Back to Login</button>
     `;
 
     document.getElementById('sendResetBtn')?.addEventListener('click', async function() {
       const email = document.getElementById('resetEmail').value.trim();
-      if (!email || !email.includes('@')) {
-        alert('Please enter a valid email.');
-        return;
-      }
+      if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
 
       const token = turnstile.getResponse();
       if (!token) { alert('Please verify you are human.'); return; }
@@ -671,48 +916,24 @@ export function startGoogleSignIn() {
 
 // ======================== PROCESS GOOGLE USER ========================
 function processGoogleUser(userData) {
-  if (!userData || !userData.email) {
-    console.warn('Invalid Google user data:', userData);
-    return;
-  }
-
+  if (!userData || !userData.email) return;
   clearPreviousUserData();
-
   let existingUser = users.find(u => u.email === userData.email);
   if (!existingUser) {
-    const newUser = {
-      id: Date.now(),
-      fullName: userData.name || 'Google User',
-      email: userData.email,
-      password: 'oauth_' + Date.now(),
-      school: '',
-      department: '',
-      level: '',
-      profilePic: userData.picture || '',
-      bio: '',
-      googleAuth: true
-    };
-    users.push(newUser);
-    saveAll();
-    currentUser = newUser;
-    console.log('✅ New Google user created:', currentUser.fullName);
+    const newUser = { id: Date.now(), fullName: userData.name || 'Google User', email: userData.email, password: 'oauth_' + Date.now(), school: '', department: '', level: '', profilePic: userData.picture || '', bio: '', googleAuth: true };
+    users.push(newUser); saveAll(); currentUser = newUser;
   } else {
     existingUser.fullName = userData.name || existingUser.fullName;
     existingUser.profilePic = userData.picture || existingUser.profilePic;
     existingUser.googleAuth = true;
-    saveAll();
-    currentUser = existingUser;
-    console.log('✅ Existing user updated:', currentUser.fullName);
+    saveAll(); currentUser = existingUser;
   }
-
   localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
   addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
-
   syncLocalUserToServer(currentUser);
   loadCloudData(currentUser.id).then(() => {
     if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
   });
-
   if (window.NotifBridge && window.NotifBridge.subscribeToPush) {
     window.NotifBridge.subscribeToPush();
   }
@@ -722,20 +943,10 @@ function processGoogleUser(userData) {
 // ======================== RENDER APP ========================
 export function renderApp() {
   console.log('🔄 renderApp() called');
-
   const tempUser = localStorage.getItem('studentnija_user');
   if (tempUser) {
-    try {
-      const userData = JSON.parse(tempUser);
-      console.log('📦 Found temporary Google user data:', userData);
-      processGoogleUser(userData);
-      localStorage.removeItem('studentnija_user');
-    } catch (_) {
-      localStorage.removeItem('studentnija_user');
-    }
+    try { const userData = JSON.parse(tempUser); processGoogleUser(userData); localStorage.removeItem('studentnija_user'); } catch (_) {}
   }
-
-  // Check for "Remember Me" stored user (auto-login)
   if (!currentUser || !currentUser.email) {
     const rememberMe = localStorage.getItem('remember_me');
     const storedUser = localStorage.getItem('studentnija_currentUser');
@@ -753,7 +964,6 @@ export function renderApp() {
       } catch (_) {}
     }
   }
-
   if (currentUser && currentUser.email) {
     clearPreviousUserData();
     renderMainApp();
@@ -769,13 +979,8 @@ export function renderApp() {
           renderMainApp();
           if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
         }).catch(() => renderMainApp());
-      } catch (_) {
-        localStorage.removeItem('studentnija_currentUser');
-        renderAuth();
-      }
-    } else {
-      renderAuth();
-    }
+      } catch (_) { localStorage.removeItem('studentnija_currentUser'); renderAuth(); }
+    } else { renderAuth(); }
   }
 }
 
@@ -1150,7 +1355,6 @@ window.addEventListener('load', async () => {
   console.log('🚀 App bootstrapping...');
   loadAll();
 
-  // Check for "Remember Me" auto-login first
   const rememberMe = localStorage.getItem('remember_me');
   const storedUser = localStorage.getItem('studentnija_currentUser');
   if (rememberMe === 'true' && storedUser && !currentUser?.email) {
@@ -1158,12 +1362,8 @@ window.addEventListener('load', async () => {
       const user = JSON.parse(storedUser);
       if (user.email) {
         const existing = users.find(u => u.email === user.email);
-        if (existing) {
-          Object.assign(currentUser, existing);
-        } else {
-          currentUser = user;
-          if (!users.find(u => u.email === user.email)) users.push(user);
-        }
+        if (existing) Object.assign(currentUser, existing);
+        else { currentUser = user; if (!users.find(u => u.email === user.email)) users.push(user); }
         clearPreviousUserData();
         await loadCloudData(currentUser.id);
         renderMainApp();
