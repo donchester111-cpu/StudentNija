@@ -44,6 +44,71 @@ import { apiPost, apiGet } from './api.js';
 const TURNSTILE_SITE_KEY = '0x4AAAAAAD46hrOUi9OGHQUP';
 const API_BASE = 'https://studentnija-public-chat.onrender.com';
 
+// ======================== GLOBAL TURNSTILE FIX CSS ========================
+(function injectTurnstileStyles() {
+  const style = document.createElement('style');
+
+  style.textContent = `
+    /* ======================== TURNSTILE CONTAINER ======================== */
+
+    .turnstile-wrapper {
+      width: 100%;
+      min-height: 70px;
+      margin: 14px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      /* CRITICAL: never clip Cloudflare's iframe */
+      overflow: visible;
+    }
+
+    /*
+     * Do NOT force width: 100% on .cf-turnstile.
+     * Turnstile controls its own iframe dimensions.
+     */
+    .turnstile-wrapper .cf-turnstile {
+      display: block;
+      width: auto;
+      max-width: 100%;
+      min-width: 0;
+    }
+
+    /*
+     * Turnstile iframe itself
+     */
+    .turnstile-wrapper iframe {
+      display: block;
+      max-width: 100%;
+    }
+
+    /*
+     * Small screens
+     */
+    @media (max-width: 400px) {
+      .turnstile-wrapper {
+        transform: scale(0.92);
+        transform-origin: center;
+        width: 108.7%;
+        margin-left: -11.35%;
+      }
+    }
+
+    /*
+     * Very small screens
+     */
+    @media (max-width: 340px) {
+      .turnstile-wrapper {
+        transform: scale(0.82);
+        width: 121.95%;
+        margin-left: -10.975%;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+})();
+
 async function verifyTurnstile(token) {
   try {
     const res = await fetch(`${API_BASE}/api/verify-turnstile`, {
@@ -58,18 +123,42 @@ async function verifyTurnstile(token) {
   }
 }
 
-// ======================== TURNSTILE DYNAMIC RENDER HELPER ========================
+// ======================== IMPROVED TURNSTILE RENDER ========================
 function resetTurnstile() {
-  if (typeof turnstile !== 'undefined') {
-    const existingWidget = document.querySelector('.cf-turnstile');
-    if (existingWidget) {
-      const widgetId = existingWidget.getAttribute('data-widget-id');
-      if (widgetId) turnstile.remove(widgetId);
+  if (typeof turnstile === 'undefined') return;
+
+  const existingWidget = document.querySelector('.cf-turnstile');
+
+  if (existingWidget) {
+    const widgetId = existingWidget.getAttribute('data-widget-id');
+
+    if (widgetId) {
+      try {
+        turnstile.remove(widgetId);
+      } catch (error) {
+        console.warn('Turnstile cleanup failed:', error);
+      }
     }
-    setTimeout(() => {
-      turnstile.render('.cf-turnstile');
-    }, 50);
+
+    existingWidget.innerHTML = '';
   }
+
+  setTimeout(() => {
+    const widget = document.querySelector('.cf-turnstile');
+
+    if (!widget) return;
+
+    try {
+      const widgetId = turnstile.render(widget, {
+        sitekey: TURNSTILE_SITE_KEY,
+        appearance: 'always'
+      });
+
+      widget.setAttribute('data-widget-id', widgetId);
+    } catch (error) {
+      console.error('Turnstile render failed:', error);
+    }
+  }, 100);
 }
 
 // ======================== CLOUD AUTO‑SYNC ========================
@@ -792,7 +881,9 @@ export function showAuthForm(formType) {
         <label><input type="checkbox" id="rememberMe" checked> Remember Me</label>
         <span id="forgotBtn" style="color:#F4B400; cursor:pointer;">Forgot?</span>
       </div>
-      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}" data-appearance="always"></div>
+      <div class="turnstile-wrapper">
+        <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}" data-appearance="always"></div>
+      </div>
       <button class="btn-primary" id="doLogin">Login</button>
       <div style="display:flex; align-items:center; margin:12px 0;">
         <hr style="flex:1; border:0; border-top:1px solid var(--border-light);">
@@ -851,7 +942,9 @@ export function showAuthForm(formType) {
       <input id="regSchool" placeholder="School / University">
       <input id="regDept" placeholder="Department">
       <input id="regLevel" placeholder="Level (e.g., 300L)">
-      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}" data-appearance="always"></div>
+      <div class="turnstile-wrapper">
+        <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}" data-appearance="always"></div>
+      </div>
       <button class="btn-primary" id="doRegister">Register</button>
       <button class="btn-outline" id="backLogin" style="margin-top:8px;">Back to Login</button>
     `;
@@ -896,7 +989,9 @@ export function showAuthForm(formType) {
     container.innerHTML = `
       <p>Enter your email to receive a password reset link.</p>
       <input id="resetEmail" placeholder="Email">
-      <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}" data-appearance="always"></div>
+      <div class="turnstile-wrapper">
+        <div class="cf-turnstile" data-sitekey="${TURNSTILE_SITE_KEY}" data-appearance="always"></div>
+      </div>
       <button class="btn-primary" id="sendResetBtn">Send Reset Link</button>
       <button class="btn-outline" id="backToLoginBtn" style="margin-top:8px;">Back to Login</button>
     `;
