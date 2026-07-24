@@ -1,3 +1,9 @@
+// ============================================================
+// app.js – StudentNija Main Entry Point
+// Full implementation with feature flags, maintenance, announcements,
+// onboarding, tour, and all other functionality.
+// ============================================================
+
 import {
   currentUser, users, coursesData, plannerTasks, timetableEvents,
   exams, notifications, userStats, settings, flashcards, savedNotes,
@@ -38,19 +44,15 @@ window.openToolModal = openToolModal;
 window.closeToolModal = closeToolModal;
 
 // ======================== API HELPER ========================
-import { apiPost, apiGet } from './api.js';
+import { apiPost, apiGet, setAuthToken, getAuthToken, API_BASE } from './api.js';
 
 // ======================== TURNSTILE CONFIG ========================
 const TURNSTILE_SITE_KEY = '0x4AAAAAAD46hrOUi9OGHQUP';
-const API_BASE = 'https://studentnija-public-chat.onrender.com';
 
 // ======================== GLOBAL TURNSTILE FIX CSS ========================
 (function injectTurnstileStyles() {
   const style = document.createElement('style');
-
   style.textContent = `
-    /* ======================== TURNSTILE CONTAINER ======================== */
-
     .turnstile-wrapper {
       width: 100%;
       min-height: 70px;
@@ -58,33 +60,18 @@ const API_BASE = 'https://studentnija-public-chat.onrender.com';
       display: flex;
       align-items: center;
       justify-content: center;
-
-      /* CRITICAL: never clip Cloudflare's iframe */
       overflow: visible;
     }
-
-    /*
-     * Do NOT force width: 100% on .cf-turnstile.
-     * Turnstile controls its own iframe dimensions.
-     */
     .turnstile-wrapper .cf-turnstile {
       display: block;
       width: auto;
       max-width: 100%;
       min-width: 0;
     }
-
-    /*
-     * Turnstile iframe itself
-     */
     .turnstile-wrapper iframe {
       display: block;
       max-width: 100%;
     }
-
-    /*
-     * Small screens
-     */
     @media (max-width: 400px) {
       .turnstile-wrapper {
         transform: scale(0.92);
@@ -93,10 +80,6 @@ const API_BASE = 'https://studentnija-public-chat.onrender.com';
         margin-left: -11.35%;
       }
     }
-
-    /*
-     * Very small screens
-     */
     @media (max-width: 340px) {
       .turnstile-wrapper {
         transform: scale(0.82);
@@ -105,7 +88,6 @@ const API_BASE = 'https://studentnija-public-chat.onrender.com';
       }
     }
   `;
-
   document.head.appendChild(style);
 })();
 
@@ -123,45 +105,30 @@ async function verifyTurnstile(token) {
   }
 }
 
-// ======================== IMPROVED TURNSTILE RENDER ========================
 function resetTurnstile() {
   if (typeof turnstile === 'undefined') return;
-
   const existingWidget = document.querySelector('.cf-turnstile');
-
   if (existingWidget) {
     const widgetId = existingWidget.getAttribute('data-widget-id');
-
     if (widgetId) {
-      try {
-        turnstile.remove(widgetId);
-      } catch (error) {
-        console.warn('Turnstile cleanup failed:', error);
-      }
+      try { turnstile.remove(widgetId); } catch (e) {}
     }
-
     existingWidget.innerHTML = '';
   }
-
   setTimeout(() => {
     const widget = document.querySelector('.cf-turnstile');
-
     if (!widget) return;
-
     try {
       const widgetId = turnstile.render(widget, {
         sitekey: TURNSTILE_SITE_KEY,
         appearance: 'always'
       });
-
       widget.setAttribute('data-widget-id', widgetId);
-    } catch (error) {
-      console.error('Turnstile render failed:', error);
-    }
+    } catch (e) {}
   }, 100);
 }
 
-// ======================== CLOUD AUTO‑SYNC ========================
+// ======================== CLOUD SYNC ========================
 let syncTimer = null;
 function scheduleCloudSync() {
   if (!currentUser || !currentUser.id) return;
@@ -278,6 +245,7 @@ export async function trackEvent(eventType, payload = {}) {
 
 // ======================== SYNC LOCAL USER TO SERVER ========================
 async function syncLocalUserToServer(user) {
+  if (!user || !user.id) return;
   try {
     await apiPost('/api/local-user/sync', {
       email: user.email,
@@ -306,6 +274,8 @@ function clearPreviousUserData() {
     'studentnija_achievements',
     'studentnija_planner_tasks',
     'studentnija_coursesData',
+    'studentnija_users',
+    'studentnija_currentUser',
   ];
   keysToRemove.forEach(key => localStorage.removeItem(key));
   
@@ -348,7 +318,23 @@ window.onerror = function(message, source, lineno, colno, error) {
 export let currentPage = "home";
 window.currentPage = currentPage;
 
-// ======================== ONBOARDING (WELCOME + DETAILED GUIDE) ========================
+// ======================== FEATURE FLAGS ========================
+let featureFlags = { ai: true, flashcards: true, gradePredictor: true, communityQ: true, registration: true, maintenance: false };
+window.featureFlags = featureFlags;
+
+async function loadFeatureFlags() {
+  try {
+    const res = await apiGet('/api/admin/flags');
+    if (res && typeof res === 'object') {
+      featureFlags = res;
+      window.featureFlags = res;
+    }
+  } catch (e) {
+    console.warn('Feature flags not available, using defaults.');
+  }
+}
+
+// ======================== ONBOARDING (FULL) ========================
 function showOnboarding() {
   if (localStorage.getItem('studentnija_onboarded')) return;
 
@@ -446,7 +432,7 @@ function showOnboarding() {
   if (backdrop) backdrop.addEventListener('click', (e) => { if (e.target === backdrop) dismiss(); });
 }
 
-// ======================== DETAILED ONBOARDING (18‑step guided tour) ========================
+// ======================== DETAILED ONBOARDING TOUR (FULL) ========================
 function startStudentNijaTour() {
   if (localStorage.getItem('studentnija_instructions_read')) return;
 
@@ -754,7 +740,7 @@ function startStudentNijaTour() {
       <div class="step-icon-wrapper"><span class="step-icon" id="stepIcon">${steps[0].icon}</span></div>
       <div class="step-title" id="stepTitle">${steps[0].title}</div>
       <div class="step-description" id="stepDescription">${steps[0].description}</div>
-      <div class="step-features" id="stepFeatures">${steps[0].features.map(feature => `<div class="step-feature">${feature}</div>`).join('')}</div>
+      <div class="step-features" id="stepFeatures">${steps[0].features.map(f => `<div class="step-feature">${f}</div>`).join('')}</div>
       <div class="tour-actions">
         <button class="skip-link" id="skipTourBtn">Skip tour</button>
         <div class="flex-spacer"></div>
@@ -786,7 +772,7 @@ function startStudentNijaTour() {
     descEl.textContent = step.description;
     categoryEl.textContent = step.category;
     counterEl.textContent = `${index + 1} / ${steps.length}`;
-    featuresEl.innerHTML = step.features.map(feature => `<div class="step-feature">${feature}</div>`).join('');
+    featuresEl.innerHTML = step.features.map(f => `<div class="step-feature">${f}</div>`).join('');
     dots.forEach((dot, i) => { dot.classList.toggle('active', i === index); });
     prevBtn.style.display = index === 0 ? 'none' : 'inline-block';
     nextBtn.style.display = index === steps.length - 1 ? 'none' : 'inline-block';
@@ -859,7 +845,9 @@ export function renderAuth() {
 
 function getAuthHTML() {
   return `<div class="glass-card" style="padding:32px;margin:40px 20px;text-align:center">
-    <h1 style="color:#008751; font-size:32px;">🇳🇬 StudentNija</h1>
+    <h1 style="color:#008751; font-size:32px; display:flex; align-items:center; justify-content:center; gap:10px;">
+      <img src="icons/icon.png" alt="StudentNija" style="height:40px; width:auto;"> StudentNija
+    </h1>
     <p style="margin:8px 0 20px;">Study Smarter. Score Higher.</p>
     <div id="authForms"></div>
   </div>`;
@@ -872,6 +860,16 @@ export function attachAuthEvents() {
 export function showAuthForm(formType) {
   const container = document.getElementById('authForms');
   if (!container) return;
+
+  // === Registration disabled check ===
+  if (formType === 'register' && !window.featureFlags?.registration) {
+    container.innerHTML = `
+      <p class="text-muted" style="font-size:16px; margin:20px 0;">🔒 Registration is currently disabled by the administrator.</p>
+      <button class="btn-outline" id="backLoginFromReg" style="margin-top:8px;">Back to Login</button>
+    `;
+    document.getElementById('backLoginFromReg')?.addEventListener('click', () => showAuthForm('login'));
+    return;
+  }
 
   if (formType === 'login') {
     container.innerHTML = `
@@ -907,17 +905,28 @@ export function showAuthForm(formType) {
       const human = await verifyTurnstile(token);
       if (!human) { alert('Verification failed. Please try again.'); return; }
 
-      if (loginUser(email, pwd, rem)) {
-        if (rem) {
-          localStorage.setItem('remember_me', 'true');
-          localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
+      try {
+        const data = await apiPost('/api/auth/login', { email, password: pwd });
+        if (data.success) {
+          setAuthToken(data.token);
+          Object.assign(currentUser, data.user);
+          if (rem) {
+            localStorage.setItem('remember_me', 'true');
+          } else {
+            localStorage.removeItem('remember_me');
+            sessionStorage.setItem('studentnija_jwt', data.token);
+          }
+          syncLocalUserToServer(currentUser);
+          await loadCloudData(currentUser.id);
+          addNotification('Login', `Welcome back, ${currentUser.fullName}`);
+          renderMainApp();
+          if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
+          trackEvent('login');
         } else {
-          localStorage.removeItem('remember_me');
+          alert(data.error || 'Login failed');
         }
-        syncLocalUserToServer(currentUser);
-        renderApp();
-      } else {
-        alert('Invalid credentials');
+      } catch (e) {
+        alert('Login error: ' + e.message);
       }
     });
 
@@ -937,7 +946,7 @@ export function showAuthForm(formType) {
     container.innerHTML = `
       <input id="regName" placeholder="Full Name">
       <input id="regEmail" placeholder="Email" type="email">
-      <input id="regPass" type="password" placeholder="Password">
+      <input id="regPass" type="password" placeholder="Password (min 6 chars)">
       <input id="regConfirm" type="password" placeholder="Confirm Password">
       <input id="regSchool" placeholder="School / University">
       <input id="regDept" placeholder="Department">
@@ -961,23 +970,52 @@ export function showAuthForm(formType) {
 
       if (!name || !email || !pass || !school || !dept || !level) {
         alert('All fields required');
-      } else if (pass !== conf) {
+        return;
+      }
+      if (pass !== conf) {
         alert('Passwords do not match');
-      } else if (!email.includes('@')) {
+        return;
+      }
+      if (pass.length < 6) {
+        alert('Password must be at least 6 characters');
+        return;
+      }
+      if (!email.includes('@')) {
         alert('Invalid email');
-      } else {
-        const token = turnstile.getResponse();
-        if (!token) { alert('Please verify you are human.'); return; }
-        const human = await verifyTurnstile(token);
-        if (!human) { alert('Verification failed. Please try again.'); return; }
+        return;
+      }
 
-        if (registerUser(name, email, pass, school, dept, level)) {
+      const token = turnstile.getResponse();
+      if (!token) { alert('Please verify you are human.'); return; }
+      const human = await verifyTurnstile(token);
+      if (!human) { alert('Verification failed. Please try again.'); return; }
+
+      try {
+        const data = await apiPost('/api/auth/register', {
+          fullName: name,
+          email,
+          password: pass,
+          school,
+          department: dept,
+          level
+        });
+        if (data.success) {
+          setAuthToken(data.token);
+          Object.assign(currentUser, data.user);
+          localStorage.removeItem('remember_me');
+          sessionStorage.setItem('studentnija_jwt', data.token);
           syncLocalUserToServer(currentUser);
-          alert('Registration successful! Please login.');
-          showAuthForm('login');
+          await loadCloudData(currentUser.id);
+          addNotification('Welcome', `Welcome, ${currentUser.fullName}`);
+          alert('Registration successful!');
+          renderMainApp();
+          if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
+          trackEvent('register');
         } else {
-          alert('Email already exists');
+          alert(data.error || 'Registration failed');
         }
+      } catch (e) {
+        alert('Registration error: ' + e.message);
       }
     });
 
@@ -1023,76 +1061,111 @@ export function showAuthForm(formType) {
 
 // ======================== GOOGLE SIGN-IN ========================
 export function startGoogleSignIn() {
-  window.location.href = 'studentnija_sync.html';
+  window.location.href = API_BASE + '/api/auth/google';
 }
 
-// ======================== PROCESS GOOGLE USER ========================
-function processGoogleUser(userData) {
-  if (!userData || !userData.email) return;
-  clearPreviousUserData();
-  let existingUser = users.find(u => u.email === userData.email);
-  if (!existingUser) {
-    const newUser = { id: Date.now(), fullName: userData.name || 'Google User', email: userData.email, password: 'oauth_' + Date.now(), school: '', department: '', level: '', profilePic: userData.picture || '', bio: '', googleAuth: true };
-    users.push(newUser); saveAll(); currentUser = newUser;
-  } else {
-    existingUser.fullName = userData.name || existingUser.fullName;
-    existingUser.profilePic = userData.picture || existingUser.profilePic;
-    existingUser.googleAuth = true;
-    saveAll(); currentUser = existingUser;
+// ======================== PROCESS GOOGLE USER (callback) ========================
+export function processGoogleAuthCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  const userData = params.get('user');
+  if (token && userData) {
+    try {
+      const user = JSON.parse(decodeURIComponent(userData));
+      setAuthToken(token);
+      Object.assign(currentUser, user);
+      if (localStorage.getItem('remember_me') === 'true') {
+        localStorage.setItem('studentnija_jwt', token);
+      } else {
+        sessionStorage.setItem('studentnija_jwt', token);
+      }
+      syncLocalUserToServer(currentUser);
+      loadCloudData(currentUser.id).then(() => {
+        renderMainApp();
+        if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
+      });
+      trackEvent('login_google');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } catch (e) {
+      console.error('Google auth callback error', e);
+      renderAuth();
+    }
   }
-  localStorage.setItem('studentnija_currentUser', JSON.stringify(currentUser));
-  addNotification('Sign In', 'Welcome ' + currentUser.fullName + '!');
-  syncLocalUserToServer(currentUser);
-  loadCloudData(currentUser.id).then(() => {
-    if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
-  });
-  if (window.NotifBridge && window.NotifBridge.subscribeToPush) {
-    window.NotifBridge.subscribeToPush();
-  }
-  trackEvent('login');
 }
 
 // ======================== RENDER APP ========================
-export function renderApp() {
+export async function renderApp() {
   console.log('🔄 renderApp() called');
-  const tempUser = localStorage.getItem('studentnija_user');
-  if (tempUser) {
-    try { const userData = JSON.parse(tempUser); processGoogleUser(userData); localStorage.removeItem('studentnija_user'); } catch (_) {}
-  }
-  if (!currentUser || !currentUser.email) {
-    const rememberMe = localStorage.getItem('remember_me');
-    const storedUser = localStorage.getItem('studentnija_currentUser');
-    if (rememberMe === 'true' && storedUser) {
-      try {
-        const user = JSON.parse(storedUser);
-        if (user.email) {
-          const existing = users.find(u => u.email === user.email);
-          if (existing) Object.assign(currentUser, existing);
-          else Object.assign(currentUser, user);
-          clearPreviousUserData();
-          loadCloudData(currentUser.id).then(() => renderMainApp()).catch(() => renderMainApp());
-          return;
-        }
-      } catch (_) {}
+
+  // Load feature flags first
+  await loadFeatureFlags();
+
+  // Check maintenance mode
+  if (window.featureFlags.maintenance) {
+    const container = document.getElementById('pagesContainer');
+    if (container) {
+      container.innerHTML = `
+        <div class="page active-page" style="display:flex; align-items:center; justify-content:center; height:100vh; text-align:center; padding:20px;">
+          <div class="glass-card" style="padding:40px; max-width:500px; border-radius:30px; background:var(--bg-secondary); border:1px solid rgba(255,255,255,0.08);">
+            <span style="font-size:64px; display:block; margin-bottom:16px;">🔧</span>
+            <h2 style="font-size:28px; font-weight:800; margin-bottom:8px;">Under Maintenance</h2>
+            <p style="font-size:16px; color:var(--text-muted); line-height:1.6;">
+              StudentNija is currently undergoing scheduled maintenance.<br>
+              We'll be back soon. Please check back later.
+            </p>
+            <div style="margin-top:20px;">
+              <span class="badge" style="background:var(--accent-light);">⏳ Estimated downtime: 2 hours</span>
+            </div>
+          </div>
+        </div>
+      `;
+      const bottomNav = document.getElementById('bottomNav');
+      if (bottomNav) bottomNav.style.display = 'none';
+      hideLoadingScreen();
+      return;
     }
   }
-  if (currentUser && currentUser.email) {
-    clearPreviousUserData();
-    renderMainApp();
-    if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
-  } else {
-    const stored = localStorage.getItem('studentnija_currentUser');
-    if (stored) {
-      try {
-        const user = JSON.parse(stored);
-        Object.assign(currentUser, user);
+
+  // Check if we are on the callback page
+  if (window.location.pathname.includes('studentnija_sync.html') || window.location.search.includes('token')) {
+    processGoogleAuthCallback();
+    return;
+  }
+
+  const token = getAuthToken();
+  if (token) {
+    try {
+      const data = await apiGet('/api/auth/me');
+      if (data.user) {
+        Object.assign(currentUser, data.user);
         clearPreviousUserData();
-        loadCloudData(currentUser.id).then(() => {
-          renderMainApp();
-          if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
-        }).catch(() => renderMainApp());
-      } catch (_) { localStorage.removeItem('studentnija_currentUser'); renderAuth(); }
-    } else { renderAuth(); }
+        await loadCloudData(currentUser.id);
+        renderMainApp();
+        if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
+        return;
+      } else {
+        setAuthToken(null);
+        renderAuth();
+      }
+    } catch (e) {
+      setAuthToken(null);
+      renderAuth();
+    }
+  } else {
+    const sessionToken = sessionStorage.getItem('studentnija_jwt');
+    if (sessionToken) {
+      setAuthToken(sessionToken);
+      renderApp(); // retry
+      return;
+    }
+    const urlToken = new URLSearchParams(window.location.search).get('token');
+    if (urlToken) {
+      setAuthToken(urlToken);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      renderApp();
+      return;
+    }
+    renderAuth();
   }
 }
 
@@ -1259,7 +1332,7 @@ export function attachBottomNav() {
   }
 }
 
-// ======================== AI BRIDGE (unchanged) ========================
+// ======================== AI BRIDGE ========================
 function getAppState() {
   return {
     user: currentUser,
@@ -1467,63 +1540,20 @@ window.addEventListener('load', async () => {
   console.log('🚀 App bootstrapping...');
   loadAll();
 
-  const rememberMe = localStorage.getItem('remember_me');
-  const storedUser = localStorage.getItem('studentnija_currentUser');
-  if (rememberMe === 'true' && storedUser && !currentUser?.email) {
-    try {
-      const user = JSON.parse(storedUser);
-      if (user.email) {
-        const existing = users.find(u => u.email === user.email);
-        if (existing) Object.assign(currentUser, existing);
-        else { currentUser = user; if (!users.find(u => u.email === user.email)) users.push(user); }
-        clearPreviousUserData();
-        await loadCloudData(currentUser.id);
-        renderMainApp();
-        if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
-        return;
-      }
-    } catch (_) {}
+  // Check for Google OAuth callback (if redirected from backend)
+  if (window.location.search.includes('token') && window.location.search.includes('user')) {
+    processGoogleAuthCallback();
+    return;
   }
 
-  const tempUser = localStorage.getItem('studentnija_user');
-  if (tempUser) {
-    try {
-      const userData = JSON.parse(tempUser);
-      processGoogleUser(userData);
-      localStorage.removeItem('studentnija_user');
-    } catch (e) {
-      localStorage.removeItem('studentnija_user');
-    }
-  }
-
-  if (!currentUser || !currentUser.email) {
-    const stored = localStorage.getItem('studentnija_currentUser');
-    if (stored) {
-      try {
-        const user = JSON.parse(stored);
-        Object.assign(currentUser, user);
-        clearPreviousUserData();
-        await loadCloudData(currentUser.id);
-        renderMainApp();
-        if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
-      } catch (_) {
-        localStorage.removeItem('studentnija_currentUser');
-        renderAuth();
-      }
-    } else {
-      renderAuth();
-    }
-  } else {
-    clearPreviousUserData();
-    await loadCloudData(currentUser.id);
-    renderMainApp();
-    if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
-  }
+  // Render app (will check maintenance and flags)
+  await renderApp();
 
   window.addEventListener('app:logout', () => {
     clearPreviousUserData();
-    localStorage.removeItem('studentnija_currentUser');
+    setAuthToken(null);
     localStorage.removeItem('remember_me');
+    sessionStorage.removeItem('studentnija_jwt');
     renderApp();
   });
 
