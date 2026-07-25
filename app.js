@@ -1170,7 +1170,8 @@ export function showAuthForm(formType) {
 
 // ======================== GOOGLE SIGN-IN ========================
 export function startGoogleSignIn() {
-  window.location.href = API_BASE + '/api/auth/google';
+  // Go directly to the sync page (same domain)
+  window.location.href = 'studentnija_sync.html';
 }
 
 // ======================== PROCESS GOOGLE USER (callback) ========================
