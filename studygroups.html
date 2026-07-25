@@ -45,86 +45,29 @@
     }
     .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; overflow: hidden; }
 
-    /* HEADER */
-    .chat-header {
-      background: var(--bg-secondary);
-      backdrop-filter: blur(16px);
-      padding: 8px 12px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-shrink: 0;
-      height: var(--header-height);
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      z-index: 10;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
-    }
+    .chat-header { background: var(--bg-secondary); backdrop-filter: blur(16px); padding: 8px 12px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; height: var(--header-height); border-bottom: 1px solid rgba(255,255,255,0.04); z-index: 10; box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
     .chat-header .left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
-    .home-btn {
-      background: none; border: none; font-size: clamp(18px, 2.5vw, 22px); cursor: pointer;
-      width: 36px; height: 36px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-primary);
-      transition: background 0.2s;
-      flex-shrink: 0;
-    }
+    .home-btn { background: none; border: none; font-size: clamp(18px, 2.5vw, 22px); cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--text-primary); transition: background 0.2s; flex-shrink: 0; }
     .home-btn:active { background: rgba(255,255,255,0.06); }
     .chat-header .group-info { display: flex; flex-direction: column; line-height: 1.2; overflow: hidden; }
-    .chat-header .group-info .name {
-      font-weight: 700; font-size: clamp(15px, 2vw, 18px);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      cursor: pointer;
-    }
+    .chat-header .group-info .name { font-weight: 700; font-size: clamp(15px, 2vw, 18px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
     .chat-header .group-info .status { font-size: clamp(10px, 1.2vw, 12px); color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
     .online-dot { width: 7px; height: 7px; border-radius: 50%; background: #00C853; animation: pulseDot 2s infinite; }
     @keyframes pulseDot { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.4; transform:scale(0.8); } }
     .chat-header .right { display: flex; gap: 2px; align-items: center; flex-shrink: 0; }
-    .chat-header .right button {
-      background: none; border: none; color: var(--text-muted);
-      font-size: clamp(18px, 2.2vw, 22px);
-      cursor: pointer; width: 36px; height: 36px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      transition: background 0.2s;
-    }
+    .chat-header .right button { background: none; border: none; color: var(--text-muted); font-size: clamp(18px, 2.2vw, 22px); cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
     .chat-header .right button:active { background: rgba(255,255,255,0.06); }
     .avatar-btn { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 2px solid transparent; padding:0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .avatar-btn img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* BUTTONS */
-    .btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      border: none; color: white; padding: 8px 16px; border-radius: 30px;
-      font-weight: 600; cursor: pointer; transition: transform 0.15s, box-shadow 0.2s;
-      box-shadow: 0 4px 12px var(--accent-glow);
-      font-size: clamp(12px, 1.4vw, 14px);
-      display: inline-flex; align-items: center; gap: 6px;
-      min-height: 40px;
-    }
+    .btn { background: linear-gradient(135deg, var(--accent), var(--accent-light)); border: none; color: white; padding: 8px 16px; border-radius: 30px; font-weight: 600; cursor: pointer; transition: transform 0.15s, box-shadow 0.2s; box-shadow: 0 4px 12px var(--accent-glow); font-size: clamp(12px, 1.4vw, 14px); display: inline-flex; align-items: center; gap: 6px; min-height: 40px; }
     .btn:active { transform: scale(0.96); }
-    .btn-outline {
-      background: transparent; border: 1.5px solid var(--accent-light);
-      color: var(--text-primary); box-shadow: none;
-    }
+    .btn-outline { background: transparent; border: 1.5px solid var(--accent-light); color: var(--text-primary); box-shadow: none; }
     .btn-outline:active { background: rgba(0,135,81,0.08); }
 
-    /* CHAT AREA */
-    .chat-area {
-      flex: 1 1 0%; min-height: 0; overflow-y: auto; padding: 12px 12px 8px;
-      display: flex; flex-direction: column; gap: 8px; background: var(--bg-primary);
-      scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-    }
-    .date-divider {
-      text-align: center; font-size: 11px; color: var(--text-muted); margin: 12px 0 8px;
-      opacity: 0.5; text-transform: uppercase; background: var(--bg-solid); padding: 4px 12px;
-      border-radius: 30px; align-self: center;
-    }
-    .message-card {
-      max-width: 82%; padding: 10px 14px; border-radius: 18px; background: var(--bg-solid);
-      box-shadow: var(--shadow-sm); animation: fadeInMsg 0.3s ease; display: flex; flex-direction: column;
-      gap: 4px; position: relative; border: 1px solid rgba(255,255,255,0.03);
-      cursor: pointer; align-self: flex-start; user-select: text;
-      word-break: break-word;
-    }
+    .chat-area { flex: 1 1 0%; min-height: 0; overflow-y: auto; padding: 12px 12px 8px; display: flex; flex-direction: column; gap: 8px; background: var(--bg-primary); scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+    .date-divider { text-align: center; font-size: 11px; color: var(--text-muted); margin: 12px 0 8px; opacity: 0.5; text-transform: uppercase; background: var(--bg-solid); padding: 4px 12px; border-radius: 30px; align-self: center; }
+    .message-card { max-width: 82%; padding: 10px 14px; border-radius: 18px; background: var(--bg-solid); box-shadow: var(--shadow-sm); animation: fadeInMsg 0.3s ease; display: flex; flex-direction: column; gap: 4px; position: relative; border: 1px solid rgba(255,255,255,0.03); cursor: pointer; align-self: flex-start; user-select: text; word-break: break-word; }
     .message-card.self { align-self: flex-end; background: linear-gradient(135deg, var(--accent), var(--accent-light)); color: white; }
     .message-card .sender-row { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
     .message-card .sender-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -135,622 +78,150 @@
     .message-card .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: clamp(9px, 1vw, 11px); opacity: 0.6; }
     .message-card .footer .sent-check { color: var(--accent); margin-left: 4px; }
     .message-card .reactions { display: flex; gap: 4px; flex-wrap: wrap; }
-    .reaction-btn {
-      background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 12px; font-size: clamp(12px, 1.4vw, 15px);
-      display: flex; align-items: center; gap: 2px; cursor: pointer; border: none; color: inherit; font-family: inherit;
-    }
+    .reaction-btn { background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 12px; font-size: clamp(12px, 1.4vw, 15px); display: flex; align-items: center; gap: 2px; cursor: pointer; border: none; color: inherit; font-family: inherit; }
     .reaction-btn .count { font-size: 10px; opacity: 0.8; }
     @keyframes fadeInMsg { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
 
-    /* CONTEXT MENU */
-    .context-menu {
-      position: fixed; z-index: 200; background: var(--bg-secondary); border-radius: 16px;
-      padding: 8px; box-shadow: var(--shadow); display: none; flex-direction: column; gap: 4px;
-      border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px);
-      min-width: 160px; max-width: calc(100vw - 32px);
-    }
-    .context-menu button {
-      background: none; border: none; color: var(--text-primary); font-size: clamp(13px, 1.4vw, 15px);
-      padding: 10px 16px; border-radius: 12px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px;
-      min-height: 44px;
-    }
+    .context-menu { position: fixed; z-index: 200; background: var(--bg-secondary); border-radius: 16px; padding: 8px; box-shadow: var(--shadow); display: none; flex-direction: column; gap: 4px; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px); min-width: 160px; max-width: calc(100vw - 32px); }
+    .context-menu button { background: none; border: none; color: var(--text-primary); font-size: clamp(13px, 1.4vw, 15px); padding: 10px 16px; border-radius: 12px; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 44px; }
     .context-menu button:active { background: rgba(255,255,255,0.05); }
 
-    /* REACTION PICKER */
-    .reaction-picker {
-      position: fixed; z-index: 100; background: var(--bg-secondary); border-radius: 30px;
-      padding: 8px 12px; box-shadow: var(--shadow); display: none; gap: 8px;
-      flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.08);
-      backdrop-filter: blur(10px); max-width: calc(100vw - 40px);
-    }
-    .reaction-picker button {
-      background: none; border: none; font-size: clamp(22px, 3.5vw, 30px); cursor: pointer; transition: transform 0.1s;
-      padding: 4px; border-radius: 50%; min-width: 40px; min-height: 40px;
-    }
+    .reaction-picker { position: fixed; z-index: 100; background: var(--bg-secondary); border-radius: 30px; padding: 8px 12px; box-shadow: var(--shadow); display: none; gap: 8px; flex-wrap: wrap; justify-content: center; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(10px); max-width: calc(100vw - 40px); }
+    .reaction-picker button { background: none; border: none; font-size: clamp(22px, 3.5vw, 30px); cursor: pointer; transition: transform 0.1s; padding: 4px; border-radius: 50%; min-width: 40px; min-height: 40px; }
     .reaction-picker button:active { transform: scale(1.2); }
 
-    /* INPUT BAR */
-    .input-wrapper {
-      flex-shrink: 0;
-      background: var(--bg-secondary);
-      backdrop-filter: blur(20px);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      padding: 8px 10px calc(8px + var(--safe-bottom));
-      z-index: 10;
-      position: relative;
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
-    }
-    .input-bar {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-      background: var(--bg-primary);
-      border-radius: 50px;
-      padding: 3px 3px 3px 16px;
-      border: 1px solid rgba(255,255,255,0.08);
-      box-shadow: 0 2px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04);
-      transition: border-color 0.2s, box-shadow 0.2s;
-      min-height: 44px;
-    }
-    .input-bar:focus-within {
-      border-color: var(--accent-light);
-      box-shadow: 0 2px 20px rgba(0,135,81,0.2), inset 0 1px 0 rgba(255,255,255,0.06);
-    }
-    .input-bar input {
-      flex: 1;
-      background: none;
-      border: none;
-      color: var(--text-primary);
-      font-size: var(--font-size);
-      outline: none;
-      padding: 8px 0;
-      min-height: 38px;
-      font-family: inherit;
-      min-width: 40px;
-    }
-    .input-bar input::placeholder {
-      color: var(--text-muted);
-      opacity: 0.7;
-    }
-    .input-bar .btn-icon {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: clamp(18px, 2.2vw, 22px);
-      cursor: pointer;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s, color 0.2s;
-      flex-shrink: 0;
-    }
-    .input-bar .btn-icon:active {
-      background: rgba(255,255,255,0.06);
-      color: var(--text-primary);
-    }
-    .send-btn {
-      background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      border: none;
-      border-radius: 40px;
-      padding: 0 16px;
-      color: white;
-      font-weight: 700;
-      cursor: pointer;
-      height: 38px;
-      font-size: clamp(13px, 1.2vw, 15px);
-      box-shadow: 0 4px 14px var(--accent-glow);
-      transition: transform 0.15s, box-shadow 0.2s;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      flex-shrink: 0;
-      min-width: 44px;
-      justify-content: center;
-    }
-    .send-btn:active {
-      transform: scale(0.95);
-      box-shadow: 0 2px 8px var(--accent-glow);
-    }
+    .input-wrapper { flex-shrink: 0; background: var(--bg-secondary); backdrop-filter: blur(20px); border-top: 1px solid rgba(255,255,255,0.06); padding: 8px 10px calc(8px + var(--safe-bottom)); z-index: 10; position: relative; box-shadow: 0 -4px 20px rgba(0,0,0,0.15); }
+    .input-bar { display: flex; gap: 6px; align-items: center; background: var(--bg-primary); border-radius: 50px; padding: 3px 3px 3px 16px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 2px 16px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04); transition: border-color 0.2s, box-shadow 0.2s; min-height: 44px; }
+    .input-bar:focus-within { border-color: var(--accent-light); box-shadow: 0 2px 20px rgba(0,135,81,0.2), inset 0 1px 0 rgba(255,255,255,0.06); }
+    .input-bar input { flex: 1; background: none; border: none; color: var(--text-primary); font-size: var(--font-size); outline: none; padding: 8px 0; min-height: 38px; font-family: inherit; min-width: 40px; }
+    .input-bar input::placeholder { color: var(--text-muted); opacity: 0.7; }
+    .input-bar .btn-icon { background: none; border: none; color: var(--text-muted); font-size: clamp(18px, 2.2vw, 22px); cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s; flex-shrink: 0; }
+    .input-bar .btn-icon:active { background: rgba(255,255,255,0.06); color: var(--text-primary); }
+    .send-btn { background: linear-gradient(135deg, var(--accent), var(--accent-light)); border: none; border-radius: 40px; padding: 0 16px; color: white; font-weight: 700; cursor: pointer; height: 38px; font-size: clamp(13px, 1.2vw, 15px); box-shadow: 0 4px 14px var(--accent-glow); transition: transform 0.15s, box-shadow 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 4px; flex-shrink: 0; min-width: 44px; justify-content: center; }
+    .send-btn:active { transform: scale(0.95); box-shadow: 0 2px 8px var(--accent-glow); }
     .send-btn .label { display: inline-block; }
     .send-btn .icon { display: none; }
-    .ai-toggle {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: clamp(10px, 1vw, 12px);
-      color: var(--text-muted);
-      background: rgba(255,255,255,0.04);
-      padding: 4px 8px;
-      border-radius: 30px;
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
+    .ai-toggle { display: flex; align-items: center; gap: 4px; font-size: clamp(10px, 1vw, 12px); color: var(--text-muted); background: rgba(255,255,255,0.04); padding: 4px 8px; border-radius: 30px; white-space: nowrap; flex-shrink: 0; }
     .ai-toggle input { accent-color: var(--accent); width: 16px; height: 16px; }
 
-    .recording-indicator {
-      position: absolute;
-      top: -32px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #ff4444;
-      color: white;
-      padding: 4px 18px;
-      border-radius: 30px;
-      font-size: 12px;
-      font-weight: 600;
-      display: none;
-      align-items: center;
-      gap: 8px;
-      box-shadow: 0 4px 12px rgba(255,68,68,0.3);
-    }
+    .recording-indicator { position: absolute; top: -32px; left: 50%; transform: translateX(-50%); background: #ff4444; color: white; padding: 4px 18px; border-radius: 30px; font-size: 12px; font-weight: 600; display: none; align-items: center; gap: 8px; box-shadow: 0 4px 12px rgba(255,68,68,0.3); }
     .recording-indicator .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: white; animation: pulseRed 1s infinite; }
     @keyframes pulseRed { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-    .emoji-picker {
-      display: none;
-      position: absolute;
-      bottom: 70px;
-      left: 12px;
-      background: var(--bg-secondary);
-      border-radius: var(--radius-sm);
-      padding: 10px;
-      box-shadow: var(--shadow);
-      z-index: 20;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      max-width: calc(100vw - 24px);
-      border: 1px solid rgba(255,255,255,0.06);
-    }
+    .emoji-picker { display: none; position: absolute; bottom: 70px; left: 12px; background: var(--bg-secondary); border-radius: var(--radius-sm); padding: 10px; box-shadow: var(--shadow); z-index: 20; grid-template-columns: repeat(7, 1fr); gap: 4px; max-width: calc(100vw - 24px); border: 1px solid rgba(255,255,255,0.06); }
     .emoji-picker.open { display: grid; }
-    .emoji-picker button {
-      background: none; border: none; font-size: clamp(22px, 3.5vw, 30px);
-      cursor: pointer; padding: 4px; min-height: 40px;
-      border-radius: 8px;
-      transition: background 0.1s;
-    }
+    .emoji-picker button { background: none; border: none; font-size: clamp(22px, 3.5vw, 30px); cursor: pointer; padding: 4px; min-height: 40px; border-radius: 8px; transition: background 0.1s; }
     .emoji-picker button:active { background: rgba(255,255,255,0.08); transform: scale(1.1); }
 
-    .reply-bar {
-      display:none;
-      align-items:center;
-      gap:8px;
-      padding:4px 14px;
-      background:var(--bg-secondary);
-      border-top:1px solid rgba(255,255,255,0.04);
-      flex-shrink:0;
-    }
-    .reply-bar .reply-content {
-      font-size:clamp(12px, 1.2vw, 14px);
-      color:var(--text-muted);
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
-    }
+    .reply-bar { display:none; align-items:center; gap:8px; padding:4px 14px; background:var(--bg-secondary); border-top:1px solid rgba(255,255,255,0.04); flex-shrink:0; }
+    .reply-bar .reply-content { font-size:clamp(12px, 1.2vw, 14px); color:var(--text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .reply-bar .reply-sender { font-weight:700; color:var(--accent-light); }
-    .reply-close {
-      background:none;border:none;color:var(--text-muted);
-      font-size:20px;cursor:pointer;padding:4px 8px;
-    }
+    .reply-close { background:none;border:none;color:var(--text-muted); font-size:20px;cursor:pointer;padding:4px 8px; }
 
-    /* HOME PAGE – Professional community */
-    .home-page {
-      flex: 1;
-      overflow-y: auto;
-      padding: 0;
-      background: var(--bg-primary);
-      -webkit-overflow-scrolling: touch;
-    }
-    .community-hero {
-      background: linear-gradient(145deg, var(--bg-secondary), var(--bg-primary));
-      padding: clamp(16px, 4vw, 28px) clamp(16px, 4vw, 24px) 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      position: relative;
-    }
-    .community-hero::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--accent-light), transparent);
-      opacity: 0.2;
-    }
-    .community-hero .top-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .community-hero h1 {
-      font-size: clamp(20px, 5vw, 32px);
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+    .home-page { flex: 1; overflow-y: auto; padding: 0; background: var(--bg-primary); -webkit-overflow-scrolling: touch; }
+    .community-hero { background: linear-gradient(145deg, var(--bg-secondary), var(--bg-primary)); padding: clamp(16px, 4vw, 28px) clamp(16px, 4vw, 24px) 16px; border-bottom: 1px solid rgba(255,255,255,0.04); position: relative; }
+    .community-hero::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--accent-light), transparent); opacity: 0.2; }
+    .community-hero .top-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .community-hero h1 { font-size: clamp(20px, 5vw, 32px); font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 8px; }
     .community-hero h1 span { color: var(--accent-light); }
-    .community-hero .sub {
-      color: var(--text-muted);
-      font-size: clamp(12px, 1.6vw, 15px);
-      margin: 4px 0 12px;
-      max-width: 380px;
-    }
-    .community-stats {
-      display: flex;
-      gap: clamp(12px, 2.5vw, 24px);
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-    .community-stats .stat {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--bg-card);
-      padding: 4px 12px 4px 10px;
-      border-radius: 40px;
-      border: 1px solid rgba(255,255,255,0.04);
-      backdrop-filter: blur(4px);
-      font-size: clamp(11px, 1.2vw, 14px);
-      color: var(--text-muted);
-    }
-    .community-stats .stat strong {
-      font-size: clamp(16px, 2.5vw, 22px);
-      font-weight: 700;
-      color: var(--text-primary);
-    }
+    .community-hero .sub { color: var(--text-muted); font-size: clamp(12px, 1.6vw, 15px); margin: 4px 0 12px; max-width: 380px; }
+    .community-stats { display: flex; gap: clamp(12px, 2.5vw, 24px); flex-wrap: wrap; margin-top: 8px; }
+    .community-stats .stat { display: flex; align-items: center; gap: 6px; background: var(--bg-card); padding: 4px 12px 4px 10px; border-radius: 40px; border: 1px solid rgba(255,255,255,0.04); backdrop-filter: blur(4px); font-size: clamp(11px, 1.2vw, 14px); color: var(--text-muted); }
+    .community-stats .stat strong { font-size: clamp(16px, 2.5vw, 22px); font-weight: 700; color: var(--text-primary); }
     .community-stats .stat .icon { font-size: clamp(16px, 2vw, 20px); opacity: 0.8; }
 
-    .quick-actions {
-      display: flex;
-      gap: 6px;
-      padding: 12px clamp(12px, 3vw, 24px);
-      overflow-x: auto;
-      -webkit-overflow-scrolling: touch;
-      scrollbar-width: none;
-      border-bottom: 1px solid rgba(255,255,255,0.03);
-    }
+    .quick-actions { display: flex; gap: 6px; padding: 12px clamp(12px, 3vw, 24px); overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; border-bottom: 1px solid rgba(255,255,255,0.03); }
     .quick-actions::-webkit-scrollbar { display: none; }
-    .quick-actions .qa-btn {
-      flex: 0 0 auto;
-      background: var(--bg-card);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 40px;
-      padding: 6px 14px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--text-primary);
-      font-weight: 500;
-      font-size: clamp(12px, 1.2vw, 14px);
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-      backdrop-filter: blur(4px);
-      min-height: 38px;
-    }
+    .quick-actions .qa-btn { flex: 0 0 auto; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.06); border-radius: 40px; padding: 6px 14px; display: flex; align-items: center; gap: 6px; color: var(--text-primary); font-weight: 500; font-size: clamp(12px, 1.2vw, 14px); cursor: pointer; transition: all 0.2s; white-space: nowrap; backdrop-filter: blur(4px); min-height: 38px; }
     .quick-actions .qa-btn:active { transform: scale(0.95); background: var(--accent); color: white; border-color: var(--accent); }
     .quick-actions .qa-btn .icon { font-size: clamp(14px, 1.6vw, 18px); }
 
-    #searchContainer {
-      padding: 0 clamp(12px, 3vw, 24px) 12px;
-      display: none;
-    }
-    #searchContainer input {
-      width: 100%;
-      padding: 10px 16px;
-      border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.06);
-      background: var(--bg-card);
-      color: var(--text-primary);
-      font-size: clamp(13px, 1.4vw, 15px);
-      outline: none;
-      transition: border 0.2s;
-      min-height: 44px;
-    }
+    #searchContainer { padding: 0 clamp(12px, 3vw, 24px) 12px; display: none; }
+    #searchContainer input { width: 100%; padding: 10px 16px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.06); background: var(--bg-card); color: var(--text-primary); font-size: clamp(13px, 1.4vw, 15px); outline: none; transition: border 0.2s; min-height: 44px; }
     #searchContainer input:focus { border-color: var(--accent-light); }
 
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 clamp(12px, 3vw, 24px);
-      margin: 14px 0 10px;
-    }
-    .section-header h2 {
-      font-size: clamp(16px, 2.5vw, 22px);
-      font-weight: 700;
-      letter-spacing: -0.3px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .section-header .see-all {
-      color: var(--accent-light);
-      font-size: clamp(12px, 1.2vw, 14px);
-      font-weight: 600;
-      cursor: pointer;
-      background: none;
-      border: none;
-      min-height: 36px;
-      padding: 4px 8px;
-    }
+    .section-header { display: flex; justify-content: space-between; align-items: center; padding: 0 clamp(12px, 3vw, 24px); margin: 14px 0 10px; }
+    .section-header h2 { font-size: clamp(16px, 2.5vw, 22px); font-weight: 700; letter-spacing: -0.3px; display: flex; align-items: center; gap: 8px; }
+    .section-header .see-all { color: var(--accent-light); font-size: clamp(12px, 1.2vw, 14px); font-weight: 600; cursor: pointer; background: none; border: none; min-height: 36px; padding: 4px 8px; }
 
-    .group-grid {
-      display: grid;
-      gap: 12px;
-      padding: 0 clamp(12px, 3vw, 24px) 16px;
-      grid-template-columns: 1fr;
-    }
-    @media (min-width: 400px) {
-      .group-grid { grid-template-columns: 1fr 1fr; }
-    }
-    @media (min-width: 700px) {
-      .group-grid { grid-template-columns: repeat(3, 1fr); }
-    }
-    @media (min-width: 1024px) {
-      .group-grid { grid-template-columns: repeat(4, 1fr); }
-    }
+    .group-grid { display: grid; gap: 12px; padding: 0 clamp(12px, 3vw, 24px) 16px; grid-template-columns: 1fr; }
+    @media (min-width: 400px) { .group-grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 700px) { .group-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 1024px) { .group-grid { grid-template-columns: repeat(4, 1fr); } }
 
-    .group-card {
-      background: var(--bg-card);
-      border-radius: var(--radius);
-      border: 1px solid rgba(255,255,255,0.04);
-      padding: clamp(12px, 1.5vw, 18px);
-      cursor: pointer;
-      transition: all 0.25s ease;
-      backdrop-filter: blur(4px);
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    }
-    .group-card:hover {
-      background: var(--bg-solid);
-      transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-      border-color: rgba(255,255,255,0.08);
-    }
+    .group-card { background: var(--bg-card); border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.04); padding: clamp(12px, 1.5vw, 18px); cursor: pointer; transition: all 0.25s ease; backdrop-filter: blur(4px); display: flex; flex-direction: column; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+    .group-card:hover { background: var(--bg-solid); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); border-color: rgba(255,255,255,0.08); }
     .group-card:active { transform: scale(0.97); }
-    .group-card .card-top {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 8px;
-    }
-    .group-card .card-avatar {
-      width: clamp(40px, 5vw, 56px);
-      height: clamp(40px, 5vw, 56px);
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--accent-light));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(18px, 2.5vw, 26px);
-      font-weight: 700;
-      color: white;
-      flex-shrink: 0;
-      overflow: hidden;
-    }
+    .group-card .card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+    .group-card .card-avatar { width: clamp(40px, 5vw, 56px); height: clamp(40px, 5vw, 56px); border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent-light)); display: flex; align-items: center; justify-content: center; font-size: clamp(18px, 2.5vw, 26px); font-weight: 700; color: white; flex-shrink: 0; overflow: hidden; }
     .group-card .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
     .group-card .card-info { flex: 1; min-width: 0; }
-    .group-card .card-info .name {
-      font-weight: 700;
-      font-size: clamp(14px, 1.6vw, 17px);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .group-card .card-info .desc {
-      font-size: clamp(11px, 1vw, 13px);
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      margin-top: 2px;
-    }
-    .group-card .card-meta {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: 8px;
-      font-size: clamp(11px, 1vw, 13px);
-      color: var(--text-muted);
-      border-top: 1px solid rgba(255,255,255,0.04);
-      padding-top: 8px;
-    }
+    .group-card .card-info .name { font-weight: 700; font-size: clamp(14px, 1.6vw, 17px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .group-card .card-info .desc { font-size: clamp(11px, 1vw, 13px); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+    .group-card .card-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 8px; font-size: clamp(11px, 1vw, 13px); color: var(--text-muted); border-top: 1px solid rgba(255,255,255,0.04); padding-top: 8px; }
     .group-card .card-meta .members { display: flex; align-items: center; gap: 4px; }
-    .group-card .card-meta .join-badge {
-      background: var(--accent);
-      color: white;
-      padding: 2px 12px;
-      border-radius: 30px;
-      font-weight: 600;
-      font-size: clamp(10px, 0.9vw, 12px);
-    }
-    .group-card .card-meta .unread-badge {
-      background: #ff4444;
-      color: white;
-      font-weight: 700;
-      padding: 1px 10px;
-      border-radius: 30px;
-      font-size: clamp(10px, 0.9vw, 12px);
-    }
+    .group-card .card-meta .join-badge { background: var(--accent); color: white; padding: 2px 12px; border-radius: 30px; font-weight: 600; font-size: clamp(10px, 0.9vw, 12px); }
+    .group-card .card-meta .unread-badge { background: #ff4444; color: white; font-weight: 700; padding: 1px 10px; border-radius: 30px; font-size: clamp(10px, 0.9vw, 12px); }
 
-    .private-section {
-      margin-top: 4px;
-      border-top: 1px solid rgba(255,255,255,0.04);
-      padding-top: 4px;
-    }
-    .private-form-inline {
-      display: flex;
-      gap: 6px;
-      padding: 0 clamp(12px, 3vw, 24px) 12px;
-      flex-wrap: wrap;
-    }
-    .private-form-inline input {
-      flex: 1;
-      min-width: 80px;
-      background: var(--bg-card);
-      border: 1px solid rgba(255,255,255,0.04);
-      border-radius: 30px;
-      padding: 8px 14px;
-      color: var(--text-primary);
-      font-size: clamp(12px, 1.2vw, 14px);
-      outline: none;
-      transition: border 0.2s;
-      min-height: 38px;
-    }
+    .private-section { margin-top: 4px; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 4px; }
+    .private-form-inline { display: flex; gap: 6px; padding: 0 clamp(12px, 3vw, 24px) 12px; flex-wrap: wrap; }
+    .private-form-inline input { flex: 1; min-width: 80px; background: var(--bg-card); border: 1px solid rgba(255,255,255,0.04); border-radius: 30px; padding: 8px 14px; color: var(--text-primary); font-size: clamp(12px, 1.2vw, 14px); outline: none; transition: border 0.2s; min-height: 38px; }
     .private-form-inline input:focus { border-color: var(--accent-light); }
     .private-form-inline input::placeholder { color: var(--text-muted); }
     .private-form-inline .btn { flex: 0 0 auto; padding: 6px 16px; min-height: 38px; }
 
-    .private-chat-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      padding: 0 clamp(12px, 3vw, 24px) 16px;
-    }
-    .private-chat-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
-      border-radius: var(--radius-sm);
-      background: var(--bg-card);
-      border: 1px solid rgba(255,255,255,0.02);
-      cursor: pointer;
-      transition: all 0.2s;
-      min-height: 56px;
-    }
+    .private-chat-list { display: flex; flex-direction: column; gap: 6px; padding: 0 clamp(12px, 3vw, 24px) 16px; }
+    .private-chat-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--bg-card); border: 1px solid rgba(255,255,255,0.02); cursor: pointer; transition: all 0.2s; min-height: 56px; }
     .private-chat-item:active { transform: scale(0.98); background: var(--bg-solid); }
-    .private-chat-item .pc-avatar {
-      width: clamp(36px, 4vw, 44px);
-      height: clamp(36px, 4vw, 44px);
-      border-radius: 50%;
-      background: var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      color: white;
-      font-size: clamp(14px, 1.6vw, 18px);
-      flex-shrink: 0;
-    }
+    .private-chat-item .pc-avatar { width: clamp(36px, 4vw, 44px); height: clamp(36px, 4vw, 44px); border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; font-size: clamp(14px, 1.6vw, 18px); flex-shrink: 0; }
     .private-chat-item .pc-info { flex: 1; min-width: 0; }
     .private-chat-item .pc-info .pc-name { font-weight: 600; font-size: clamp(13px, 1.4vw, 15px); }
-    .private-chat-item .pc-info .pc-preview {
-      font-size: clamp(11px, 1vw, 13px);
-      color: var(--text-muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .private-chat-item .pc-unread {
-      background: #ff4444;
-      color: white;
-      padding: 1px 10px;
-      border-radius: 30px;
-      font-size: clamp(10px, 0.9vw, 12px);
-      font-weight: 700;
-    }
+    .private-chat-item .pc-info .pc-preview { font-size: clamp(11px, 1vw, 13px); color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .private-chat-item .pc-unread { background: #ff4444; color: white; padding: 1px 10px; border-radius: 30px; font-size: clamp(10px, 0.9vw, 12px); font-weight: 700; }
 
-    .empty-state-home {
-      text-align: center;
-      padding: clamp(24px, 5vw, 48px) 16px;
-      color: var(--text-muted);
-    }
+    .empty-state-home { text-align: center; padding: clamp(24px, 5vw, 48px) 16px; color: var(--text-muted); }
     .empty-state-home .icon { font-size: clamp(36px, 6vw, 56px); margin-bottom: 8px; opacity: 0.6; }
     .empty-state-home p { font-size: clamp(13px, 1.4vw, 15px); }
 
-    /* DRAWER */
     .drawer-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 50; display: none; }
     .drawer-overlay.open { display: block; }
-    .drawer {
-      position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary);
-      border-radius: 32px 32px 0 0; padding: 16px 16px calc(16px + var(--safe-bottom));
-      max-height: 75vh; z-index: 51; transform: translateY(100%);
-      transition: transform 0.4s cubic-bezier(0.2,0.9,0.4,1);
-      box-shadow: 0 -8px 40px rgba(0,0,0,0.4); display: flex; flex-direction: column; overflow: hidden;
-    }
+    .drawer { position: fixed; bottom: 0; left: 0; right: 0; background: var(--bg-secondary); border-radius: 32px 32px 0 0; padding: 16px 16px calc(16px + var(--safe-bottom)); max-height: 75vh; z-index: 51; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.2,0.9,0.4,1); box-shadow: 0 -8px 40px rgba(0,0,0,0.4); display: flex; flex-direction: column; overflow: hidden; }
     .drawer.open { transform: translateY(0); }
     .drawer .handle { width: 40px; height: 5px; border-radius: 10px; background: var(--text-muted); opacity: 0.3; margin: 0 auto 16px; }
     .drawer .drawer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
     .drawer .drawer-header h3 { font-size: clamp(18px, 2.5vw, 22px); font-weight: 700; }
 
     .group-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
-    .group-list .group-item {
-      display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: var(--radius-sm);
-      cursor: pointer; transition: background 0.2s; border: 1.5px solid transparent; background: var(--bg-card);
-      min-height: 52px;
-    }
+    .group-list .group-item { display: flex; align-items: center; gap: 14px; padding: 12px 16px; border-radius: var(--radius-sm); cursor: pointer; transition: background 0.2s; border: 1.5px solid transparent; background: var(--bg-card); min-height: 52px; }
     .group-list .group-item:active { background: var(--bg-solid); }
     .group-list .group-item .avatar { width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; background: var(--accent); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; }
 
-    /* GROUP INFO PANEL */
-    .group-info-panel {
-      position: fixed; top: 0; right: -100%; width: 100%; max-width: 380px; height: 100%;
-      background: var(--bg-secondary); z-index: 150; transition: right 0.3s ease;
-      box-shadow: var(--shadow); border-left: 1px solid rgba(255,255,255,0.06);
-      display: flex; flex-direction: column; overflow-y: auto;
-    }
+    .group-info-panel { position: fixed; top: 0; right: -100%; width: 100%; max-width: 380px; height: 100%; background: var(--bg-secondary); z-index: 150; transition: right 0.3s ease; box-shadow: var(--shadow); border-left: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; overflow-y: auto; }
     .group-info-panel.open { right: 0; }
-    .group-info-panel .close-panel-btn {
-      align-self: flex-end; background: none; border: none; color: var(--text-muted);
-      font-size: 24px; padding: 12px 16px; cursor: pointer;
-    }
+    .group-info-panel .close-panel-btn { align-self: flex-end; background: none; border: none; color: var(--text-muted); font-size: 24px; padding: 12px 16px; cursor: pointer; }
     .group-info-panel .panel-content { padding: 0 20px 20px; }
-    .group-info-panel .group-logo {
-      width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 12px; overflow: hidden;
-      background: var(--accent); display: flex; align-items: center; justify-content: center;
-      font-size: 36px; color: white; position: relative;
-    }
+    .group-info-panel .group-logo { width: 80px; height: 80px; border-radius: 50%; margin: 0 auto 12px; overflow: hidden; background: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 36px; color: white; position: relative; }
     .group-info-panel .group-logo img { width: 100%; height: 100%; object-fit: cover; }
-    .group-info-panel .group-logo .change-logo-btn {
-      position: absolute; bottom: 0; right: 0; background: var(--accent); border: none;
-      color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center;
-      justify-content: center; cursor: pointer; font-size: 14px;
-    }
+    .group-info-panel .group-logo .change-logo-btn { position: absolute; bottom: 0; right: 0; background: var(--accent); border: none; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; }
     .group-info-panel h2 { text-align: center; margin-bottom: 4px; font-size: clamp(18px, 2.5vw, 22px); }
     .group-info-panel .desc { text-align: center; color: var(--text-muted); margin-bottom: 16px; font-size: clamp(13px, 1.2vw, 15px); }
     .member-list { display: flex; flex-direction: column; gap: 4px; }
-    .member-item {
-      display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid rgba(255,255,255,0.04);
-    }
+    .member-item { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 0.5px solid rgba(255,255,255,0.04); }
     .member-item .member-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; }
     .member-item .member-name { flex: 1; font-weight: 500; font-size: clamp(13px, 1.2vw, 15px); }
     .admin-badge { background: var(--accent); color: white; padding: 2px 8px; border-radius: 12px; font-size: 10px; margin-left: 6px; }
     .action-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 
-    /* MODALS */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 160; display: none; align-items: center; justify-content: center; padding: 16px; }
     .modal-overlay.open { display: flex; }
-    .modal-box {
-      background: var(--bg-secondary); border-radius: 24px; padding: 24px; max-width: 400px; width: 100%;
-      box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 16px;
-    }
+    .modal-box { background: var(--bg-secondary); border-radius: 24px; padding: 24px; max-width: 400px; width: 100%; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 16px; }
     .modal-box h3 { font-size: clamp(18px, 2.5vw, 22px); font-weight: 700; text-align: center; }
-    .modal-box input, .modal-box textarea {
-      width: 100%; padding: 12px 16px; border-radius: 14px;
-      border: 1px solid rgba(255,255,255,0.08); background: var(--bg-primary);
-      color: var(--text-primary); font-size: clamp(14px, 1.4vw, 16px);
-    }
+    .modal-box input, .modal-box textarea { width: 100%; padding: 12px 16px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.08); background: var(--bg-primary); color: var(--text-primary); font-size: clamp(14px, 1.4vw, 16px); }
     .modal-box .modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 
-    /* SETTINGS */
     .settings-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 100; display: none; }
     .settings-overlay.show { display: block; }
-    .settings-panel {
-      position: fixed; top: 0; right: -420px; width: min(400px, 92%); height: 100%;
-      background: var(--bg-secondary); border-left: 1px solid rgba(255,255,255,0.04);
-      padding: 28px 20px; overflow-y: auto; transition: right 0.35s cubic-bezier(0.2,0.9,0.4,1);
-      z-index: 101; box-shadow: var(--shadow);
-    }
+    .settings-panel { position: fixed; top: 0; right: -420px; width: min(400px, 92%); height: 100%; background: var(--bg-secondary); border-left: 1px solid rgba(255,255,255,0.04); padding: 28px 20px; overflow-y: auto; transition: right 0.35s cubic-bezier(0.2,0.9,0.4,1); z-index: 101; box-shadow: var(--shadow); }
     .settings-panel.open { right: 0; }
     .settings-panel .close-btn { text-align: right; font-size: 26px; cursor: pointer; color: var(--text-muted); padding: 4px 8px; }
     .settings-panel h3 { font-size: clamp(20px, 2.8vw, 26px); font-weight: 700; margin-bottom: 20px; }
@@ -766,19 +237,13 @@
     @media (max-width: 420px) {
       .input-bar { padding-left: 12px; gap: 4px; }
       .input-bar input { font-size: 14px; }
-      .send-btn {
-        padding: 0 10px;
-        font-size: 13px;
-        min-width: 36px;
-        height: 34px;
-      }
+      .send-btn { padding: 0 10px; font-size: 13px; min-width: 36px; height: 34px; }
       .send-btn .label { display: none; }
       .send-btn .icon { display: inline; font-size: 18px; }
       .input-bar .btn-icon { width: 32px; height: 32px; font-size: 16px; }
       .ai-toggle { font-size: 10px; padding: 2px 6px; }
       .ai-toggle input { width: 14px; height: 14px; }
     }
-
     @media (max-width: 360px) {
       .chat-header { padding: 6px 8px; }
       .home-btn { width: 32px; height: 32px; font-size: 18px; }
@@ -788,7 +253,6 @@
       .group-card .card-avatar { width: 36px; height: 36px; font-size: 16px; }
       .private-chat-item { padding: 8px 12px; gap: 8px; }
     }
-
     @media (max-width: 768px) and (orientation: landscape) {
       .community-hero h1 { font-size: 20px; }
       .community-hero .sub { font-size: 13px; margin-bottom: 8px; }
@@ -817,7 +281,6 @@
     </div>
   </header>
 
-  <!-- HOME PAGE -->
   <div class="home-page" id="homePage">
     <div class="community-hero">
       <div class="top-row">
@@ -861,16 +324,13 @@
     </div>
   </div>
 
-  <!-- CHAT AREA -->
   <div class="chat-area" id="chatArea" style="display:none;"></div>
 
-  <!-- REPLY BAR -->
   <div class="reply-bar" id="replyBar">
     <span class="reply-content">↩ Replying to <span class="reply-sender">User</span>: <span class="reply-text">Message</span></span>
     <button class="reply-close" id="replyClose">✕</button>
   </div>
 
-  <!-- INPUT WRAPPER -->
   <div class="input-wrapper" id="inputWrapper" style="display:none;">
     <div class="recording-indicator" id="recIndicator"><span class="rec-dot"></span> Recording...</div>
     <div class="input-bar">
@@ -886,7 +346,6 @@
     <div class="emoji-picker" id="textEmojiPicker"></div>
   </div>
 
-  <!-- REACTION PICKER -->
   <div class="reaction-picker" id="reactionPicker">
     <button data-emoji="👍">👍</button><button data-emoji="😂">😂</button><button data-emoji="❤️">❤️</button>
     <button data-emoji="🙏">🙏</button><button data-emoji="😊">😊</button><button data-emoji="🥱">🥱</button>
@@ -894,7 +353,6 @@
     <button data-emoji="😎">😎</button><button data-emoji="😇">😇</button><button data-emoji="🔥">🔥</button>
   </div>
 
-  <!-- CONTEXT MENU -->
   <div class="context-menu" id="contextMenu">
     <button id="ctxCopy">📋 Copy</button>
     <button id="ctxReply">↩ Reply</button>
@@ -906,7 +364,6 @@
     <button id="ctxCancel">❌ Cancel</button>
   </div>
 
-  <!-- GROUP INFO PANEL -->
   <div class="group-info-panel" id="groupInfoPanel">
     <button class="close-panel-btn" id="closeGroupInfoBtn">✕</button>
     <div class="panel-content">
@@ -933,7 +390,6 @@
     </div>
   </div>
 
-  <!-- MODALS -->
   <div class="modal-overlay" id="reportMsgModal"><div class="modal-box"><h3>🚩 Report Message</h3><textarea id="reportMsgReason" rows="3" placeholder="Why are you reporting this message?"></textarea><div class="modal-actions"><button class="btn-outline" id="cancelReportMsgBtn">Cancel</button><button class="btn" id="confirmReportMsgBtn">Submit</button></div></div></div>
   <div class="modal-overlay" id="reportGroupModal"><div class="modal-box"><h3>🚩 Report Group</h3><textarea id="reportGroupReason" rows="3" placeholder="Why are you reporting this group?"></textarea><div class="modal-actions"><button class="btn-outline" id="cancelReportGroupBtn">Cancel</button><button class="btn" id="confirmReportGroupBtn">Submit</button></div></div></div>
   <div class="modal-overlay" id="createGroupModal"><div class="modal-box"><h3>✨ Create Group</h3><input type="text" id="newGroupName" placeholder="Group name"><textarea id="newGroupDesc" rows="2" placeholder="Description (optional)"></textarea><div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;"><span>Logo:</span><input type="file" id="newGroupLogoFile" accept="image/*" style="display:none;"><button id="pickLogoBtn" class="btn-outline" style="flex:1;">Choose Image</button><span id="logoPreview" style="font-size:24px;">📚</span></div><div class="modal-actions"><button class="btn-outline" id="cancelCreateGroupBtn">Cancel</button><button class="btn" id="confirmCreateGroupBtn">Create</button></div></div></div>
@@ -941,7 +397,6 @@
   <div class="modal-overlay" id="simpleInputModal"><div class="modal-box"><h3 id="simpleInputTitle">Enter Value</h3><input type="text" id="simpleInputField" placeholder=""><div class="modal-actions"><button class="btn-outline" id="cancelSimpleInputBtn">Cancel</button><button class="btn" id="confirmSimpleInputBtn">OK</button></div></div></div>
   <div class="modal-overlay" id="confirmModal"><div class="modal-box"><h3 id="confirmTitle">Confirm</h3><p id="confirmMessage">Are you sure?</p><div class="modal-actions"><button class="btn-outline" id="cancelConfirmBtn">Cancel</button><button class="btn" id="okConfirmBtn">Yes</button></div></div></div>
 
-  <!-- DRAWER -->
   <div class="drawer-overlay" id="drawerOverlay"></div>
   <div class="drawer" id="drawer">
     <div class="handle"></div>
@@ -949,7 +404,6 @@
     <div class="group-list" id="groupList"></div>
   </div>
 
-  <!-- SETTINGS -->
   <div class="settings-overlay" id="settingsOverlay"></div>
   <div class="settings-panel" id="settingsPanel">
     <div class="close-btn" id="settingsClose">✕</div>
@@ -964,16 +418,41 @@
 <script>
   (function() {
     // ============================================================
-    // 1. SAFELY LOAD USER INFO FROM MAIN APP's localStorage
+    // 0. MAINTENANCE CHECK & THEME SYNC
+    // ============================================================
+    const SERVER_URL = "https://studentnija-public-chat.onrender.com";
+
+    async function checkMaintenance() {
+      try {
+        const res = await fetch(`${SERVER_URL}/api/admin/flags`);
+        const flags = await res.json();
+        if (flags.maintenance) {
+          document.body.innerHTML = `
+            <div style="display:flex;align-items:center;justify-content:center;height:100vh;text-align:center;padding:20px;background:var(--bg-primary);">
+              <div style="padding:40px;max-width:500px;border-radius:30px;background:var(--bg-secondary);border:1px solid rgba(255,255,255,0.08);">
+                <span style="font-size:64px;display:block;margin-bottom:16px;">🔧</span>
+                <h2 style="font-size:28px;font-weight:800;margin-bottom:8px;color:var(--text-primary);">Under Maintenance</h2>
+                <p style="font-size:16px;color:var(--text-muted);line-height:1.6;">StudentNija is currently undergoing scheduled maintenance.<br>We'll be back soon.</p>
+              </div>
+            </div>
+          `;
+          return false;
+        }
+        return true;
+      } catch (e) {
+        return true;
+      }
+    }
+
+    // ============================================================
+    // 1. LOAD USER INFO & THEME
     // ============================================================
     let rawUser = localStorage.getItem('studentnija_currentUser');
     let currentUserObj = {};
     if (rawUser && rawUser !== 'null') {
       try {
         currentUserObj = JSON.parse(rawUser);
-      } catch (e) {
-        currentUserObj = {};
-      }
+      } catch (e) { currentUserObj = {}; }
     }
     const JWT_TOKEN = localStorage.getItem('studentnija_jwt') || sessionStorage.getItem('studentnija_jwt') || '';
 
@@ -985,36 +464,32 @@
     localStorage.setItem('studentnija_chat_user_id', USER_ID);
     if (USER_AVATAR) localStorage.setItem('studentnija_chat_user_avatar', USER_AVATAR);
 
-    // ============================================================
-    // 2. HELPER: Sync user profile update to main app + cloud
-    // ============================================================
-    async function syncUserProfileUpdate(updates) {
-      const user = JSON.parse(localStorage.getItem('studentnija_currentUser') || '{}');
-      Object.assign(user, updates);
-      localStorage.setItem('studentnija_currentUser', JSON.stringify(user));
-      if (updates.fullName) localStorage.setItem('studentnija_chat_user_name', updates.fullName);
-      if (updates.profilePicture) localStorage.setItem('studentnija_chat_user_avatar', updates.profilePicture);
-      if (typeof window.scheduleCloudSync === 'function') {
-        window.scheduleCloudSync();
-      } else {
-        try {
-          await fetch(`${SERVER_URL}/api/sync/save`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${JWT_TOKEN}`
-            },
-            body: JSON.stringify({
-              userId: USER_ID,
-              data: { profile: updates }
-            })
-          });
-        } catch (e) { /* ignore */ }
-      }
+    // Theme sync
+    let settings = {
+      theme: localStorage.getItem('studentnija_chat_theme') || localStorage.getItem('theme') || 'dark',
+      fontSize: parseInt(localStorage.getItem('studentnija_chat_fontsize') || '15'),
+      sound: JSON.parse(localStorage.getItem('studentnija_chat_sound_enabled') ?? 'true'),
+      soundEffect: localStorage.getItem('studentnija_chat_sound') || 'bubble',
+      displayName: USER_NAME
+    };
+
+    function applySettings() {
+      document.body.classList.toggle('light-theme', settings.theme === 'light');
+      document.documentElement.style.setProperty('--font-size', settings.fontSize + 'px');
+      document.getElementById('displayNameInput').value = settings.displayName;
+      document.getElementById('themeSelect').value = settings.theme;
+      document.getElementById('fontSizeSlider').value = settings.fontSize;
+      document.getElementById('soundSwitch').classList.toggle('active', settings.sound);
+      document.getElementById('soundSelect').value = settings.soundEffect;
+      const avatarImg = document.getElementById('userAvatarImg');
+      const savedAvatar = localStorage.getItem('studentnija_chat_user_avatar') || USER_AVATAR;
+      if (savedAvatar && savedAvatar !== 'undefined') avatarImg.src = savedAvatar;
+      else avatarImg.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2236%22 height=%2236%22%3E%3Ccircle cx=%2218%22 cy=%2218%22 r=%2218%22 fill=%22%23008751%22/%3E%3Ctext x=%2218%22 y=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2214%22%3E👤%3C/text%3E%3C/svg%3E';
+      document.getElementById('settingsUserId').textContent = USER_ID;
     }
 
     // ============================================================
-    // 3. AUDIO (unchanged)
+    // 2. AUDIO & SOUND
     // ============================================================
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function tone(freq, start, duration, type = "sine", volume = 0.3) {
@@ -1043,22 +518,15 @@
       magic: () => { let t = now(); tone(500, t, 0.10); tone(800, t+0.10, 0.10); tone(1100, t+0.20, 0.10); tone(1500, t+0.30, 0.25); },
       premium: () => { let t = now(); tone(660, t, 0.10, "triangle"); tone(880, t+0.10, 0.10, "triangle"); tone(1320, t+0.20, 0.15, "triangle"); tone(1760, t+0.34, 0.35, "triangle"); }
     };
-
     let currentSound = localStorage.getItem('studentnija_chat_sound') || 'bubble';
     let soundEnabled = JSON.parse(localStorage.getItem('studentnija_chat_sound_enabled') ?? 'true');
     function playSound() { if (!soundEnabled) return; if (soundGenerators[currentSound]) soundGenerators[currentSound](); }
-    function testSound() { playSound(); }
 
     // ============================================================
-    // 4. CONTENT FILTER (FIXED REGEX – NO "Nothing to repeat" error)
+    // 3. FILTER (for bad words)
     // ============================================================
-    // Helper: escape special regex characters.
-    function escapeRegExp(string) {
-      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
-
+    function escapeRegExp(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
     const BAD_WORDS = [
-      // Basic swear words (kill and variants intentionally removed)
       'fuck', 'f u c k', 'f*ck', 'f**k', 'f***', 'fuk', 'fck',
       'shit', 's h i t', 'sh*t', 'sht', 'sh1t',
       'ass', 'a s s', 'arse', 'azz',
@@ -1093,7 +561,6 @@
       'wetback', 'w e t b a c k',
       'beaner', 'b e a n e r',
       'zipperhead', 'z i p p e r h e a d',
-      // Violent threats / extreme language (kill removed)
       'murder', 'm u r d e r', 'm*rder',
       'rape', 'r a p e', 'r*pe',
       'suicide', 's u i c i d e', 'su1cide',
@@ -1105,7 +572,6 @@
       'torture', 't o r t u r e',
       'abuse', 'a b u s e',
       'molest', 'm o l e s t',
-      // Common insults
       'idiot', 'i d i o t', '1d10t',
       'stupid', 's t u p i d', 'st00pid',
       'moron', 'm o r o n',
@@ -1120,7 +586,6 @@
       'sonofabitch', 's o n o f a b i t c h',
       'bullshit', 'b u l l s h i t', 'bullsh1t',
       'horseshit', 'h o r s e s h i t',
-      // Additional slurs and offensive terms
       'queer', 'q u e e r',
       'homo', 'h o m o',
       'lesbo', 'l e s b o',
@@ -1129,13 +594,11 @@
       'poof', 'p o o f',
       'bender', 'b e n d e r',
       'bent', 'b e n t',
-      // Religious insults
       'blasphemy', 'b l a s p h e m y',
       'satan', 's a t a n',
       'devil', 'd e v i l',
       'hellfire', 'h e l l f i r e',
       'damnation', 'd a m n a t i o n',
-      // Others
       'prick', 'p r i c k',
       'piss', 'p i s s',
       'crap', 'c r a p',
@@ -1148,11 +611,7 @@
       'minge', 'm i n g e',
       'fanny', 'f a n n y'
     ];
-
-    function normalizeText(text) {
-      return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim();
-    }
-
+    function normalizeText(text) { return text.toLowerCase().replace(/[^a-z0-9\s]/g, '').replace(/\s+/g, ' ').trim(); }
     function containsBadWord(text) {
       const normalized = normalizeText(text);
       const leetMap = { '0':'o', '1':'i', '3':'e', '4':'a', '5':'s', '7':'t', '8':'b' };
@@ -1171,7 +630,6 @@
       }
       return false;
     }
-
     function filterMessage(text) {
       if (!text || text.trim() === '') return { allowed: false, filteredText: '' };
       if (containsBadWord(text)) {
@@ -1191,7 +649,7 @@
     }
 
     // ============================================================
-    // 5. DOM REFS & SETTINGS (integrated)
+    // 4. DOM REFS
     // ============================================================
     const chatArea = document.getElementById('chatArea');
     const homePage = document.getElementById('homePage');
@@ -1227,8 +685,11 @@
     const confirmMessage = document.getElementById('confirmMessage');
     const okConfirmBtn = document.getElementById('okConfirmBtn');
     const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+    const textEmojiPicker = document.getElementById('textEmojiPicker');
 
-    const SERVER_URL = "https://studentnija-public-chat.onrender.com";
+    // ============================================================
+    // 5. SOCKET.IO
+    // ============================================================
     const socket = io(SERVER_URL, {
       transports: ['websocket','polling'],
       reconnection: true,
@@ -1251,34 +712,9 @@
     function saveUnread() { localStorage.setItem('studentnija_unread', JSON.stringify(unreadCounts)); }
     function savePrivateUnread() { localStorage.setItem('studentnija_private_unread', JSON.stringify(privateUnread)); }
 
-    let mediaRecorder = null, audioChunks = [], isRecording = false;
-
-    // Settings object – use main app’s theme/font if available
-    let settings = {
-      theme: localStorage.getItem('studentnija_chat_theme') || localStorage.getItem('theme') || 'dark',
-      fontSize: parseInt(localStorage.getItem('studentnija_chat_fontsize') || '15'),
-      sound: soundEnabled,
-      soundEffect: currentSound,
-      displayName: USER_NAME
-    };
-
-    function applySettings() {
-      document.body.classList.toggle('light-theme', settings.theme === 'light');
-      document.documentElement.style.setProperty('--font-size', settings.fontSize + 'px');
-      document.getElementById('displayNameInput').value = settings.displayName;
-      document.getElementById('themeSelect').value = settings.theme;
-      document.getElementById('fontSizeSlider').value = settings.fontSize;
-      document.getElementById('soundSwitch').classList.toggle('active', settings.sound);
-      document.getElementById('soundSelect').value = settings.soundEffect;
-      const avatarImg = document.getElementById('userAvatarImg');
-      const savedAvatar = localStorage.getItem('studentnija_chat_user_avatar') || USER_AVATAR;
-      if (savedAvatar && savedAvatar !== 'undefined') avatarImg.src = savedAvatar;
-      else avatarImg.src = 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2236%22 height=%2236%22%3E%3Ccircle cx=%2218%22 cy=%2218%22 r=%2218%22 fill=%22%23008751%22/%3E%3Ctext x=%2218%22 y=%2224%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2214%22%3E👤%3C/text%3E%3C/svg%3E';
-      document.getElementById('settingsUserId').textContent = USER_ID;
-    }
-    applySettings();
-
-    // Settings listeners
+    // ============================================================
+    // 6. SETTINGS LISTENERS
+    // ============================================================
     document.getElementById('themeSelect').addEventListener('change', e => {
       settings.theme = e.target.value;
       localStorage.setItem('studentnija_chat_theme', settings.theme);
@@ -1301,13 +737,17 @@
       settings.soundEffect = currentSound;
       applySettings();
     });
-    document.getElementById('testSoundBtn').addEventListener('click', testSound);
+    document.getElementById('testSoundBtn').addEventListener('click', () => {
+      playSound();
+    });
     document.getElementById('displayNameInput').addEventListener('change', async function(e) {
       const name = e.target.value.trim();
       if (name) {
         settings.displayName = name;
-        await syncUserProfileUpdate({ fullName: name });
+        // Update local storage and sync
+        localStorage.setItem('studentnija_chat_user_name', name);
         applySettings();
+        // Update socket user name if in a group
         if (socket && currentGroup) {
           socket.emit('leaveGroup');
           socket.emit('joinGroup', { groupId: currentGroup, userName: name, userId: USER_ID });
@@ -1315,13 +755,13 @@
       }
     });
     document.getElementById('changeAvatarBtn').addEventListener('click', () => document.getElementById('avatarFileInput').click());
-    document.getElementById('avatarFileInput').addEventListener('change', async function(e) {
+    document.getElementById('avatarFileInput').addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = async function(ev) {
+        reader.onload = function(ev) {
           const avatarData = ev.target.result;
-          await syncUserProfileUpdate({ profilePicture: avatarData });
+          localStorage.setItem('studentnija_chat_user_avatar', avatarData);
           applySettings();
         };
         reader.readAsDataURL(file);
@@ -1349,7 +789,7 @@
     cancelConfirmBtn.addEventListener('click', () => confirmModal.classList.remove('open'));
 
     // ============================================================
-    // 6. RENDER FUNCTIONS (unchanged)
+    // 7. RENDER FUNCTIONS
     // ============================================================
     function setHeaderForHome() {
       homeBtn.innerHTML = '←';
@@ -1467,8 +907,196 @@
       renderMessages();
     }
 
+    function renderMessages() {
+      chatArea.innerHTML = '';
+      if (messages.length === 0) {
+        chatArea.innerHTML = `<div class="empty-state" style="padding:30px;text-align:center;color:var(--text-muted);"><div style="font-size:40px;">👋</div><p>No messages yet. Say hello!</p></div>`;
+        return;
+      }
+      messages.forEach(msg => {
+        let displayText = msg.text;
+        if (displayText) {
+          const filtered = filterMessage(displayText);
+          displayText = filtered.allowed ? filtered.filteredText : '[Filtered]';
+        }
+        const isSelf = msg.senderId === USER_ID;
+        const senderName = msg.senderName || 'User';
+        const avatarHtml = isSelf
+          ? `<img class="sender-avatar" src="${localStorage.getItem('studentnija_chat_user_avatar') || USER_AVATAR || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2228%22 height=%2228%22%3E%3Ccircle cx=%2214%22 cy=%2214%22 r=%2214%22 fill=%22%23008751%22/%3E%3Ctext x=%2214%22 y=%2220%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2212%22%3E👤%3C/text%3E%3C/svg%3E'}">`
+          : `<div class="sender-avatar" style="background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">${senderName.charAt(0).toUpperCase()}</div>`;
+        const reactionsHtml = Object.entries(msg.reactions || {}).map(([emoji, users]) =>
+          `<span class="reaction-btn" data-msgid="${msg.id}" data-emoji="${emoji}">${emoji} <span class="count">${users.length}</span></span>`
+        ).join('');
+        const contentHtml = msg.type === 'audio'
+          ? `<div class="audio-msg"><audio controls src="${displayText}"></audio></div>`
+          : `<div class="text">${escapeHtml(displayText)}</div>`;
+        const sentCheck = isSelf ? '<span class="sent-check">✓</span>' : '';
+        const div = document.createElement('div');
+        div.className = `message-card ${isSelf ? 'self' : 'other'}`;
+        div.dataset.id = msg.id; div.dataset.senderid = msg.senderId;
+        div.innerHTML = `
+          <div class="sender-row">${avatarHtml}<span class="sender-name">${escapeHtml(senderName)}</span></div>
+          ${contentHtml}
+          <div class="footer">
+            <div class="reactions">${reactionsHtml}</div>
+            <span class="timestamp">${new Date(msg.timestamp).toLocaleTimeString()}${sentCheck}</span>
+          </div>
+        `;
+        chatArea.appendChild(div);
+        // touch/context events
+        let tapCount = 0, tapTimer = null, longPressTimer = null;
+        div.addEventListener('touchstart', e => {
+          tapCount++;
+          if (tapCount === 1) tapTimer = setTimeout(() => { tapCount = 0; }, 300);
+          else if (tapCount === 2) { clearTimeout(tapTimer); tapCount = 0; showReactionPicker(div, msg.id); e.preventDefault(); }
+          longPressTimer = setTimeout(() => showContextMenu(div, msg), 500);
+        });
+        div.addEventListener('touchend', () => clearTimeout(longPressTimer));
+        div.addEventListener('touchmove', () => clearTimeout(longPressTimer));
+        div.addEventListener('contextmenu', e => { e.preventDefault(); showContextMenu(div, msg); });
+      });
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      // swipe to reply
+      let swipeStartX = 0;
+      chatArea.addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; }, { passive: true });
+      chatArea.addEventListener('touchmove', e => {
+        const delta = e.touches[0].clientX - swipeStartX;
+        if (delta > 80) {
+          const target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+          const card = target?.closest('.message-card');
+          if (card) {
+            const msgId = card.dataset.id;
+            const msg = messages.find(m => m.id === msgId);
+            if (msg && !msg.deleted) setReplyTo(msg);
+            card.style.transform = 'translateX(12px)';
+            setTimeout(() => card.style.transform = '', 300);
+          }
+        }
+      }, { passive: true });
+
+      chatArea.querySelectorAll('.reaction-btn').forEach(btn => {
+        btn.addEventListener('click', e => { e.stopPropagation(); socket.emit('react', { groupId: currentGroup, messageId: btn.dataset.msgid, emoji: btn.dataset.emoji, userId: USER_ID }); });
+      });
+    }
+
     // ============================================================
-    // 7. SOCKET EVENTS
+    // 8. CONTEXT MENU & REPLY
+    // ============================================================
+    let activeContextMsg = null;
+    function showContextMenu(element, msg) {
+      activeContextMsg = msg;
+      const rect = element.getBoundingClientRect();
+      let top = rect.bottom + 4, left = rect.left;
+      if (top + 200 > window.innerHeight) top = rect.top - 200;
+      if (left + 180 > window.innerWidth) left = window.innerWidth - 190;
+      if (left < 10) left = 10;
+      contextMenu.style.top = top + 'px'; contextMenu.style.left = left + 'px';
+      contextMenu.style.display = 'flex';
+      document.getElementById('ctxDelete').style.display = msg.senderId === USER_ID ? 'flex' : 'none';
+      const isAdmin = admins.includes(USER_ID) || createdBy === USER_ID;
+      document.getElementById('ctxDeleteAll').style.display = (isAdmin && msg.senderId === USER_ID) ? 'flex' : 'none';
+      document.getElementById('ctxPin').style.display = isAdmin ? 'flex' : 'none';
+    }
+    document.getElementById('ctxCopy').addEventListener('click', () => { if (activeContextMsg) navigator.clipboard.writeText(activeContextMsg.text); contextMenu.style.display = 'none'; });
+    document.getElementById('ctxReply').addEventListener('click', () => { if (activeContextMsg) setReplyTo(activeContextMsg); contextMenu.style.display = 'none'; });
+    document.getElementById('ctxDelete').addEventListener('click', () => { if (activeContextMsg) { socket.emit('deleteMessage', { groupId: currentGroup, messageId: activeContextMsg.id, userId: USER_ID, forAll: false }); contextMenu.style.display = 'none'; } });
+    document.getElementById('ctxDeleteAll').addEventListener('click', () => { if (activeContextMsg) { socket.emit('deleteMessage', { groupId: currentGroup, messageId: activeContextMsg.id, userId: USER_ID, forAll: true }); contextMenu.style.display = 'none'; } });
+    document.getElementById('ctxPin').addEventListener('click', () => { if (activeContextMsg && (admins.includes(USER_ID) || createdBy === USER_ID)) { socket.emit('pinMessage', { groupId: currentGroup, messageId: activeContextMsg.id, userId: USER_ID }); contextMenu.style.display = 'none'; } });
+    document.getElementById('ctxStar').addEventListener('click', () => { if (activeContextMsg) { let starred = JSON.parse(localStorage.getItem('studentnija_starred') || '[]'); if (!starred.includes(activeContextMsg.id)) starred.push(activeContextMsg.id); localStorage.setItem('studentnija_starred', JSON.stringify(starred)); contextMenu.style.display = 'none'; } });
+    document.getElementById('ctxReport').addEventListener('click', () => { if (activeContextMsg) { document.getElementById('reportMsgModal').classList.add('open'); contextMenu.style.display = 'none'; window._reportMsgId = activeContextMsg.id; } });
+    document.getElementById('ctxCancel').addEventListener('click', () => contextMenu.style.display = 'none');
+    document.addEventListener('click', e => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
+
+    document.getElementById('confirmReportMsgBtn').addEventListener('click', async () => {
+      const reason = document.getElementById('reportMsgReason').value.trim();
+      if (!reason) return;
+      await fetch(`${SERVER_URL}/api/feedback`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${JWT_TOKEN}`
+        },
+        body: JSON.stringify({ userId: USER_ID, message: `[Message Report] ${activeContextMsg.text} - Reason: ${reason}` })
+      });
+      document.getElementById('reportMsgModal').classList.remove('open');
+      document.getElementById('reportMsgReason').value = '';
+    });
+    document.getElementById('cancelReportMsgBtn').addEventListener('click', () => document.getElementById('reportMsgModal').classList.remove('open'));
+
+    // ============================================================
+    // 9. REPLY & SEND (with AI context)
+    // ============================================================
+    function setReplyTo(msg) {
+      replyTo = msg;
+      document.querySelector('.reply-sender').textContent = msg.senderName;
+      document.querySelector('.reply-text').textContent = (msg.text || '').substring(0, 50);
+      replyBar.style.display = 'flex';
+      messageInput.focus();
+    }
+    replyClose.addEventListener('click', () => { replyTo = null; replyBar.style.display = 'none'; });
+
+    function getConversationHistory(limit = 20) {
+      const history = [];
+      const start = Math.max(0, messages.length - limit);
+      for (let i = start; i < messages.length; i++) {
+        const msg = messages[i];
+        if (msg.senderId === 'ai_bot') {
+          history.push({ role: 'assistant', content: msg.text });
+        } else {
+          const senderName = msg.senderName || 'User';
+          history.push({ role: 'user', content: `${senderName}: ${msg.text}` });
+        }
+      }
+      return history;
+    }
+
+    function sendMessage(textOverride, type = 'text') {
+      const rawText = textOverride || messageInput.value.trim();
+      if (!rawText || (!currentGroup && !socket.id)) return;
+
+      const filterResult = filterMessage(rawText);
+      if (!filterResult.allowed || filterResult.filteredText.trim() === '') {
+        alert('⚠️ Your message contains inappropriate language and was blocked.');
+        return;
+      }
+      let finalText = filterResult.filteredText;
+
+      if (replyTo && type === 'text') {
+        finalText = `@${replyTo.senderName} ${finalText}`;
+        replyTo = null;
+        replyBar.style.display = 'none';
+      }
+
+      messageInput.value = '';
+      socket.emit('sendMessage', {
+        groupId: currentGroup,
+        text: finalText,
+        senderName: USER_NAME,
+        senderId: USER_ID,
+        timestamp: new Date().toISOString(),
+        replyToId: replyTo?.id,
+        type
+      });
+
+      if (aiToggle.checked || (type === 'text' && rawText.startsWith('@ai'))) {
+        const aiPrompt = type === 'text' ? rawText.replace(/^@ai\s*/i, '') : '[Voice note]';
+        const aiFilter = filterMessage(aiPrompt);
+        const safePrompt = aiFilter.allowed ? aiFilter.filteredText : '[Filtered Prompt]';
+        const conversation = getConversationHistory(20);
+        socket.emit('requestAI', {
+          groupId: currentGroup,
+          prompt: safePrompt,
+          context: conversation,
+          personality: 'Friendly Tutor',
+          senderName: USER_NAME,
+          senderId: USER_ID
+        });
+      }
+    }
+
+    // ============================================================
+    // 10. SOCKET EVENTS
     // ============================================================
     socket.on('groupState', data => {
       members = data.members || []; messages = data.messages || [];
@@ -1512,9 +1140,48 @@
       if (!currentGroup) { const chatId = [USER_ID, msg.senderId].sort().join(':'); incrementUnread(chatId, true); }
     });
 
-    socket.on('reactionUpdate', data => { const msg = messages.find(m => m.id === data.messageId); if (msg) { msg.reactions = data.reactions; renderMessages(); } });
-    socket.on('membersUpdate', updated => { members = updated; memberStatus.textContent = members.length + ' members'; updateGroupInfoPanel(); updateStats(); });
-    socket.on('groupMetaUpdated', data => { if (currentGroup) { groupMeta[currentGroup] = { ...groupMeta[currentGroup], description: data.description, avatar: data.avatar }; updateGroupInfoPanel(); renderHomeGroups(); } });
+    socket.on('aiResponse', (data) => {
+      if (data.groupId === currentGroup) {
+        const msg = {
+          id: Date.now().toString(36)+Math.random().toString(36).substr(2,4),
+          senderId: 'ai_bot',
+          senderName: '✦ StudentNija AI',
+          text: data.text,
+          timestamp: new Date().toISOString(),
+          reactions: {},
+          replyTo: null,
+          edited: false,
+          deleted: false,
+          deletedFor: [],
+          type: 'text'
+        };
+        messages.push(msg); renderMessages(); totalMessages++;
+        if (settings.sound) playSound();
+        updateStats();
+      }
+    });
+
+    socket.on('aiTyping', (data) => {
+      // Optional: show typing indicator
+    });
+
+    socket.on('reactionUpdate', data => {
+      const msg = messages.find(m => m.id === data.messageId);
+      if (msg) { msg.reactions = data.reactions; renderMessages(); }
+    });
+    socket.on('membersUpdate', updated => {
+      members = updated;
+      memberStatus.textContent = members.length + ' members';
+      updateGroupInfoPanel();
+      updateStats();
+    });
+    socket.on('groupMetaUpdated', data => {
+      if (currentGroup) {
+        groupMeta[currentGroup] = { ...groupMeta[currentGroup], description: data.description, avatar: data.avatar };
+        updateGroupInfoPanel();
+        renderHomeGroups();
+      }
+    });
     socket.on('groupRenamed', data => {
       if (data.groupId === currentGroup) {
         groupTitle.textContent = data.newName;
@@ -1532,216 +1199,7 @@
     socket.on('error', data => alert(data.message));
 
     // ============================================================
-    // 8. RENDER MESSAGES (with filter applied)
-    // ============================================================
-    function renderMessages() {
-      chatArea.innerHTML = '';
-      if (messages.length === 0) {
-        chatArea.innerHTML = `<div class="empty-state" style="padding:30px;text-align:center;color:var(--text-muted);"><div style="font-size:40px;">👋</div><p>No messages yet. Say hello!</p></div>`;
-        return;
-      }
-      messages.forEach(msg => {
-        let displayText = msg.text;
-        if (displayText) {
-          const filtered = filterMessage(displayText);
-          displayText = filtered.allowed ? filtered.filteredText : '[Filtered]';
-        }
-        const isSelf = msg.senderId === USER_ID;
-        const senderName = msg.senderName || 'User';
-        const avatarHtml = isSelf
-          ? `<img class="sender-avatar" src="${localStorage.getItem('studentnija_chat_user_avatar') || USER_AVATAR || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2228%22 height=%2228%22%3E%3Ccircle cx=%2214%22 cy=%2214%22 r=%2214%22 fill=%22%23008751%22/%3E%3Ctext x=%2214%22 y=%2220%22 text-anchor=%22middle%22 fill=%22white%22 font-size=%2212%22%3E👤%3C/text%3E%3C/svg%3E'}">`
-          : `<div class="sender-avatar" style="background:var(--accent); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:12px;">${senderName.charAt(0).toUpperCase()}</div>`;
-        const reactionsHtml = Object.entries(msg.reactions || {}).map(([emoji, users]) =>
-          `<span class="reaction-btn" data-msgid="${msg.id}" data-emoji="${emoji}">${emoji} <span class="count">${users.length}</span></span>`
-        ).join('');
-        const contentHtml = msg.type === 'audio'
-          ? `<div class="audio-msg"><audio controls src="${displayText}"></audio></div>`
-          : `<div class="text">${escapeHtml(displayText)}</div>`;
-        const sentCheck = isSelf ? '<span class="sent-check">✓</span>' : '';
-        const div = document.createElement('div');
-        div.className = `message-card ${isSelf ? 'self' : 'other'}`;
-        div.dataset.id = msg.id; div.dataset.senderid = msg.senderId;
-        div.innerHTML = `
-          <div class="sender-row">${avatarHtml}<span class="sender-name">${escapeHtml(senderName)}</span></div>
-          ${contentHtml}
-          <div class="footer">
-            <div class="reactions">${reactionsHtml}</div>
-            <span class="timestamp">${new Date(msg.timestamp).toLocaleTimeString()}${sentCheck}</span>
-          </div>
-        `;
-        chatArea.appendChild(div);
-        let tapCount = 0, tapTimer = null, longPressTimer = null;
-        div.addEventListener('touchstart', e => {
-          tapCount++;
-          if (tapCount === 1) tapTimer = setTimeout(() => { tapCount = 0; }, 300);
-          else if (tapCount === 2) { clearTimeout(tapTimer); tapCount = 0; showReactionPicker(div, msg.id); e.preventDefault(); }
-          longPressTimer = setTimeout(() => showContextMenu(div, msg), 500);
-        });
-        div.addEventListener('touchend', () => clearTimeout(longPressTimer));
-        div.addEventListener('touchmove', () => clearTimeout(longPressTimer));
-        div.addEventListener('contextmenu', e => { e.preventDefault(); showContextMenu(div, msg); });
-      });
-      chatArea.scrollTop = chatArea.scrollHeight;
-
-      let swipeStartX = 0;
-      chatArea.addEventListener('touchstart', e => { swipeStartX = e.touches[0].clientX; }, { passive: true });
-      chatArea.addEventListener('touchmove', e => {
-        const delta = e.touches[0].clientX - swipeStartX;
-        if (delta > 80) {
-          const target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-          const card = target?.closest('.message-card');
-          if (card) {
-            const msgId = card.dataset.id;
-            const msg = messages.find(m => m.id === msgId);
-            if (msg && !msg.deleted) setReplyTo(msg);
-            card.style.transform = 'translateX(12px)';
-            setTimeout(() => card.style.transform = '', 300);
-          }
-        }
-      }, { passive: true });
-
-      chatArea.querySelectorAll('.reaction-btn').forEach(btn => {
-        btn.addEventListener('click', e => { e.stopPropagation(); socket.emit('react', { groupId: currentGroup, messageId: btn.dataset.msgid, emoji: btn.dataset.emoji, userId: USER_ID }); });
-      });
-    }
-
-    // ============================================================
-    // 9. CONTEXT MENU & REPLY (unchanged)
-    // ============================================================
-    let activeContextMsg = null;
-    function showContextMenu(element, msg) {
-      activeContextMsg = msg;
-      const rect = element.getBoundingClientRect();
-      let top = rect.bottom + 4, left = rect.left;
-      if (top + 200 > window.innerHeight) top = rect.top - 200;
-      if (left + 180 > window.innerWidth) left = window.innerWidth - 190;
-      if (left < 10) left = 10;
-      contextMenu.style.top = top + 'px'; contextMenu.style.left = left + 'px';
-      contextMenu.style.display = 'flex';
-      document.getElementById('ctxDelete').style.display = msg.senderId === USER_ID ? 'flex' : 'none';
-      const isAdmin = admins.includes(USER_ID) || createdBy === USER_ID;
-      document.getElementById('ctxDeleteAll').style.display = (isAdmin && msg.senderId === USER_ID) ? 'flex' : 'none';
-      document.getElementById('ctxPin').style.display = isAdmin ? 'flex' : 'none';
-    }
-    document.getElementById('ctxCopy').addEventListener('click', () => { if (activeContextMsg) navigator.clipboard.writeText(activeContextMsg.text); contextMenu.style.display = 'none'; });
-    document.getElementById('ctxReply').addEventListener('click', () => { if (activeContextMsg) setReplyTo(activeContextMsg); contextMenu.style.display = 'none'; });
-    document.getElementById('ctxDelete').addEventListener('click', () => { if (activeContextMsg) { socket.emit('deleteMessage', { groupId: currentGroup, messageId: activeContextMsg.id, userId: USER_ID, forAll: false }); contextMenu.style.display = 'none'; } });
-    document.getElementById('ctxDeleteAll').addEventListener('click', () => { if (activeContextMsg) { socket.emit('deleteMessage', { groupId: currentGroup, messageId: activeContextMsg.id, userId: USER_ID, forAll: true }); contextMenu.style.display = 'none'; } });
-    document.getElementById('ctxPin').addEventListener('click', () => { if (activeContextMsg && (admins.includes(USER_ID) || createdBy === USER_ID)) { socket.emit('pinMessage', { groupId: currentGroup, messageId: activeContextMsg.id, userId: USER_ID }); contextMenu.style.display = 'none'; } });
-    document.getElementById('ctxStar').addEventListener('click', () => { if (activeContextMsg) { let starred = JSON.parse(localStorage.getItem('studentnija_starred') || '[]'); if (!starred.includes(activeContextMsg.id)) starred.push(activeContextMsg.id); localStorage.setItem('studentnija_starred', JSON.stringify(starred)); contextMenu.style.display = 'none'; } });
-    document.getElementById('ctxReport').addEventListener('click', () => { if (activeContextMsg) { document.getElementById('reportMsgModal').classList.add('open'); contextMenu.style.display = 'none'; window._reportMsgId = activeContextMsg.id; } });
-    document.getElementById('ctxCancel').addEventListener('click', () => contextMenu.style.display = 'none');
-    document.addEventListener('click', e => { if (!contextMenu.contains(e.target)) contextMenu.style.display = 'none'; });
-
-    // Report message – uses JWT
-    document.getElementById('confirmReportMsgBtn').addEventListener('click', async () => {
-      const reason = document.getElementById('reportMsgReason').value.trim();
-      if (!reason) return;
-      await fetch(`${SERVER_URL}/api/feedback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${JWT_TOKEN}`
-        },
-        body: JSON.stringify({ userId: USER_ID, message: `[Message Report] ${activeContextMsg.text} - Reason: ${reason}` })
-      });
-      document.getElementById('reportMsgModal').classList.remove('open');
-      document.getElementById('reportMsgReason').value = '';
-    });
-    document.getElementById('cancelReportMsgBtn').addEventListener('click', () => document.getElementById('reportMsgModal').classList.remove('open'));
-
-    // ============================================================
-    // 10. REPLY & SEND
-    // ============================================================
-    function setReplyTo(msg) {
-      replyTo = msg;
-      document.querySelector('.reply-sender').textContent = msg.senderName;
-      document.querySelector('.reply-text').textContent = (msg.text || '').substring(0, 50);
-      replyBar.style.display = 'flex';
-      messageInput.focus();
-    }
-    replyClose.addEventListener('click', () => { replyTo = null; replyBar.style.display = 'none'; });
-
-    function sendMessage(textOverride, type = 'text') {
-      const rawText = textOverride || messageInput.value.trim();
-      if (!rawText || (!currentGroup && !socket.id)) return;
-
-      const filterResult = filterMessage(rawText);
-      if (!filterResult.allowed || filterResult.filteredText.trim() === '') {
-        alert('⚠️ Your message contains inappropriate language and was blocked.');
-        return;
-      }
-      let finalText = filterResult.filteredText;
-
-      if (replyTo && type === 'text') {
-        finalText = `@${replyTo.senderName} ${finalText}`;
-        replyTo = null;
-        replyBar.style.display = 'none';
-      }
-
-      messageInput.value = '';
-      socket.emit('sendMessage', {
-        groupId: currentGroup,
-        text: finalText,
-        senderName: USER_NAME,
-        senderId: USER_ID,
-        timestamp: new Date().toISOString(),
-        replyToId: replyTo?.id,
-        type
-      });
-
-      if (aiToggle.checked || (type === 'text' && rawText.startsWith('@ai'))) {
-        const aiPrompt = type === 'text' ? rawText.replace(/^@ai\s*/i, '') : '[Voice note]';
-        const aiFilter = filterMessage(aiPrompt);
-        const safePrompt = aiFilter.allowed ? aiFilter.filteredText : '[Filtered Prompt]';
-        socket.emit('requestAI', {
-          groupId: currentGroup,
-          prompt: safePrompt,
-          context: messages.slice(-10).map(m => `${m.senderName}: ${m.text}`).join('\n'),
-          personality: 'Friendly Tutor',
-          senderName: USER_NAME,
-          senderId: USER_ID
-        });
-      }
-    }
-
-    // ============================================================
-    // 11. VOICE RECORDING (unchanged)
-    // ============================================================
-    async function startRecording() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorder = new MediaRecorder(stream);
-        audioChunks = [];
-        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
-        mediaRecorder.onstop = () => {
-          const blob = new Blob(audioChunks, { type: 'audio/webm' });
-          const url = URL.createObjectURL(blob);
-          socket.emit('sendMessage', {
-            groupId: currentGroup,
-            text: url,
-            senderName: USER_NAME,
-            senderId: USER_ID,
-            timestamp: new Date().toISOString(),
-            type: 'audio'
-          });
-          stream.getTracks().forEach(t => t.stop());
-          recIndicator.style.display = 'none';
-          isRecording = false;
-        };
-        mediaRecorder.start();
-        recIndicator.style.display = 'flex';
-        isRecording = true;
-      } catch (e) {}
-    }
-    function stopRecording() { if (mediaRecorder && isRecording) mediaRecorder.stop(); }
-    micBtn.addEventListener('mousedown', startRecording);
-    micBtn.addEventListener('mouseup', stopRecording);
-    micBtn.addEventListener('touchstart', startRecording);
-    micBtn.addEventListener('touchend', stopRecording);
-
-    // ============================================================
-    // 12. REACTION PICKER (unchanged)
+    // 11. REACTION PICKER
     // ============================================================
     let activeReactionMsgId = null;
     function showReactionPicker(element, msgId) {
@@ -1761,7 +1219,7 @@
     document.addEventListener('click', e => { if (!reactionPicker.contains(e.target)) reactionPicker.style.display = 'none'; });
 
     // ============================================================
-    // 13. GROUP INFO PANEL (unchanged)
+    // 12. GROUP INFO PANEL
     // ============================================================
     function updateGroupInfoPanel() {
       if (!currentGroup) return;
@@ -1791,7 +1249,7 @@
     document.getElementById('closeGroupInfoBtn').addEventListener('click', () => groupInfoPanel.classList.remove('open'));
 
     // ============================================================
-    // 14. MODALS & QUICK ACTIONS (unchanged)
+    // 13. MODALS & QUICK ACTIONS
     // ============================================================
     let simpleInputCallback = null;
     function openSimpleInput(title, placeholder, currentValue, callback) {
@@ -1847,7 +1305,7 @@
     document.getElementById('cancelReportGroupBtn').addEventListener('click', () => document.getElementById('reportGroupModal').classList.remove('open'));
 
     // ============================================================
-    // 15. QUICK ACTIONS (unchanged)
+    // 14. QUICK ACTIONS
     // ============================================================
     document.getElementById('qaCreateGroup').addEventListener('click', () => createGroupModal.classList.add('open'));
     document.getElementById('qaJoinGroup').addEventListener('click', () => joinGroupModal.classList.add('open'));
@@ -1876,7 +1334,7 @@
     });
 
     // ============================================================
-    // 16. GROUP CREATION / JOIN (unchanged)
+    // 15. GROUP CREATION / JOIN
     // ============================================================
     document.getElementById('newGroupDrawerBtn').addEventListener('click', () => createGroupModal.classList.add('open'));
     document.getElementById('cancelCreateGroupBtn').addEventListener('click', () => createGroupModal.classList.remove('open'));
@@ -1916,7 +1374,7 @@
     });
 
     // ============================================================
-    // 17. DRAWER, GROUPS, SEARCH (unchanged)
+    // 16. DRAWER, GROUPS, SEARCH, EMOJI
     // ============================================================
     function closeDrawer() { drawerOverlay.classList.remove('open'); drawer.classList.remove('open'); }
     function loadGroups() { groups = JSON.parse(localStorage.getItem('studentnija_groups') || '[]'); renderGroups(); }
@@ -1943,10 +1401,7 @@
     messageInput.addEventListener('keypress', e => { if (e.key === 'Enter') sendMessage(); });
     function escapeHtml(s) { return s.replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
 
-    // ============================================================
-    // 18. EMOJI PICKER (unchanged)
-    // ============================================================
-    const textEmojiPicker = document.getElementById('textEmojiPicker');
+    // Emoji picker
     const textEmojis = ['😊','😂','❤️','👍','🎉','🔥','📚','💪','🤓','✨','🥳','🤔','😭','🤗','💯','🙌','👏','🕊️','🌱','⭐'];
     textEmojiPicker.innerHTML = textEmojis.map(e => `<button>${e}</button>`).join('');
     document.getElementById('emojiBtn').addEventListener('click', e => { e.stopPropagation(); textEmojiPicker.classList.toggle('open'); });
@@ -1954,23 +1409,74 @@
     document.addEventListener('click', e => { if (!textEmojiPicker.contains(e.target) && e.target !== document.getElementById('emojiBtn')) textEmojiPicker.classList.remove('open'); });
 
     // ============================================================
-    // 19. INIT
+    // 17. VOICE RECORDING
     // ============================================================
-    loadGroups();
-    renderHome();
-    setHeaderForHome();
-    socket.on('connect', () => {
-      console.log('✅ Connected with user:', USER_NAME);
-      const lastGroup = localStorage.getItem('studentnija_last_group_v3');
-      if (lastGroup && groups.includes(lastGroup)) {
-        switchGroup(lastGroup);
-      }
-    });
+    let mediaRecorder = null, audioChunks = [], isRecording = false;
+    async function startRecording() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+        mediaRecorder.onstop = () => {
+          const blob = new Blob(audioChunks, { type: 'audio/webm' });
+          const url = URL.createObjectURL(blob);
+          socket.emit('sendMessage', {
+            groupId: currentGroup,
+            text: url,
+            senderName: USER_NAME,
+            senderId: USER_ID,
+            timestamp: new Date().toISOString(),
+            type: 'audio'
+          });
+          stream.getTracks().forEach(t => t.stop());
+          recIndicator.style.display = 'none';
+          isRecording = false;
+        };
+        mediaRecorder.start();
+        recIndicator.style.display = 'flex';
+        isRecording = true;
+      } catch (e) {}
+    }
+    function stopRecording() { if (mediaRecorder && isRecording) mediaRecorder.stop(); }
+    micBtn.addEventListener('mousedown', startRecording);
+    micBtn.addEventListener('mouseup', stopRecording);
+    micBtn.addEventListener('touchstart', startRecording);
+    micBtn.addEventListener('touchend', stopRecording);
 
-    window.syncUserProfileUpdate = syncUserProfileUpdate;
-    window.USER_NAME = USER_NAME;
-    window.USER_ID = USER_ID;
-    window.JWT_TOKEN = JWT_TOKEN;
+    // ============================================================
+    // 18. INIT
+    // ============================================================
+    (async function init() {
+      const ok = await checkMaintenance();
+      if (!ok) return;
+
+      applySettings();
+      loadGroups();
+      renderHome();
+      setHeaderForHome();
+
+      socket.on('connect', () => {
+        console.log('✅ Connected with user:', USER_NAME);
+        const lastGroup = localStorage.getItem('studentnija_last_group_v3');
+        if (lastGroup && groups.includes(lastGroup)) {
+          switchGroup(lastGroup);
+        }
+      });
+
+      // Expose for debugging
+      window.syncUserProfileUpdate = function(updates) {
+        const user = JSON.parse(localStorage.getItem('studentnija_currentUser') || '{}');
+        Object.assign(user, updates);
+        localStorage.setItem('studentnija_currentUser', JSON.stringify(user));
+        if (updates.fullName) localStorage.setItem('studentnija_chat_user_name', updates.fullName);
+        if (updates.profilePicture) localStorage.setItem('studentnija_chat_user_avatar', updates.profilePicture);
+        applySettings();
+      };
+      window.USER_NAME = USER_NAME;
+      window.USER_ID = USER_ID;
+      window.JWT_TOKEN = JWT_TOKEN;
+    })();
   })();
 </script>
 </body>

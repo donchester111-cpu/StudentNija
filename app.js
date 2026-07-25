@@ -1,7 +1,7 @@
 // ============================================================
 // app.js – StudentNija Main Entry Point
 // Full implementation with feature flags, maintenance, announcements,
-// onboarding, tour, and all other functionality.
+// onboarding, tour, logout, delete account, and Turnstile auto-reset.
 // ============================================================
 
 import {
@@ -15,7 +15,7 @@ import {
   escapeHtml, initCoursesData, initScholarships, initAchievements,
   showLoadingOverlay, hideLoadingOverlay,
   registerUser, loginUser, updateUserProfile, changePassword, logout, deleteAccount,
-  updateConnectionIndicator
+  updateConnectionIndicator, setCurrentUser
 } from './state.js';
 
 import { renderHome } from './pages/home.js';
@@ -91,6 +91,7 @@ const TURNSTILE_SITE_KEY = '0x4AAAAAAD46hrOUi9OGHQUP';
   document.head.appendChild(style);
 })();
 
+// ======================== TURNSTILE VERIFICATION ========================
 async function verifyTurnstile(token) {
   try {
     const res = await fetch(`${API_BASE}/api/verify-turnstile`, {
@@ -105,6 +106,7 @@ async function verifyTurnstile(token) {
   }
 }
 
+// ======================== TURNSTILE RENDER WITH RESET ========================
 function resetTurnstile() {
   if (typeof turnstile === 'undefined') return;
   const existingWidget = document.querySelector('.cf-turnstile');
@@ -112,20 +114,47 @@ function resetTurnstile() {
     const widgetId = existingWidget.getAttribute('data-widget-id');
     if (widgetId) {
       try { turnstile.remove(widgetId); } catch (e) {}
+      existingWidget.removeAttribute('data-widget-id');
     }
+    // Clear inner HTML to remove any stale iframe
     existingWidget.innerHTML = '';
   }
+  // Re-render after a small delay to ensure DOM is ready
   setTimeout(() => {
     const widget = document.querySelector('.cf-turnstile');
     if (!widget) return;
     try {
       const widgetId = turnstile.render(widget, {
         sitekey: TURNSTILE_SITE_KEY,
-        appearance: 'always'
+        appearance: 'always',
+        // Optionally, you can add callback to clear error state
       });
       widget.setAttribute('data-widget-id', widgetId);
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Turnstile render error:', e);
+    }
   }, 100);
+}
+
+// Helper to get Turnstile token with a safety check
+function getTurnstileToken() {
+  if (typeof turnstile === 'undefined') return null;
+  try {
+    return turnstile.getResponse();
+  } catch (e) {
+    return null;
+  }
+}
+
+// Helper to reset Turnstile after failed verification
+function resetTurnstileWidget() {
+  if (typeof turnstile === 'undefined') return;
+  try {
+    turnstile.reset();
+  } catch (e) {
+    // If reset fails, re-render the whole widget
+    resetTurnstile();
+  }
 }
 
 // ======================== CLOUD SYNC ========================
@@ -276,10 +305,22 @@ function clearPreviousUserData() {
     'studentnija_coursesData',
     'studentnija_users',
     'studentnija_currentUser',
+    'studentnija_groups',
+    'studentnija_unread',
+    'studentnija_private_unread',
+    'studentnija_chat_user_name',
+    'studentnija_chat_user_id',
+    'studentnija_chat_user_avatar',
+    'studentnija_chat_theme',
+    'studentnija_chat_fontsize',
+    'studentnija_chat_sound',
+    'studentnija_chat_sound_enabled',
+    'studentnija_remember'
   ];
   keysToRemove.forEach(key => localStorage.removeItem(key));
   
   Object.keys(coursesData).forEach(k => delete coursesData[k]);
+  semesterList.forEach(s => coursesData[s] = []);
   plannerTasks.length = 0;
   timetableEvents.length = 0;
   exams.length = 0;
@@ -295,7 +336,14 @@ function clearPreviousUserData() {
     userStats.level = 1;
     userStats.xp = 0;
   }
+  // Reset currentUser
+  if (currentUser) {
+    Object.keys(currentUser).forEach(key => delete currentUser[key]);
+  }
+  // Reset achievements and other arrays
+  initAchievements();
 }
+window.clearPreviousUserData = clearPreviousUserData;
 
 // ======================== ERROR HANDLERS ========================
 window.addEventListener('unhandledrejection', function(event) {
@@ -321,6 +369,8 @@ window.currentPage = currentPage;
 // ======================== FEATURE FLAGS ========================
 let featureFlags = { ai: true, flashcards: true, gradePredictor: true, communityQ: true, registration: true, maintenance: false };
 window.featureFlags = featureFlags;
+let isMaintenanceMode = false;
+window.isMaintenanceMode = () => isMaintenanceMode;
 
 async function loadFeatureFlags() {
   try {
@@ -328,9 +378,35 @@ async function loadFeatureFlags() {
     if (res && typeof res === 'object') {
       featureFlags = res;
       window.featureFlags = res;
+      isMaintenanceMode = res.maintenance || false;
     }
   } catch (e) {
     console.warn('Feature flags not available, using defaults.');
+  }
+}
+
+// ======================== MAINTENANCE OVERLAY ========================
+function showMaintenanceOverlay() {
+  const container = document.getElementById('pagesContainer');
+  if (container) {
+    container.innerHTML = `
+      <div class="page active-page" style="display:flex; align-items:center; justify-content:center; height:100vh; text-align:center; padding:20px; background:var(--bg-primary);">
+        <div class="glass-card" style="padding:40px; max-width:500px; border-radius:30px; background:var(--bg-secondary); border:1px solid rgba(255,255,255,0.08);">
+          <span style="font-size:64px; display:block; margin-bottom:16px;">🔧</span>
+          <h2 style="font-size:28px; font-weight:800; margin-bottom:8px; color:var(--text-primary);">Under Maintenance</h2>
+          <p style="font-size:16px; color:var(--text-muted); line-height:1.6;">
+            StudentNija is currently undergoing scheduled maintenance.<br>
+            We'll be back soon. Please check back later.
+          </p>
+          <div style="margin-top:20px;">
+            <span class="badge" style="background:var(--accent-light);">⏳ Estimated downtime: 2 hours</span>
+          </div>
+        </div>
+      </div>
+    `;
+    const bottomNav = document.getElementById('bottomNav');
+    if (bottomNav) bottomNav.style.display = 'none';
+    hideLoadingScreen();
   }
 }
 
@@ -900,16 +976,26 @@ export function showAuthForm(formType) {
       const pwd = document.getElementById('loginPass').value;
       const rem = document.getElementById('rememberMe')?.checked;
 
-      const token = turnstile.getResponse();
-      if (!token) { alert('Please verify you are human.'); return; }
-      const human = await verifyTurnstile(token);
-      if (!human) { alert('Verification failed. Please try again.'); return; }
+      // Get Turnstile token
+      const token = getTurnstileToken();
+      if (!token) {
+        alert('Please complete the security check.');
+        resetTurnstileWidget();
+        return;
+      }
 
       try {
+        const human = await verifyTurnstile(token);
+        if (!human) {
+          alert('Verification failed. Please try again.');
+          resetTurnstileWidget();
+          return;
+        }
+
         const data = await apiPost('/api/auth/login', { email, password: pwd });
         if (data.success) {
           setAuthToken(data.token);
-          Object.assign(currentUser, data.user);
+          setCurrentUser(data.user);
           if (rem) {
             localStorage.setItem('remember_me', 'true');
           } else {
@@ -924,9 +1010,11 @@ export function showAuthForm(formType) {
           trackEvent('login');
         } else {
           alert(data.error || 'Login failed');
+          resetTurnstileWidget();
         }
       } catch (e) {
         alert('Login error: ' + e.message);
+        resetTurnstileWidget();
       }
     });
 
@@ -985,12 +1073,21 @@ export function showAuthForm(formType) {
         return;
       }
 
-      const token = turnstile.getResponse();
-      if (!token) { alert('Please verify you are human.'); return; }
-      const human = await verifyTurnstile(token);
-      if (!human) { alert('Verification failed. Please try again.'); return; }
+      const token = getTurnstileToken();
+      if (!token) {
+        alert('Please complete the security check.');
+        resetTurnstileWidget();
+        return;
+      }
 
       try {
+        const human = await verifyTurnstile(token);
+        if (!human) {
+          alert('Verification failed. Please try again.');
+          resetTurnstileWidget();
+          return;
+        }
+
         const data = await apiPost('/api/auth/register', {
           fullName: name,
           email,
@@ -1001,7 +1098,7 @@ export function showAuthForm(formType) {
         });
         if (data.success) {
           setAuthToken(data.token);
-          Object.assign(currentUser, data.user);
+          setCurrentUser(data.user);
           localStorage.removeItem('remember_me');
           sessionStorage.setItem('studentnija_jwt', data.token);
           syncLocalUserToServer(currentUser);
@@ -1013,9 +1110,11 @@ export function showAuthForm(formType) {
           trackEvent('register');
         } else {
           alert(data.error || 'Registration failed');
+          resetTurnstileWidget();
         }
       } catch (e) {
         alert('Registration error: ' + e.message);
+        resetTurnstileWidget();
       }
     });
 
@@ -1039,17 +1138,27 @@ export function showAuthForm(formType) {
       const email = document.getElementById('resetEmail').value.trim();
       if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
 
-      const token = turnstile.getResponse();
-      if (!token) { alert('Please verify you are human.'); return; }
-      const human = await verifyTurnstile(token);
-      if (!human) { alert('Verification failed. Please try again.'); return; }
+      const token = getTurnstileToken();
+      if (!token) {
+        alert('Please complete the security check.');
+        resetTurnstileWidget();
+        return;
+      }
 
       try {
+        const human = await verifyTurnstile(token);
+        if (!human) {
+          alert('Verification failed. Please try again.');
+          resetTurnstileWidget();
+          return;
+        }
+
         await apiPost('/api/auth/forgot-password', { email });
         alert('If an account with that email exists, a reset link has been sent.');
         showAuthForm('login');
       } catch (e) {
         alert('Could not send reset email. Please try again later.');
+        resetTurnstileWidget();
       }
     });
 
@@ -1073,7 +1182,7 @@ export function processGoogleAuthCallback() {
     try {
       const user = JSON.parse(decodeURIComponent(userData));
       setAuthToken(token);
-      Object.assign(currentUser, user);
+      setCurrentUser(user);
       if (localStorage.getItem('remember_me') === 'true') {
         localStorage.setItem('studentnija_jwt', token);
       } else {
@@ -1093,6 +1202,56 @@ export function processGoogleAuthCallback() {
   }
 }
 
+// ======================== LOGOUT ========================
+window.logout = function() {
+  clearPreviousUserData();
+  setAuthToken(null);
+  localStorage.removeItem('remember_me');
+  sessionStorage.removeItem('studentnija_jwt');
+  // Reset currentUser
+  if (currentUser) {
+    Object.keys(currentUser).forEach(key => delete currentUser[key]);
+  }
+  // Redirect to login
+  window.location.href = window.location.origin;
+};
+
+// ======================== DELETE ACCOUNT (cloud) ========================
+window.deleteAccount = async function() {
+  if (!confirm('⚠️ Are you sure you want to permanently delete your account?\n\nThis action cannot be undone. All your data will be lost.')) return;
+  if (!currentUser || !currentUser.id) return alert('You are not logged in.');
+
+  const token = getAuthToken();
+  if (!token) return alert('No authentication token found.');
+
+  try {
+    const res = await fetch(`${API_BASE}/api/users/${currentUser.id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('Account deleted successfully.');
+      // Logout after deletion
+      clearPreviousUserData();
+      setAuthToken(null);
+      localStorage.removeItem('remember_me');
+      sessionStorage.removeItem('studentnija_jwt');
+      if (currentUser) {
+        Object.keys(currentUser).forEach(key => delete currentUser[key]);
+      }
+      window.location.href = window.location.origin;
+    } else {
+      alert('Deletion failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch (e) {
+    alert('Network error: ' + e.message);
+  }
+};
+
 // ======================== RENDER APP ========================
 export async function renderApp() {
   console.log('🔄 renderApp() called');
@@ -1102,28 +1261,8 @@ export async function renderApp() {
 
   // Check maintenance mode
   if (window.featureFlags.maintenance) {
-    const container = document.getElementById('pagesContainer');
-    if (container) {
-      container.innerHTML = `
-        <div class="page active-page" style="display:flex; align-items:center; justify-content:center; height:100vh; text-align:center; padding:20px;">
-          <div class="glass-card" style="padding:40px; max-width:500px; border-radius:30px; background:var(--bg-secondary); border:1px solid rgba(255,255,255,0.08);">
-            <span style="font-size:64px; display:block; margin-bottom:16px;">🔧</span>
-            <h2 style="font-size:28px; font-weight:800; margin-bottom:8px;">Under Maintenance</h2>
-            <p style="font-size:16px; color:var(--text-muted); line-height:1.6;">
-              StudentNija is currently undergoing scheduled maintenance.<br>
-              We'll be back soon. Please check back later.
-            </p>
-            <div style="margin-top:20px;">
-              <span class="badge" style="background:var(--accent-light);">⏳ Estimated downtime: 2 hours</span>
-            </div>
-          </div>
-        </div>
-      `;
-      const bottomNav = document.getElementById('bottomNav');
-      if (bottomNav) bottomNav.style.display = 'none';
-      hideLoadingScreen();
-      return;
-    }
+    showMaintenanceOverlay();
+    return;
   }
 
   // Check if we are on the callback page
@@ -1137,8 +1276,8 @@ export async function renderApp() {
     try {
       const data = await apiGet('/api/auth/me');
       if (data.user) {
-        Object.assign(currentUser, data.user);
-        clearPreviousUserData();
+        setCurrentUser(data.user);
+        clearPreviousUserData(); // Clear local data first, then load cloud
         await loadCloudData(currentUser.id);
         renderMainApp();
         if (!localStorage.getItem('studentnija_onboarded')) showOnboarding();
@@ -1549,6 +1688,7 @@ window.addEventListener('load', async () => {
   // Render app (will check maintenance and flags)
   await renderApp();
 
+  // Listen for logout events
   window.addEventListener('app:logout', () => {
     clearPreviousUserData();
     setAuthToken(null);
