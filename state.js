@@ -1,6 +1,9 @@
 // ======================== GLOBAL STATE ========================
 export let currentUser = null;
 export let users = [];
+export let logout = [];
+export let setCurrentUser = [];
+export let deleteAccount = [];
 export let coursesData = {};
 export let plannerTasks = [];
 export let timetableEvents = [];
@@ -105,12 +108,13 @@ export function initScholarships() {
 }
 
 export function initAchievements() {
+  // Fixed: use 'name' instead of 'title' to match home.js expectations
   achievements = [
-    {id:"first_course", title:"First Course Added", achieved:false, icon:"🏆"},
-    {id:"semester_done", title:"First Semester Completed", achieved:false, icon:"📘"},
-    {id:"cgpa_excellent", title:"CGPA Above 4.00", achieved:false, icon:"🎯"},
-    {id:"streak_7", title:"7 Day Study Streak", achieved:false, icon:"🔥"},
-    {id:"streak_30", title:"30 Day Study Streak", achieved:false, icon:"⭐"}
+    {id:"first_course", name:"First Course Added", achieved:false, icon:"🏆"},
+    {id:"semester_done", name:"First Semester Completed", achieved:false, icon:"📘"},
+    {id:"cgpa_excellent", name:"CGPA Above 4.00", achieved:false, icon:"🎯"},
+    {id:"streak_7", name:"7 Day Study Streak", achieved:false, icon:"🔥"},
+    {id:"streak_30", name:"30 Day Study Streak", achieved:false, icon:"⭐"}
   ];
 }
 
@@ -140,20 +144,22 @@ export function getClassification(cgpa) {
 }
 
 export function checkAchievements() {
+  // Ensure achievements is not empty
+  if (!achievements || achievements.length === 0) initAchievements();
   let totalCourses = 0;
   for(let s in coursesData) totalCourses += coursesData[s].length;
-  if(totalCourses>=1 && !achievements.find(a=>a.id==="first_course")?.achieved)
-    achievements.find(a=>a.id==="first_course").achieved=true;
+  const firstCourse = achievements.find(a=>a.id==="first_course");
+  if(totalCourses>=1 && firstCourse && !firstCourse.achieved) firstCourse.achieved = true;
   let allSemestersWithCourses = semesterList.filter(s=>coursesData[s]?.length>0).length;
-  if(allSemestersWithCourses>=1 && !achievements.find(a=>a.id==="semester_done")?.achieved)
-    achievements.find(a=>a.id==="semester_done").achieved=true;
+  const semesterDone = achievements.find(a=>a.id==="semester_done");
+  if(allSemestersWithCourses>=1 && semesterDone && !semesterDone.achieved) semesterDone.achieved = true;
   let cgpa = computeOverallCGPA();
-  if(cgpa>=4.0 && !achievements.find(a=>a.id==="cgpa_excellent")?.achieved)
-    achievements.find(a=>a.id==="cgpa_excellent").achieved=true;
-  if(userStats.studyStreak>=7 && !achievements.find(a=>a.id==="streak_7")?.achieved)
-    achievements.find(a=>a.id==="streak_7").achieved=true;
-  if(userStats.studyStreak>=30 && !achievements.find(a=>a.id==="streak_30")?.achieved)
-    achievements.find(a=>a.id==="streak_30").achieved=true;
+  const cgpaExcellent = achievements.find(a=>a.id==="cgpa_excellent");
+  if(cgpa>=4.0 && cgpaExcellent && !cgpaExcellent.achieved) cgpaExcellent.achieved = true;
+  const streak7 = achievements.find(a=>a.id==="streak_7");
+  if(userStats.studyStreak>=7 && streak7 && !streak7.achieved) streak7.achieved = true;
+  const streak30 = achievements.find(a=>a.id==="streak_30");
+  if(userStats.studyStreak>=30 && streak30 && !streak30.achieved) streak30.achieved = true;
   saveAll();
 }
 
@@ -376,35 +382,106 @@ export function changePassword(oldPwd, newPwd) {
   return false;
 }
 
-export function logout() {
-  showLoadingOverlay('Logging out...');
-  setTimeout(() => {
-    currentUser = null;
-    localStorage.removeItem('studentnija_user');
-    // Also reset login poller flag – we'll let the app handle it
-    // We dispatch an event that app.js listens to
-    saveAll();
-    hideLoadingOverlay();
-    const event = new CustomEvent('app:logout');
-    window.dispatchEvent(event);
-    addNotification('Logout', 'You have been logged out.');
-  }, 600);
-}
+// These local auth functions are kept for backward compatibility, but the main app uses cloud auth.
 
-export function deleteAccount() {
-  if (!currentUser) return;
-  if (confirm('⚠️ Are you sure you want to permanently delete your account?\n\nThis action cannot be undone. All your data will be lost.')) {
-    showLoadingOverlay('Deleting account...');
-    setTimeout(() => {
-      const index = users.findIndex(u => u.id === currentUser.id);
-      if (index !== -1) users.splice(index, 1);
-      currentUser = null;
-      localStorage.removeItem('studentnija_user');
-      saveAll();
-      hideLoadingOverlay();
-      const event = new CustomEvent('app:logout');
-      window.dispatchEvent(event);
-      addNotification('Account', 'Your account has been permanently deleted.');
-    }, 800);
-  }
-                         }
+// ======================== CLEAR PREVIOUS USER DATA ========================
+export function clearPreviousUserData() {
+  // Clear all data arrays and localStorage keys
+  const keysToRemove = [
+    'studentnija_courses',
+    'studentnija_planner',
+    'studentnija_timetable',
+    'studentnija_exams',
+    'studentnija_flashcards',
+    'studentnija_notes_list',
+    'studentnija_notes',
+    'studentnija_notifications',
+    'studentnija_achievements',
+    'studentnija_stats',
+    'studentnija_scholarships',
+    'studentnija_pastquestions',
+    'studentnija_studyLog',
+    'studentnija_users',
+    'studentnija_currentUser',
+    'studentnija_groups',
+    'studentnija_unread',
+    'studentnija_private_unread',
+    'studentnija_chat_user_name',
+    'studentnija_chat_user_id',
+    'studentnija_chat_user_avatar',
+    'studentnija_chat_theme',
+    'studentnija_chat_fontsize',
+    'studentnija_chat_sound',
+    'studentnija_chat_sound_enabled',
+    'studentnija_remember'
+  ];
+  keysToRemove.forEach(key => localStorage.removeItem(key));
+
+  // Reset all exported arrays/objects
+  coursesData = {};
+  semesterList.forEach(s => coursesData[s] = []);
+  plannerTasks = [];
+  timetableEvents = [];
+  exams = [];
+  flashcards = [];
+  savedNotes = [];
+  notes = [];
+  notifications = [];
+  achievements = [];
+  userStats = { studyStreak: 0, totalCourses: 0, totalHours: 0, lastActive: null };
+  scholarships = [];
+  pastQuestions = [];
+  studyHoursLog = [];
+  // Reset currentUser
+  currentUser = null;
+  // Reset settings to defaults but keep theme from main app? We'll keep current settings object.
+  settings = {
+    theme: 'light',
+    notificationsEnabled: true,
+    examNotifications: true,
+    classNotifications: true,
+    accentColor: '#008751'
+  };
+  saveAll();
+}
+window.clearPreviousUserData = clearPreviousUserData;
+
+// ======================== EXPOSE GLOBALLY ========================
+window.currentUser = currentUser;
+window.users = users;
+window.coursesData = coursesData;
+window.plannerTasks = plannerTasks;
+window.timetableEvents = timetableEvents;
+window.exams = exams;
+window.flashcards = flashcards;
+window.savedNotes = savedNotes;
+window.achievements = achievements;
+window.userStats = userStats;
+window.settings = settings;
+window.notifications = notifications;
+window.scholarships = scholarships;
+window.pastQuestions = pastQuestions;
+window.studyHoursLog = studyHoursLog;
+window.saveAll = saveAll;
+window.loadAll = loadAll;
+window.addNotification = addNotification;
+window.applyTheme = applyTheme;
+window.applyAccentColor = applyAccentColor;
+window.computeOverallCGPA = computeOverallCGPA;
+window.getClassification = getClassification;
+window.updateStreak = updateStreak;
+window.checkAchievements = checkAchievements;
+window.buildUserContext = buildUserContext;
+window.scheduleExamReminders = scheduleExamReminders;
+window.scheduleClassReminders = scheduleClassReminders;
+window.originalAddExam = originalAddExam;
+window.originalAddClass = originalAddClass;
+window.rescheduleAllFromStorage = rescheduleAllFromStorage;
+window.escapeHtml = escapeHtml;
+window.showLoadingOverlay = showLoadingOverlay;
+window.hideLoadingOverlay = hideLoadingOverlay;
+window.registerUser = registerUser;
+window.loginUser = loginUser;
+window.updateUserProfile = updateUserProfile;
+window.changePassword = changePassword;
+window.clearPreviousUserData = clearPreviousUserData;
