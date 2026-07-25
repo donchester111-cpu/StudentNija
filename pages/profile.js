@@ -590,32 +590,26 @@ export function renderProfilePage() {
   });
 
   // ---- LOGOUT ----
-  document.getElementById('logoutBtn')?.addEventListener('click', function() {
-    if (confirm('Logout?')) {
-      // Clear all tokens and local data
-      localStorage.removeItem('studentnija_jwt');
-      sessionStorage.removeItem('studentnija_jwt');
-      localStorage.removeItem('studentnija_currentUser');
-      localStorage.removeItem('remember_me');
-      // Reload to login screen
-      window.location.href = window.location.origin;
-    }
-  });
+  // In renderProfilePage, the logout button should call window.logout
+document.getElementById('logoutBtn')?.addEventListener('click', function() {
+  if (typeof window.logout === 'function') {
+    window.logout();
+  } else {
+    // fallback
+    localStorage.removeItem('studentnija_jwt');
+    localStorage.removeItem('studentnija_currentUser');
+    window.location.reload();
+  }
+});
 
   // ---- DELETE ACCOUNT ----
   document.getElementById('deleteAccountBtn')?.addEventListener('click', function() {
-    if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-      import('../state.js').then(module => {
-        module.deleteAccount();
-        // After deletion, clear tokens and redirect
-        localStorage.removeItem('studentnija_jwt');
-        sessionStorage.removeItem('studentnija_jwt');
-        window.location.href = window.location.origin;
-      }).catch(() => {
-        alert('Delete account failed');
-      });
-    }
-  });
+  if (typeof window.deleteAccount === 'function') {
+    window.deleteAccount();
+  } else {
+    alert('Delete account function not available.');
+  }
+});
 
   // ---- THEME SELECT ----
   document.getElementById('themeSelect')?.addEventListener('change', (e) => {
